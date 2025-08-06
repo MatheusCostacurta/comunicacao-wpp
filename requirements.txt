@@ -3,3 +3,6 @@ langchain-google-genai
 langchain-groq
 pydantic
 python-dotenv
+
+python-Levenshtein
+thefuzz
