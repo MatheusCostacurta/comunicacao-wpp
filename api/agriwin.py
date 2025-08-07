@@ -13,6 +13,7 @@ class MockAPI:
             {"id": 107, "nome": "Tordon", "descricao": "Herbicida para pastagem"},
             {"id": 108, "nome": "TordonXT", "descricao": "Herbicida para pastagem"},
             {"id": 109, "nome": "Tordon H", "descricao": "Herbicida para pastagem"},
+            {"id": 110, "nome": "Tordon X", "descricao": "Herbicida para pastagem"},
             {"id": 104, "nome": "Óleo Mineral Assist", "descricao": "Adjuvante agrícola"},
         ]
     
@@ -27,8 +28,8 @@ class MockAPI:
             {"id": 105, "nome": "Glifosato Atar", "descricao": "Outra marca de Glifosato", "saldo": 10},
         ]
 
-    def get_produtos_mais_consumidos(self, id_produtor: int) -> List[dict]:
-        print(f"\n[API MOCK] Buscando produtos MAIS CONSUMIDOS para desempate...")
+    def get_produtos_mais_consumidos(self, id_produtor: int, produtos: List[str]) -> List[dict]:
+        print(f"\n[API MOCK] Buscando consumos de: {produtos} para o produtor {id_produtor}...")
         # Simula que "Tordon XT" é mais usado que outros
         return [
             {"id": 103, "nome": "Tordon XT", "consumo_recente": 150},

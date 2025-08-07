@@ -8,9 +8,9 @@ ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
 @tool
 def buscar_produto_por_nome(nome_produto: str) -> Optional[Dict]:
     """
-    Use esta ferramenta para encontrar o ID e os detalhes de um produto específico
-    pelo nome que o usuário mencionou. Esta ferramenta contém a lógica complexa de busca, busca em estoque e desempate.
-    A IA deve então usar esta lista para encontrar o ID do produto que o usuário mencionou.
+    Use esta ferramenta para obter um map de produtos similares ao produto que usuário mencionou.
+    Esse map é composto por 3 listas: produtos em estoque, produtos mais consumidos e produtos similares. 
+    A IA deve então usar esse map para encontrar o ID do produto que o usuário mencionou, priorizando produtos que já foram consumidos ou que possuem estoque para casos de desempate.
     """
     return product_finder_service.find_product(nome_produto_mencionado=nome_produto, id_produtor=ID_PRODUTOR_EXEMPLO)
 
