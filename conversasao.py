@@ -1,4 +1,4 @@
-# conversasao.py
+import json
 from langchain_groq import ChatGroq
 from modelos import ConsumoInput
 from agentes.checar_informacoes import checar_informacoes_faltantes
@@ -12,37 +12,56 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
     """
     print(f"\n--- INICIANDO PROCESSAMENTO PARA: '{mensagem}' (Remetente: {numero_telefone}) ---")
     
-    # Recupera o estado da conversa atual
     estado_conversa = memoria.obter_estado(numero_telefone)
     historico = estado_conversa["historico"]
     
-    # Adiciona a mensagem atual ao histórico para ter o contexto completo
-    historico_completo = historico + [{"role": "user", "content": mensagem}]
+    historico_para_analise = historico + [{"role": "user", "content": mensagem}]
+    texto_completo_conversa = "\n".join(m["content"] for m in historico_para_analise)
 
     campos_obrigatorios = ["produto_mencionado", "quantidade", "talhao_mencionado"]
     llm = ChatGroq(model_name="llama3-70b-8192", temperature=0)
     
-    # Etapa 1: Checar se falta alguma informação
-    # Passa o histórico completo para a checagem
-    resultado_checaem = checar_informacoes_faltantes("\n".join(m["content"] for m in historico_completo), campos_obrigatorios, llm)
+    resultado_checaem = checar_informacoes_faltantes(texto_completo_conversa, campos_obrigatorios, llm)
     
     if isinstance(resultado_checaem, str):
         print("\n--- RESULTADO FINAL (FALTAM DADOS) ---")
         print(f"Resposta para o usuário: {resultado_checaem}")
         
-        # Salva o estado da conversa para a próxima interação
         historico.append({"role": "user", "content": mensagem})
         historico.append({"role": "assistant", "content": resultado_checaem})
         memoria.salvar_estado(numero_telefone, historico)
         return
 
-    # Etapa 2: Se todas as informações estiverem presentes, acionar o agente principal
     if isinstance(resultado_checaem, ConsumoInput):
-        # Passa o histórico para o agente principal ter mais contexto
-        resultado_final = executar_agente_principal(mensagem, resultado_checaem, llm, historico)
-        print("\n--- RESULTADO FINAL (OBJETO MONTADO) ---")
-        print(resultado_final)
+        # O agente agora retorna um dicionário JSON como string
+        resultado_agente_str = executar_agente_principal(mensagem, resultado_checaem, llm, historico)
         
-        # Limpa o histórico da conversa após o sucesso, pois o ciclo foi concluído
-        memoria.salvar_estado(numero_telefone, [])
-        print(f"Registro concluído. Memória da conversa com '{numero_telefone}' foi reiniciada.")
+        # É crucial fazer o parse do resultado do agente
+        try:
+            resultado_api = json.loads(resultado_agente_str.replace("'", "\""))
+        except json.JSONDecodeError:
+            print(f"Erro ao decodificar o JSON retornado pelo agente: {resultado_agente_str}")
+            resultado_api = {"status_code": 500, "message": "Desculpe, não consegui processar a resposta final. Pode tentar novamente?"}
+
+
+        print(f"\n--- RESULTADO DA OPERAÇÃO DE SALVAMENTO ---")
+        print(f"Resposta da API: {resultado_api}")
+
+        status_code = resultado_api.get("status_code")
+        mensagem_api = resultado_api.get("message")
+
+        if status_code == 200:
+            print("Operação bem-sucedida (Status 200). Limpando o histórico da conversa.")
+            memoria.salvar_estado(numero_telefone, [])
+            resposta_usuario = "Seu registro foi salvo com sucesso!"
+        else:
+            # Qualquer status diferente de 200 é tratado como erro
+            print(f"Operação falhou (Status {status_code}). Mantendo o histórico para correção.")
+            resposta_usuario = mensagem_api # A mensagem de erro humanizada da API
+            
+            # Adiciona a interação falha ao histórico para dar contexto na próxima tentativa
+            historico.append({"role": "user", "content": mensagem})
+            historico.append({"role": "assistant", "content": resposta_usuario})
+            memoria.salvar_estado(numero_telefone, historico)
+
+        print(f"Resposta final para o usuário: {resposta_usuario}")

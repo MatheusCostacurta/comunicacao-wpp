@@ -8,29 +8,28 @@ from agentes.ferramentas import all_tools
 
 def executar_agente_principal(mensagem_usuario: str, dados_iniciais: ConsumoInput, llm, historico_conversa: List = None):
     """
-    Aciona o agente orquestrador para buscar os IDs usando as ferramentas disponíveis.
+    Aciona o agente orquestrador para buscar os IDs usando as ferramentas disponíveis, ao final, salvar o registro.
     """
-    print("\n--- ETAPA 2: Acionando o Agente Orquestrador para buscar IDs (Método Robusto) ---")
+    print("\n--- ETAPA 2: Acionando o Agente Orquestrador para buscar IDs e salvar (Método Robusto) ---")
 
     historico_conversa = historico_conversa or []
 
     llm_with_tools = llm.bind_tools(all_tools)
     prompt = ChatPromptTemplate.from_messages([
         ("system", """Você é um assistente especialista em registros agrícolas.
-        Sua tarefa é usar as ferramentas disponíveis para encontrar os IDs corretos para cada item mencionado pelo usuário.
+        Sua tarefa é usar as ferramentas disponíveis para encontrar os IDs corretos para cada item mencionado pelo usuário, e após isso, registrar o consumo.
 
-        - Para o produto, use a ferramenta 'buscar_produto_por_nome' com o nome do produto extraído.
-        - Para talhão e máquina, use as ferramentas 'buscar_talhoes_disponiveis' e 'buscar_maquinas_disponiveis', e então encontre o item correto na lista retornada.
+        1.  Primeiro, use as ferramentas de busca ('buscar_produto_por_nome', 'buscar_talhoes_disponiveis', 'buscar_maquinas_disponiveis') para encontrar o item correto.
+        2.  Analise as listas e encontre os IDs correspondentes aos itens nos dados iniciais.
+        3.  Depois, sua tarefa final é chamar a ferramenta 'salvar_registro_consumo' com os IDs e informações que você encontrou.
+        4.  A resposta da ferramenta 'salvar_registro_consumo' é a sua resposta final. Não adicione nenhum texto ou formatação extra.
 
-        Analise as listas e encontre os IDs correspondentes aos itens nos dados iniciais.
-         
-        Quando tiver todos os IDs, responda DIRETAMENTE com o objeto JSON final. Não invente ou chame outras ferramentas. Apenas forneça o JSON como sua resposta final.
         - Dados Iniciais Extraídos: {dados_iniciais}
         - O usuário disse: {input}
         - Histórico da conversa até agora: {historico}"""),
         MessagesPlaceholder(variable_name="agent_scratchpad"),
     ])
-
+    
     agent = (
         {
             "input": lambda x: x["input"],
