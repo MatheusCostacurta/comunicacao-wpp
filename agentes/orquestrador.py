@@ -1,3 +1,4 @@
+from typing import List
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor
 from langchain.agents.format_scratchpad.tools import format_to_tool_messages
@@ -5,11 +6,13 @@ from langchain.agents.output_parsers.tools import ToolsAgentOutputParser
 from modelos import ConsumoInput
 from agentes.ferramentas import all_tools
 
-def executar_agente_principal(mensagem_usuario: str, dados_iniciais: ConsumoInput, llm):
+def executar_agente_principal(mensagem_usuario: str, dados_iniciais: ConsumoInput, llm, historico_conversa: List = None):
     """
     Aciona o agente orquestrador para buscar os IDs usando as ferramentas disponíveis.
     """
     print("\n--- ETAPA 2: Acionando o Agente Orquestrador para buscar IDs (Método Robusto) ---")
+
+    historico_conversa = historico_conversa or []
 
     llm_with_tools = llm.bind_tools(all_tools)
     prompt = ChatPromptTemplate.from_messages([
@@ -21,9 +24,10 @@ def executar_agente_principal(mensagem_usuario: str, dados_iniciais: ConsumoInpu
 
         Analise as listas e encontre os IDs correspondentes aos itens nos dados iniciais.
          
-        Quando tiver todos os IDs, responda DIRETAMENTE com o objeto JSON final. Não invente ou chame outras ferramentas. Apenas forneça o JSON como sua resposta final
+        Quando tiver todos os IDs, responda DIRETAMENTE com o objeto JSON final. Não invente ou chame outras ferramentas. Apenas forneça o JSON como sua resposta final.
         - Dados Iniciais Extraídos: {dados_iniciais}
-        - O usuário disse: {input}"""),
+        - O usuário disse: {input}
+        - Histórico da conversa até agora: {historico}"""),
         MessagesPlaceholder(variable_name="agent_scratchpad"),
     ])
 
@@ -31,6 +35,7 @@ def executar_agente_principal(mensagem_usuario: str, dados_iniciais: ConsumoInpu
         {
             "input": lambda x: x["input"],
             "dados_iniciais": lambda x: x["dados_iniciais"],
+            "historico": lambda x: x["historico"],
             "agent_scratchpad": lambda x: format_to_tool_messages(x["intermediate_steps"]),
         }
         | prompt
@@ -46,7 +51,8 @@ def executar_agente_principal(mensagem_usuario: str, dados_iniciais: ConsumoInpu
     
     resultado = agent_executor.invoke({
         "input": mensagem_usuario,
-        "dados_iniciais": dados_iniciais.dict()
+        "dados_iniciais": dados_iniciais.dict(),
+        "historico": historico_conversa
     })
 
     return resultado.get("output", "Não foi possível determinar a resposta final.")
