@@ -1,8 +1,12 @@
 langchain
-langchain-google-genai
-langchain-groq
 pydantic
 python-dotenv
 
 python-Levenshtein
 thefuzz
+google-cloud-aiplatform # Google Cloud AI Platform - usado para imagens
+openai # OpenAI - usado para transcrição de áudio
+
+langchain-openai # OpenAI - usado para LLMs
+langchain-google-genai
+langchain-groq
