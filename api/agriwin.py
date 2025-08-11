@@ -1,12 +1,15 @@
 from typing import Dict, List, Tuple
+from .dtos.produto import Produto
+from .dtos.talhao import Talhao
+from .dtos.imobilizado import Imobilizado
 
 class MockAPI:
     """
     Esta classe simula as chamadas para sua API interna.
     """
-    def get_produtos_do_produtor(self, id_produtor: int) -> List[dict]:
+    def get_produtos_do_produtor(self, id_produtor: int) -> List[Produto]:
         print(f"\n[API MOCK] Buscando todos os produtos para o produtor {id_produtor}...")
-        return [
+        produtos_data = [
             {"id": 101, "nome": "Glifosato Pro", "descricao": "Herbicida de amplo espectro"},
             {"id": 102, "nome": "Adubo Super Simples", "descricao": "Fertilizante fosfatado"},
             {"id": 103, "nome": "Tordon XT", "descricao": "Herbicida para pastagem"},
@@ -16,22 +19,26 @@ class MockAPI:
             {"id": 110, "nome": "Tordon X", "descricao": "Herbicida para pastagem"},
             {"id": 104, "nome": "Óleo Mineral Assist", "descricao": "Adjuvante agrícola"},
         ]
+
+        return [Produto(**data) for data in produtos_data]
     
-    def get_produtos_em_estoque(self, id_produtor: int, produtos: List[str]) -> List[dict]:
+    def get_produtos_em_estoque(self, id_produtor: int, produtos: List[str]) -> List[Produto]:
         print(f"\n[API MOCK] Buscando {produtos} EM ESTOQUE para o produtor {id_produtor}...")
         # Simula que "Glifosato" e "Tordon" estão em estoque
-        return [
+        produtos_data = [
             {"id": 101, "nome": "Glifosato Pro", "descricao": "Herbicida de amplo espectro", "saldo": 50},
             {"id": 103, "nome": "Tordon XT", "descricao": "Herbicida para pastagem", "saldo": 25},
             {"id": 108, "nome": "TordonXT", "descricao": "Herbicida para pastagem", "saldo": 25},
             {"id": 109, "nome": "Tordon H", "descricao": "Herbicida para pastagem", "saldo": 25},
             {"id": 105, "nome": "Glifosato Atar", "descricao": "Outra marca de Glifosato", "saldo": 10},
         ]
+    
+        return [Produto(**data) for data in produtos_data]
 
-    def get_produtos_mais_consumidos(self, id_produtor: int, produtos: List[str]) -> List[dict]:
+    def get_produtos_mais_consumidos(self, id_produtor: int, produtos: List[str]) -> List[Produto]:
         print(f"\n[API MOCK] Buscando consumos de: {produtos} para o produtor {id_produtor}...")
         # Simula que "Tordon XT" é mais usado que outros
-        return [
+        produtos_data = [
             {"id": 103, "nome": "Tordon XT", "consumo_recente": 150},
             {"id": 103, "nome": "Tordon XT", "consumo_recente": 150},
             {"id": 103, "nome": "Tordon XT", "consumo_recente": 150},
@@ -42,21 +49,27 @@ class MockAPI:
             {"id": 102, "nome": "Adubo Super Simples", "consumo_recente": 120},
             {"id": 101, "nome": "Glifosato Pro", "consumo_recente": 80},
         ]
+    
+        return [Produto(**data) for data in produtos_data]
 
-    def get_talhoes_do_produtor(self, id_produtor: int) -> List[dict]:
+    def get_talhoes_do_produtor(self, id_produtor: int) -> List[Talhao]:
         print(f"\n[API MOCK] Buscando todos os talhões para o produtor {id_produtor}...")
-        return [
+        talhoes_data = [
             {"id": 201, "nome": "Talhão Norte", "area_ha": 50},
             {"id": 202, "nome": "Campo da Sede", "area_ha": 25},
             {"id": 203, "nome": "Talhão da Estrada", "area_ha": 70},
         ]
 
-    def get_maquinas_do_produtor(self, id_produtor: int) -> List[dict]:
+        return [Talhao(**data) for data in talhoes_data]
+    
+    def get_maquinas_do_produtor(self, id_produtor: int) -> List[Imobilizado]:
         print(f"\n[API MOCK] Buscando todas as máquinas para o produtor {id_produtor}...")
-        return [
+        imobilizados_data = [
             {"id": 301, "nome": "Trator John Deere 6110J", "tipo": "Trator"},
             {"id": 302, "nome": "Pulverizador Autopropelido Uniport 3030", "tipo": "Pulverizador"},
         ]
+    
+        return [Imobilizado(**data) for data in imobilizados_data]
     
     def salvar_consumo(self, dados_consumo: Dict) -> Tuple[int, Dict]:
         """
