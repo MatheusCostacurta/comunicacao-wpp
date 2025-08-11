@@ -10,8 +10,19 @@ def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: Lis
     print("--- ETAPA 1: Checando informações obrigatórias ---")
     structured_llm = llm.with_structured_output(ConsumoInput, include_raw=False)
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Você é um assistente que extrai informações de uma mensagem. Extraia os seguintes campos do texto do usuário."),
-        ("human", "{mensagem}")
+        ("system", """Você é um assistente especialista em extrair informações de consumo agrícola a partir de um texto. Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário.
+
+        Siga estas regras estritamente:
+        1.  Extraia `produto_mencionado`, `quantidade`, e `talhao_mencionado`.
+        2.  O campo `maquina_mencionada` é opcional. Extraia-o apenas se for explicitamente mencionado.
+        3.  Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquina_mencionada` com o valor nulo (null).
+        4.  Se um campo obrigatório não estiver na mensagem, seu valor deve ser nulo (null).
+
+        **Exemplo de Extração:**
+        - **Mensagem do Usuário:** "anota aí 15 litros de tordon no campo da sede, foi aplicação manual."
+        - **Sua Extração:** `{"produto_mencionado": "tordon", "quantidade": "15 litros", "talhao_mencionado": "campo da sede", "maquina_mencionada": null}`
+        """),
+        ("human", "Analise e extraia as informações do seguinte texto: {mensagem}")
     ])
     chain = prompt | structured_llm
     dados_extraidos = chain.invoke({"mensagem": mensagem_usuario})
@@ -21,7 +32,7 @@ def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: Lis
     mapa_perguntas = {
         "produto_mencionado": "Qual foi o produto utilizado?",
         "quantidade": "Qual foi a quantidade consumida?",
-        "talhao_mencionado": "Em qual talhão ou área foi feita a aplicação?",
+        "talhao_mencionado": "Em qual propriedade ou talhão foi feita a aplicação?",
         "maquina_mencionada": "Qual máquina foi utilizada na operação?",
     }
 

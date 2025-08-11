@@ -44,12 +44,11 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
         return
 
     if isinstance(resultado_checaem, ConsumoInput):
-        # O agente agora retorna um dicionário JSON como string
         resultado_agente_str = executar_agente_principal(mensagem, resultado_checaem, llm, historico)
         
-        # É crucial fazer o parse do resultado do agente
         try:
-            resultado_api = json.loads(resultado_agente_str.replace("'", "\""))
+            # resultado_api = json.loads(resultado_agente_str.replace("'", "\""))
+            resultado_api = json.loads(resultado_agente_str)
         except json.JSONDecodeError:
             print(f"Erro ao decodificar o JSON retornado pelo agente: {resultado_agente_str}")
             resultado_api = {"status_code": 500, "message": "Desculpe, não consegui processar a resposta final. Pode tentar novamente?"}
