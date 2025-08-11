@@ -3,6 +3,7 @@ from langchain_groq import ChatGroq
 from modelos import ConsumoInput
 from agentes.checar_informacoes import checar_informacoes_faltantes
 from agentes.orquestrador import executar_agente_principal
+from agentes.validar_intencao import validar_intencao_do_usuario
 from memoria import GerenciadorMemoria
 
 def processar_mensagem(mensagem: str, numero_telefone: str, memoria: GerenciadorMemoria):
@@ -20,6 +21,16 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
 
     campos_obrigatorios = ["produto_mencionado", "quantidade", "talhao_mencionado"]
     llm = ChatGroq(model_name="llama3-70b-8192", temperature=0)
+
+    # --- ETAPA 0: VALIDAÇÃO DE SEGURANÇA ---
+    resultado_validacao = validar_intencao_do_usuario(mensagem, llm)
+    if not resultado_validacao.intencao_valida:
+        print("\n--- RESULTADO FINAL (INTENÇÃO MALICIOSA/INVÁLIDA) ---")
+        # Não damos detalhes do erro para o usuário.
+        resposta_usuario = "Desculpe, só posso processar registros de consumo. Para outras solicitações, entre em contato com o suporte."
+        print(f"Resposta para o usuário: {resposta_usuario}")
+        #? Enviar a má intenção para o amplitude para análise
+        return
     
     resultado_checaem = checar_informacoes_faltantes(texto_completo_conversa, campos_obrigatorios, llm)
     
