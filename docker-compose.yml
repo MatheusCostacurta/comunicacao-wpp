@@ -1,0 +1,39 @@
+# Define a versão do Docker Compose
+version: '3.8'
+
+# Define os serviços (contêineres) que compõem a aplicação
+services:
+  
+  # Serviço da sua aplicação Python
+  app:
+    # Instrui o Docker a construir a imagem a partir do Dockerfile no diretório atual ('.')
+    build: .
+    container_name: comunicacao-wpp-app
+    # Carrega as variáveis de ambiente a partir do arquivo .env
+    env_file:
+      - .env
+    # Garante que o serviço 'redis' seja iniciado ANTES do serviço 'app'
+    depends_on:
+      - redis
+    # Monta o diretório atual do seu PC para dentro do /app no contêiner.
+    # Isso permite que alterações no código sejam refletidas sem precisar reconstruir a imagem (ótimo para desenvolvimento).
+    volumes:
+      - .:/app
+
+  # Serviço do Redis
+  redis:
+    # Usa a imagem oficial e leve do Redis a partir do Docker Hub
+    image: "redis:alpine"
+    container_name: wpp-redis
+    # Mapeia a porta 6379 do contêiner para a porta 6379 da sua máquina,
+    # permitindo que você se conecte ao Redis de fora do Docker, se necessário.
+    ports:
+      - "6379:6379"
+    # Cria um volume persistente para os dados do Redis.
+    # Isso garante que os dados não sejam perdidos se o contêiner for recriado.
+    volumes:
+      - redis_data:/data
+
+# Declara o volume nomeado para persistência de dados
+volumes:
+  redis_data:

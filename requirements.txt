@@ -1,7 +1,7 @@
 langchain
 pydantic
 python-dotenv
-
+redis
 python-Levenshtein
 thefuzz
 google-cloud-aiplatform # Google Cloud AI Platform - usado para imagens

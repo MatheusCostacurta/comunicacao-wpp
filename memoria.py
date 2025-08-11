@@ -1,60 +1,57 @@
-from datetime import datetime, timedelta
+import redis
+import json
+import os  # Importe o módulo 'os'
 from typing import Dict, List, Any
 
-# Tempo máximo de inatividade em minutos antes de limpar a memória da conversa
-TEMPO_MAXIMO_INATIVIDADE_MINUTOS = 30
+# Tempo máximo em segundos para uma conversa inativa permanecer no Redis
+TEMPO_MAXIMO_INATIVIDADE_SEGUNDOS = 1800  # 30 minutos
 
 class GerenciadorMemoria:
     """
-    Gerencia o estado da conversa para múltiplos usuários (números de telefone).
-    Armazena o histórico e o tempo da última interação.
+    Gerencia o estado da conversa para múltiplos usuários (números de telefone)
+    usando o Redis para persistência.
     """
-    def __init__(self):
-        self.conversas: Dict[str, Dict[str, Any]] = {}
+    def __init__(self, db=0): # Removemos host e port da assinatura
+        """
+        Inicializa o cliente Redis lendo a configuração das variáveis de ambiente.
+        """
+        # Dentro do Docker Compose, o host 'redis' aponta para o contêiner do Redis.
+        # Usamos 'localhost' como padrão para permitir testes locais sem Docker.
+        host = os.getenv('REDIS_HOST', 'localhost')
+        port = int(os.getenv('REDIS_PORT', 6379))
+        
+        print("--- INICIALIZANDO GERENCIADOR DE MEMÓRIA COM REDIS ---")
+        try:
+            self._cliente_redis = redis.Redis(host=host, port=port, db=db, decode_responses=True)
+            self._cliente_redis.ping()
+            print(f"Conexão com o Redis estabelecida com sucesso em {host}:{port}.")
+        except redis.exceptions.ConnectionError as e:
+            print(f"ERRO CRÍTICO: Não foi possível conectar ao Redis em {host}:{port}.")
+            raise
 
-    def _get_timestamp_atual(self) -> datetime:
-        """Retorna o timestamp atual."""
-        return datetime.now()
+    # ... (o resto da classe permanece igual)
+    def _gerar_chave(self, numero_telefone: str) -> str:
+        return f"conversa:{numero_telefone}"
 
     def obter_estado(self, numero_telefone: str) -> Dict[str, Any]:
-        """
-        Recupera o estado da conversa para um número de telefone.
-        Se não existir, cria um novo estado.
-        """
-        if numero_telefone not in self.conversas:
-            self.conversas[numero_telefone] = {
-                "historico": [],
-                "ultimo_acesso": self._get_timestamp_atual()
-            }
-        return self.conversas[numero_telefone]
+        chave = self._gerar_chave(numero_telefone)
+        estado_salvo_json = self._cliente_redis.get(chave)
+        if estado_salvo_json:
+            print(f"[REDIS] Estado encontrado para '{numero_telefone}'.")
+            self._cliente_redis.expire(chave, TEMPO_MAXIMO_INATIVIDADE_SEGUNDOS)
+            return json.loads(estado_salvo_json)
+        else:
+            print(f"[REDIS] Nenhum estado encontrado para '{numero_telefone}'. Criando um novo.")
+            return {"historico": []}
 
     def salvar_estado(self, numero_telefone: str, historico: List[Any]):
-        """
-        Salva o novo estado da conversa e atualiza o timestamp.
-        """
-        if numero_telefone in self.conversas:
-            self.conversas[numero_telefone]["historico"] = historico
-            self.conversas[numero_telefone]["ultimo_acesso"] = self._get_timestamp_atual()
+        chave = self._gerar_chave(numero_telefone)
+        estado = {"historico": historico}
+        estado_json = json.dumps(estado)
+        self._cliente_redis.setex(chave, TEMPO_MAXIMO_INATIVIDADE_SEGUNDOS, estado_json)
+        print(f"[REDIS] Estado salvo para '{numero_telefone}' com expiração de {TEMPO_MAXIMO_INATIVIDADE_SEGUNDOS} segundos.")
 
-    def limpar_conversas_inativas(self):
-        """
-        Verifica e remove conversas que estão inativas por mais tempo que o permitido.
-        Este método pode ser chamado periodicamente por um processo em background.
-        """
-        print("\n--- EXECUTANDO LIMPEZA DE MEMÓRIA ---")
-        agora = self._get_timestamp_atual()
-        limite_tempo = timedelta(minutes=TEMPO_MAXIMO_INATIVIDADE_MINUTOS)
-        
-        numeros_para_remover = [
-            numero
-            for numero, dados in self.conversas.items()
-            if agora - dados["ultimo_acesso"] > limite_tempo
-        ]
-
-        if not numeros_para_remover:
-            print("Nenhuma conversa inativa para limpar.")
-            return
-
-        for numero in numeros_para_remover:
-            del self.conversas[numero]
-            print(f"Memória da conversa com '{numero}' limpa por inatividade.")
+    def limpar_memoria_conversa(self, numero_telefone: str):
+        chave = self._gerar_chave(numero_telefone)
+        self._cliente_redis.delete(chave)
+        print(f"[REDIS] Memória da conversa com '{numero_telefone}' limpa.")
