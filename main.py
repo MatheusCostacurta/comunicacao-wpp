@@ -1,8 +1,7 @@
-# main.py
-import time
 from dotenv import load_dotenv
 from conversasao import processar_mensagem
 from memoria import GerenciadorMemoria
+from langchain_groq import ChatGroq
 
 def run():
     """
@@ -12,6 +11,9 @@ def run():
     print("--- INICIALIZANDO APLICAÇÃO DE COMUNICAÇÃO WPP ---")
     load_dotenv()
 
+    # Estes objetos serão compartilhados por todas as chamadas durante a execução da aplicação.
+    llm = ChatGroq(model_name="llama3-70b-8192", temperature=0)
+
     # Cria uma instância única do gerenciador de memória
     gerenciador_memoria = GerenciadorMemoria()
 
@@ -19,20 +21,20 @@ def run():
     # Usuário 2: Envia uma mensagem incompleta
     numero_usuario_2 = "+5511988882222"
     mensagem_incompleta_1 = "gastei 20kg de adubo super simples"
-    processar_mensagem(mensagem_incompleta_1, numero_usuario_2, gerenciador_memoria)
+    processar_mensagem(mensagem_incompleta_1, numero_usuario_2, gerenciador_memoria, llm)
 
     print("\n" + "="*50 + "\n")
 
     # Usuário 1: Envia uma mensagem completa
     numero_usuario_1 = "+5541999991111"
     mensagem_completa = "Boa tarde, pode registrar aí o consumo de 15 litros de tordon no talhão da estrada. Usei o pulverizador uniport."
-    processar_mensagem(mensagem_completa, numero_usuario_1, gerenciador_memoria)
+    processar_mensagem(mensagem_completa, numero_usuario_1, gerenciador_memoria, llm)
 
     print("\n" + "="*50 + "\n")
 
     # Usuário 2: Completa a informação
     mensagem_incompleta_2 = "foi no campo da sede"
-    processar_mensagem(mensagem_incompleta_2, numero_usuario_2, gerenciador_memoria)
+    processar_mensagem(mensagem_incompleta_2, numero_usuario_2, gerenciador_memoria, llm)
 
     print("\n" + "="*50 + "\n")
     

@@ -6,7 +6,7 @@ from agentes.orquestrador import executar_agente_principal
 from agentes.validar_intencao import validar_intencao_do_usuario
 from memoria import GerenciadorMemoria
 
-def processar_mensagem(mensagem: str, numero_telefone: str, memoria: GerenciadorMemoria):
+def processar_mensagem(mensagem: str, numero_telefone: str, memoria: GerenciadorMemoria, llm: ChatGroq):
     """
     Orquestra o fluxo de processamento da mensagem,
     chamando os agentes em sequência e gerenciando a memória.
@@ -20,7 +20,6 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
     texto_completo_conversa = "\n".join(m["content"] for m in historico_para_analise)
 
     campos_obrigatorios = ["produto_mencionado", "quantidade", "talhao_mencionado"]
-    llm = ChatGroq(model_name="llama3-70b-8192", temperature=0)
 
     # --- ETAPA 0: VALIDAÇÃO DE SEGURANÇA ---
     resultado_validacao = validar_intencao_do_usuario(mensagem, llm)

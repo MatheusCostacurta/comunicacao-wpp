@@ -2,9 +2,7 @@ import os
 from openai import OpenAI
 from typing import BytesIO
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-def transcrever_audio_whisper(audio_bytes: bytes, idioma: str = "pt") -> str:
+def transcrever_audio_whisper(client: OpenAI, audio_bytes: bytes, idioma: str = "pt") -> str:
     """
     Recebe os bytes de um arquivo de áudio e utiliza a API do OpenAI Whisper
     para transcrevê-lo para texto.
