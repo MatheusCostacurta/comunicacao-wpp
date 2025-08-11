@@ -1,5 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate
-from dtos import ValidacaoIntencao
+from dtos.validacao_intencao import ValidacaoIntencao
 
 def validar_intencao_do_usuario(mensagem_usuario: str, llm) -> ValidacaoIntencao:
     """
