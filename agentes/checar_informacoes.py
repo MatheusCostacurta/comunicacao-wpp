@@ -20,7 +20,7 @@ def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: Lis
 
         **Exemplo de Extração:**
         - **Mensagem do Usuário:** "anota aí 15 litros de tordon no campo da sede, foi aplicação manual."
-        - **Sua Extração:** `{"produto_mencionado": "tordon", "quantidade": "15 litros", "talhao_mencionado": "campo da sede", "maquina_mencionada": null}`
+         - **Sua Extração:** `{{"produto_mencionado": "tordon", "quantidade": "15 litros", "talhao_mencionado": "campo da sede", "maquina_mencionada": "Nenhuma"}}`
         """),
         ("human", "Analise e extraia as informações do seguinte texto: {mensagem}")
     ])

@@ -9,7 +9,7 @@ class ProductFinderService:
 
     def _buscar_candidatos(self, nome_produto: str, lista_produtos: List[dict], limite: Optional[int] = None) -> List[dict]:
         """Usa a biblioteca thefuzz para encontrar os melhores candidatos na lista."""
-        nomes = [p["nome"] for p in lista_produtos]
+        nomes = [p.nome for p in lista_produtos]
         score = 80 # Definindo um score mínimo de 80 para considerar uma correspondência
 
         # Se limite não for informado, retorna todos acima do cutoff
@@ -22,7 +22,7 @@ class ProductFinderService:
         candidatos = []
         for nome_match, score in matches:
             for produto in lista_produtos:
-                if produto["nome"] == nome_match:
+                if produto.nome == nome_match:
                     candidatos.append(produto)
                     break # para não adicionar o mesmo produto duas vezes
         return candidatos
@@ -46,13 +46,14 @@ class ProductFinderService:
         
         if len(produtos_similares) == 1:
             produto_encontrado = produtos_similares[0]
-            print(f"[SERVICE] Sucesso! Encontrado 1 produto: {produto_encontrado['nome']}")
+            print(f"[SERVICE] Sucesso! Encontrado 1 produto: {produto_encontrado.nome}")
             return produto_encontrado
         
         # 2. Segunda chamada: Buscar produtos em estoque
         if len(produtos_similares) > 1:
-            print(f"[SERVICE] Múltiplos produtos_similares encontrados: {[c['nome'] for c in produtos_similares]}. Verificando estoque e consumo...")
-        
+            nomes_similares = [c.nome for c in produtos_similares]
+            print(f"[SERVICE] Múltiplos produtos_similares encontrados: {nomes_similares}. Verificando estoque e consumo...")
+            
             produtos_em_estoque = self.api.get_produtos_em_estoque(self.id_produtor, produtos_similares)
             produtos_mais_usados = self.api.get_produtos_mais_consumidos(self.id_produtor, produtos_similares)
 

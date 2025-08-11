@@ -39,15 +39,15 @@ class MockAPI:
         print(f"\n[API MOCK] Buscando consumos de: {produtos} para o produtor {id_produtor}...")
         # Simula que "Tordon XT" é mais usado que outros
         produtos_data = [
-            {"id": 103, "nome": "Tordon XT", "consumo_recente": 150},
-            {"id": 103, "nome": "Tordon XT", "consumo_recente": 150},
-            {"id": 103, "nome": "Tordon XT", "consumo_recente": 150},
-            {"id": 103, "nome": "Tordon XT", "consumo_recente": 150},
-            {"id": 109, "nome": "Tordon H", "consumo_recente": 150},
-            {"id": 109, "nome": "Tordon H", "consumo_recente": 150},
-            {"id": 109, "nome": "Tordon H", "consumo_recente": 150},
-            {"id": 102, "nome": "Adubo Super Simples", "consumo_recente": 120},
-            {"id": 101, "nome": "Glifosato Pro", "consumo_recente": 80},
+            {"id": 103, "nome": "Tordon XT", "descricao": "Herbicida para pastagem", "consumo_recente": 150},
+            {"id": 103, "nome": "Tordon XT", "descricao": "Herbicida para pastagem", "consumo_recente": 150},
+            {"id": 103, "nome": "Tordon XT", "descricao": "Herbicida para pastagem", "consumo_recente": 150},
+            {"id": 103, "nome": "Tordon XT", "descricao": "Herbicida para pastagem", "consumo_recente": 150},
+            {"id": 109, "nome": "Tordon H", "descricao": "Herbicida para pastagem", "consumo_recente": 150},
+            {"id": 109, "nome": "Tordon H", "descricao": "Herbicida para pastagem", "consumo_recente": 150},
+            {"id": 109, "nome": "Tordon H", "descricao": "Herbicida para pastagem", "consumo_recente": 150},
+            {"id": 102, "nome": "Adubo Super Simples", "descricao": "Fertilizante fosfatado", "consumo_recente": 120},
+            {"id": 101, "nome": "Glifosato Pro", "descricao": "Herbicida de amplo espectro", "consumo_recente": 80},
         ]
     
         return [Produto(**data) for data in produtos_data]

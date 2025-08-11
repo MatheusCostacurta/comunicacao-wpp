@@ -1,5 +1,5 @@
 from typing import Optional
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 
 class ConsumoInput(BaseModel):
     """Modelo de dados para a extração inicial de informações da mensagem do usuário."""
