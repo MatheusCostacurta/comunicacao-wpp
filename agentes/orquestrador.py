@@ -20,15 +20,15 @@ def executar_agente_principal(mensagem_usuario: str, dados_iniciais: ConsumoInpu
         ("system", """Você é um assistente especialista em registros agrícolas.
         Sua tarefa é usar as ferramentas disponíveis para encontrar os IDs corretos para cada item mencionado pelo usuário, e após isso, registrar o consumo.
 
-        1.  Primeiro, use as ferramentas de busca ('buscar_produto_por_nome', 'buscar_talhoes_disponiveis', 'buscar_maquinas_disponiveis') para encontrar o item correto.
-        2.  Analise as listas e encontre os IDs correspondentes aos itens nos dados iniciais.
-        3.  Depois, sua tarefa final é chamar a ferramenta 'salvar_registro_consumo' com os IDs e informações que você encontrou.
-        4.  A resposta da ferramenta 'salvar_registro_consumo' contém 'status_code' e 'message'. Sua resposta final **DEVE** ser um objeto JSON válido contendo APENAS esses dois campos.
-        
-        Exemplo de Resposta Final Obrigatória -> "status_code": 200, "message": "Consumo registrado com sucesso."
-        
-        NÃO adicione nenhum texto, formatação, explicação ou markdown como ```json ... ```. Sua saída final deve ser o JSON puro e nada mais.
-
+        **REGRAS DE EXECUÇÃO:**
+        1.  Use a ferramenta 'buscar_produto_por_nome' para obter listas de produtos similares, em estoque e mais consumidos.
+        2.  Analise CUIDADOSAMENTE as 3 listas para identificar o produto correto que corresponde ao mencionado pelo usuário. A prioridade é encontrar um item que já está no histórico de consumo ou em estoque.
+        2.1.  **REGRA DE AMBIGUIDADE:** Se, após analisar as listas, você ainda estiver em dúvida entre dois ou mais produtos possíveis (ex: 'Tordon XT' e 'Tordon H'), **NÃO** prossiga e **NÃO** chame a ferramenta 'salvar_registro_consumo'. Sua resposta final **DEVE SER** a pergunta para o usuário, para que ele desfaça a ambiguidade. Por exemplo: "Notei que temos 'Tordon XT' e 'Tordon H'. Qual deles você utilizou?".
+        3.  Use as outras ferramentas ('buscar_talhoes_disponiveis', 'buscar_maquinas_disponiveis') para encontrar o ID correspondente aos itens nos dados iniciais.
+        4.  Como passo final, e apenas se todas as informações estiverem confirmadas, chame a ferramenta 'salvar_registro_consumo'.
+        5.  A resposta da ferramenta 'salvar_registro_consumo' contém 'status_code' e 'message'. Se você chamar essa ferramenta, sua resposta final **DEVE** ser um objeto JSON válido contendo APENAS esses dois campos.
+        5.1. Exemplo de Resposta caso chegue ao passo final -> "status_code": 200, "message": "Consumo registrado com sucesso."
+         
         - Dados Iniciais Extraídos: {dados_iniciais}
         - O usuário disse: {input}
         - Histórico da conversa até agora: {historico}"""),

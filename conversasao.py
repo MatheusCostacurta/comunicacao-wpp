@@ -44,31 +44,35 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
 
     if isinstance(resultado_checaem, ConsumoInput):
         resultado_agente_str = executar_agente_principal(mensagem, resultado_checaem, llm, historico)
-        
+                
         try:
-            # resultado_api = json.loads(resultado_agente_str.replace("'", "\""))
+            # Tenta decodificar o resultado como JSON. Se funcionar, é uma operação de salvamento.
             resultado_api = json.loads(resultado_agente_str)
-        except json.JSONDecodeError:
-            print(f"Erro ao decodificar o JSON retornado pelo agente: {resultado_agente_str}")
-            resultado_api = {"status_code": 500, "message": "Desculpe, não consegui processar a resposta final. Pode tentar novamente?"}
-
-
-        print(f"\n--- RESULTADO DA OPERAÇÃO DE SALVAMENTO ---")
-        print(f"Resposta da API: {resultado_api}")
-
-        status_code = resultado_api.get("status_code")
-        mensagem_api = resultado_api.get("message")
-
-        if status_code == 200:
-            print("Operação bem-sucedida (Status 200). Limpando o histórico da conversa.")
-            memoria.salvar_estado(numero_telefone, [])
-            resposta_usuario = "Seu registro foi salvo com sucesso!"
-        else:
-            # Qualquer status diferente de 200 é tratado como erro
-            print(f"Operação falhou (Status {status_code}). Mantendo o histórico para correção.")
-            resposta_usuario = mensagem_api # A mensagem de erro humanizada da API
             
-            # Adiciona a interação falha ao histórico para dar contexto na próxima tentativa
+            print(f"\n--- RESULTADO DA OPERAÇÃO DE SALVAMENTO ---")
+            print(f"Resposta da API: {resultado_api}")
+
+            status_code = resultado_api.get("status_code")
+            mensagem_api = resultado_api.get("message")
+
+            if status_code == 200:
+                print("Operação bem-sucedida (Status 200). Limpando o histórico da conversa.")
+                memoria.salvar_estado(numero_telefone, []) # Limpa a memória
+                resposta_usuario = "Seu registro foi salvo com sucesso!"
+            else:
+                print(f"Operação falhou (Status {status_code}). Mantendo o histórico para correção.")
+                resposta_usuario = mensagem_api
+                historico.append({"role": "user", "content": mensagem})
+                historico.append({"role": "assistant", "content": resposta_usuario})
+                memoria.salvar_estado(numero_telefone, historico)
+
+        except json.JSONDecodeError:
+            # Se falhar a decodificação, é a pergunta de desambiguação do agente.
+            print("\n--- RESULTADO FINAL (AMBIGUIDADE DETECTADA, AGUARDANDO USUÁRIO) ---")
+            resposta_usuario = resultado_agente_str
+            
+            # Adiciona a interação ao histórico para que a próxima mensagem do usuário
+            # tenha o contexto da pergunta.
             historico.append({"role": "user", "content": mensagem})
             historico.append({"role": "assistant", "content": resposta_usuario})
             memoria.salvar_estado(numero_telefone, historico)
