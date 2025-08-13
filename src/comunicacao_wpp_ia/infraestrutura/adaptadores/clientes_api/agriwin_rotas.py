@@ -1,13 +1,19 @@
 from typing import Dict, List, Tuple
-from .dtos.produto import Produto
-from .dtos.talhao import Talhao
-from .dtos.imobilizado import Imobilizado
+from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto
+from src.comunicacao_wpp_ia.dominio.modelos.talhao import Talhao
+from src.comunicacao_wpp_ia.dominio.modelos.imobilizado import Imobilizado
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_produto import RepositorioProduto
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_imobilizado import RepositorioImobilizado
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_talhao import RepositorioTalhao
 
-class MockAPI:
+class RotasAgriwin(RepositorioProduto, RepositorioImobilizado, RepositorioTalhao):
     """
-    Esta classe simula as chamadas para sua API interna.
+    Adaptador que implementa as interfaces de repositório utilizando a API do Agriwin.
     """
-    def get_produtos_do_produtor(self, id_produtor: int) -> List[Produto]:
+    def __init__(self):
+        print("[INFRA] Adaptador do Repositório Agriwin inicializado.")
+
+    def buscar_produtos_do_produtor(self, id_produtor: int) -> List[Produto]:
         print(f"\n[API MOCK] Buscando todos os produtos para o produtor {id_produtor}...")
         produtos_data = [
             {"id": 101, "nome": "Glifosato Pro", "descricao": "Herbicida de amplo espectro"},
@@ -22,7 +28,7 @@ class MockAPI:
 
         return [Produto(**data) for data in produtos_data]
     
-    def get_produtos_em_estoque(self, id_produtor: int, produtos: List[str]) -> List[Produto]:
+    def buscar_produtos_em_estoque(self, id_produtor: int, produtos: List[str]) -> List[Produto]:
         print(f"\n[API MOCK] Buscando {produtos} EM ESTOQUE para o produtor {id_produtor}...")
         # Simula que "Glifosato" e "Tordon" estão em estoque
         produtos_data = [
@@ -35,7 +41,7 @@ class MockAPI:
     
         return [Produto(**data) for data in produtos_data]
 
-    def get_produtos_mais_consumidos(self, id_produtor: int, produtos: List[str]) -> List[Produto]:
+    def buscar_produtos_mais_consumidos(self, id_produtor: int, produtos: List[str]) -> List[Produto]:
         print(f"\n[API MOCK] Buscando consumos de: {produtos} para o produtor {id_produtor}...")
         # Simula que "Tordon XT" é mais usado que outros
         produtos_data = [
@@ -52,7 +58,7 @@ class MockAPI:
     
         return [Produto(**data) for data in produtos_data]
 
-    def get_talhoes_do_produtor(self, id_produtor: int) -> List[Talhao]:
+    def buscar_talhoes_do_produtor(self, id_produtor: int) -> List[Talhao]:
         print(f"\n[API MOCK] Buscando todos os talhões para o produtor {id_produtor}...")
         talhoes_data = [
             {"id": 201, "nome": "Talhão Norte", "area_ha": 50},
@@ -62,7 +68,7 @@ class MockAPI:
 
         return [Talhao(**data) for data in talhoes_data]
     
-    def get_maquinas_do_produtor(self, id_produtor: int) -> List[Imobilizado]:
+    def buscar_maquinas_do_produtor(self, id_produtor: int) -> List[Imobilizado]:
         print(f"\n[API MOCK] Buscando todas as máquinas para o produtor {id_produtor}...")
         imobilizados_data = [
             {"id": 301, "nome": "Trator John Deere 6110J", "tipo": "Trator"},
@@ -93,6 +99,3 @@ class MockAPI:
             "registro_id": 12345 
         }
         return 200, response_body
-
-# Instância única da nossa API simulada para ser importada por outros módulos
-api_mock = MockAPI()

@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional
 from langchain.tools import tool
 from services.localizar_produto import product_finder_service 
-from api.agriwin import api_mock
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.clientes_api.agriwin_rotas import RotasAgriwin
 
 ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
 
@@ -17,12 +17,12 @@ def buscar_produto_por_nome(nome_produto: str) -> Optional[Dict]:
 @tool
 def buscar_talhoes_disponiveis() -> List[dict]:
     """Use esta ferramenta para obter uma lista de TODOS os talhões (áreas ou campos) disponíveis na fazenda do produtor. A IA deve então usar esta lista para encontrar o ID do talhão que o usuário mencionou."""
-    return api_mock.get_talhoes_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
+    return RotasAgriwin.buscar_talhoes_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
 
 @tool
 def buscar_maquinas_disponiveis() -> List[dict]:
     """Use esta ferramenta para obter uma lista de TODAS as máquinas (imobilizados) disponíveis para o produtor. A IA deve então usar esta lista para encontrar o ID da máquina que o usuário mencionou."""
-    return api_mock.get_maquinas_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
+    return RotasAgriwin.buscar_maquinas_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
 
 @tool
 def salvar_registro_consumo(id_produto: int, quantidade: str, id_talhao: int, id_maquina: Optional[int] = None) -> Dict:
@@ -38,7 +38,7 @@ def salvar_registro_consumo(id_produto: int, quantidade: str, id_talhao: int, id
     if id_maquina:
         dados_para_salvar["id_maquina"] = id_maquina
 
-    status_code, response_body = api_mock.salvar_consumo(dados_consumo=dados_para_salvar)
+    status_code, response_body = RotasAgriwin.salvar_consumo(dados_consumo=dados_para_salvar)
     
     return {
         "status_code": status_code,

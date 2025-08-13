@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 from conversasao import processar_mensagem
 from memoria import GerenciadorMemoria
-from langchain_groq import ChatGroq
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import AdaptadorGroq
 
 def run():
     """
@@ -12,7 +12,7 @@ def run():
     load_dotenv()
 
     # Estes objetos serão compartilhados por todas as chamadas durante a execução da aplicação.
-    llm = ChatGroq(model_name="llama3-70b-8192", temperature=0)
+    llm = AdaptadorGroq()
 
     # Cria uma instância única do gerenciador de memória
     gerenciador_memoria = GerenciadorMemoria()

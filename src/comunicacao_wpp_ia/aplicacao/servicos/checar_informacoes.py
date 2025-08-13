@@ -1,16 +1,11 @@
 from typing import List
-from langchain_core.prompts import ChatPromptTemplate
-from modelos import ConsumoInput
+from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
+from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 
-def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: List[str], llm) -> (str | ConsumoInput):
-    """
-    Usa o LLM para fazer uma extração estruturada rápida.
-    Se um campo obrigatório não for extraído, formula a pergunta para o usuário.
-    """
-    print("--- ETAPA 1: Checando informações obrigatórias ---")
-    structured_llm = llm.with_structured_output(ConsumoInput, include_raw=False)
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """Você é um assistente especialista em extrair informações de consumo agrícola a partir de um texto. Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário.
+# TODO: deixar metodo private
+def obter_prompt_sistema() -> str:
+    return """
+        Você é um assistente especialista em extrair informações de consumo agrícola a partir de um texto. Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário.
 
         Siga estas regras estritamente:
         1.  Extraia `produto_mencionado`, `quantidade`, e `talhao_mencionado`.
@@ -21,11 +16,25 @@ def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: Lis
         **Exemplo de Extração:**
         - **Mensagem do Usuário:** "anota aí 15 litros de tordon no campo da sede, foi aplicação manual."
          - **Sua Extração:** `{{"produto_mencionado": "tordon", "quantidade": "15 litros", "talhao_mencionado": "campo da sede", "maquina_mencionada": "Nenhuma"}}`
-        """),
-        ("human", "Analise e extraia as informações do seguinte texto: {mensagem}")
-    ])
-    chain = prompt | structured_llm
-    dados_extraidos = chain.invoke({"mensagem": mensagem_usuario})
+    """
+
+# TODO: deixar metodo private
+def obter_mensagem_usuario(mensagem: str) -> str:
+    return "Analise e extraia as informações do seguinte texto: {mensagem}"
+
+def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: List[str], llm: ServicoLLM) -> (str | Consumo):
+    """
+    Usa o LLM para fazer uma extração estruturada rápida.
+    Se um campo obrigatório não for extraído, formula a pergunta para o usuário.
+    """
+    print("--- ETAPA 1: Checando informações obrigatórias ---")
+
+    prompt_sistema = obter_prompt_sistema()
+    prompt_usuario = obter_mensagem_usuario(mensagem_usuario)
+
+    agente = llm.criar_agente(prompt_sistema, prompt_usuario, Consumo) 
+    dados_extraidos = agente.executar({"mensagem": prompt_usuario})
+
     print(f"Dados extraídos na checagem inicial: {dados_extraidos}")
 
     campos_faltantes = []

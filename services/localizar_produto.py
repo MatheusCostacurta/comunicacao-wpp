@@ -1,5 +1,5 @@
 from typing import List, Optional
-from api.agriwin import api_mock
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.clientes_api.agriwin_rotas import api_mock
 from thefuzz import process # Usaremos uma biblioteca para a busca de strings aproximada
 
 class ProductFinderService:

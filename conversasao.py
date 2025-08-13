@@ -1,12 +1,13 @@
 import json
-from langchain_groq import ChatGroq
-from modelos import ConsumoInput
-from agentes.checar_informacoes import checar_informacoes_faltantes
-from agentes.orquestrador import executar_agente_principal
-from agentes.validar_intencao import validar_intencao_do_usuario
+from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
+from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
+from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_informacoes_faltantes
+from src.comunicacao_wpp_ia.aplicacao.servicos.orquestrador import Orquestrador
+from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.ferramentas import all_tools
 from memoria import GerenciadorMemoria
 
-def processar_mensagem(mensagem: str, numero_telefone: str, memoria: GerenciadorMemoria, llm: ChatGroq):
+def processar_mensagem(mensagem: str, numero_telefone: str, memoria: GerenciadorMemoria, llm: ServicoLLM):
     """
     Orquestra o fluxo de processamento da mensagem,
     chamando os agentes em sequência e gerenciando a memória.
@@ -22,7 +23,7 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
     campos_obrigatorios = ["produto_mencionado", "quantidade", "talhao_mencionado"]
 
     # --- ETAPA 0: VALIDAÇÃO DE SEGURANÇA ---
-    resultado_validacao = validar_intencao_do_usuario(mensagem, llm)
+    resultado_validacao = validar_intencao_do_usuario(mensagem, historico, llm)
     if not resultado_validacao.intencao_valida:
         print("\n--- RESULTADO FINAL (INTENÇÃO MALICIOSA/INVÁLIDA) ---")
         # Não damos detalhes do erro para o usuário.
@@ -42,8 +43,9 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
         memoria.salvar_estado(numero_telefone, historico)
         return
 
-    if isinstance(resultado_checaem, ConsumoInput):
-        resultado_agente_str = executar_agente_principal(mensagem, resultado_checaem, llm, historico)
+    if isinstance(resultado_checaem, Consumo):
+        orquestrador = Orquestrador(llm, ferramentas=all_tools)
+        resultado_agente_str = orquestrador.executar(mensagem, resultado_checaem, historico)
                 
         try:
             # Tenta decodificar o resultado como JSON. Se funcionar, é uma operação de salvamento.
@@ -57,7 +59,7 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
 
             if status_code == 200:
                 print("Operação bem-sucedida (Status 200). Limpando o histórico da conversa.")
-                memoria.salvar_estado(numero_telefone, []) # Limpa a memória
+                memoria.limpar_memoria_conversa(numero_telefone)
                 resposta_usuario = "Seu registro foi salvo com sucesso!"
             else:
                 print(f"Operação falhou (Status {status_code}). Mantendo o histórico para correção.")
