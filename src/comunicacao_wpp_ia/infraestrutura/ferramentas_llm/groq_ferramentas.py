@@ -1,11 +1,28 @@
 from typing import Dict, List, Optional
 from langchain.tools import tool
-from services.localizar_produto import product_finder_service 
+from comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarProdutoService 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.clientes_api.agriwin_rotas import RotasAgriwin
 
 ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
 api_agriwin = RotasAgriwin()
 
+class GroqFerramentas:
+    """
+    Define as ferramentas que a IA pode usar para interagir com o sistema.
+    """
+    pass
+
+    def __init__(self):
+        self.todas_ferramentas = [
+            buscar_produto_por_nome, 
+            buscar_talhoes_disponiveis, 
+            buscar_maquinas_disponiveis, 
+            salvar_registro_consumo
+        ]
+
+    def obter(self):
+        return self.todas_ferramentas
+    
 @tool
 def buscar_produto_por_nome(nome_produto: str) -> Optional[Dict]:
     """
@@ -13,7 +30,8 @@ def buscar_produto_por_nome(nome_produto: str) -> Optional[Dict]:
     Esse map é composto por 3 listas: produtos em estoque, produtos mais consumidos e produtos similares. 
     A IA deve então usar esse map para encontrar o ID do produto que o usuário mencionou, priorizando produtos que já foram consumidos ou que possuem estoque para casos de desempate.
     """
-    return product_finder_service.find_product(nome_produto_mencionado=nome_produto, id_produtor=ID_PRODUTOR_EXEMPLO)
+    produto_service = LocalizarProdutoService(api=RotasAgriwin())
+    return produto_service.obterPossiveisProdutos(nome_produto_mencionado=nome_produto, id_produtor=ID_PRODUTOR_EXEMPLO)
 
 @tool
 def buscar_talhoes_disponiveis() -> List[dict]:
@@ -45,11 +63,3 @@ def salvar_registro_consumo(id_produto: int, quantidade: str, id_talhao: int, id
         "status_code": status_code,
         "message": response_body.get("message", "Ocorreu um erro desconhecido.")
     }
-
-# Lista de ferramentas para facilitar a importação
-all_tools = [
-    buscar_produto_por_nome, 
-    buscar_talhoes_disponiveis, 
-    buscar_maquinas_disponiveis, 
-    salvar_registro_consumo
-]

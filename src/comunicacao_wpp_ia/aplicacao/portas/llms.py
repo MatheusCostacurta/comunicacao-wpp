@@ -11,7 +11,7 @@ class ServicoLLM(ABC):
     Define a interface (Porta) para interagir com um modelo de linguagem.
     A camada de aplicação dependerá desta abstração, nunca de uma implementação concreta.
     """
-
+    
     @abstractmethod
     def criar_agente(self, prompt_sistema: str, prompt_usuario: str, modelo_saida: Type[T]) -> Agente[T]:
         """
@@ -30,5 +30,12 @@ class ServicoLLM(ABC):
 
         Returns:
             Um objeto que implementa a interface Agente.
+        """
+        pass
+
+    @abstractmethod
+    def obter_ferramentas(self) -> List[Any]:
+        """
+        Retorna a lista de ferramentas disponíveis para o agente.
         """
         pass

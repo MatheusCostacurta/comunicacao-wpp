@@ -4,7 +4,6 @@ from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_informacoes_faltantes
 from src.comunicacao_wpp_ia.aplicacao.servicos.orquestrador import Orquestrador
 from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.ferramentas import all_tools
 from memoria import GerenciadorMemoria
 
 def processar_mensagem(mensagem: str, numero_telefone: str, memoria: GerenciadorMemoria, llm: ServicoLLM):
@@ -44,7 +43,7 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: Gerenciador
         return
 
     if isinstance(resultado_checaem, Consumo):
-        orquestrador = Orquestrador(llm, ferramentas=all_tools)
+        orquestrador = Orquestrador(llm)
         resultado_agente_str = orquestrador.executar(mensagem, resultado_checaem, historico)
                 
         try:

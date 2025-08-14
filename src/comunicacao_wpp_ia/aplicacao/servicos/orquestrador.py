@@ -6,9 +6,9 @@ class Orquestrador:
     """
     Este caso de uso orquestra o registro de um consumo utilizando um agente com ferramentas.
     """
-    def __init__(self, servico_llm: ServicoLLM, ferramentas: List[Any]):
+    def __init__(self, servico_llm: ServicoLLM):
         self._servico_llm = servico_llm
-        self.ferramentas = ferramentas
+        self.ferramentas = servico_llm.obter_ferramentas()
 
     def executar(self, mensagem_usuario: str, dados_iniciais: Consumo, historico_conversa: List = None):
         historico_conversa = historico_conversa or []
