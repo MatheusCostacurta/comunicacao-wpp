@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from conversasao import processar_mensagem
+from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import processar_mensagem
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.persistencia.redis_adapter import AdaptadorRedis
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import AdaptadorGroq
 
