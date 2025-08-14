@@ -1,13 +1,11 @@
 from typing import List, Optional
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.clientes_api.agriwin_rotas import RotasAgriwin
 from thefuzz import process # Usaremos uma biblioteca para a busca de strings aproximada
 
-class ProductFinderService:
+class LocalizarProdutoService:
     def __init__(self, api):
         self.api = api
-        self.id_produtor = 1 # ID fixo para o exemplo
 
-    def _obter_candidatos(self, nome_produto: str, lista_produtos: List[dict], limite: Optional[int] = None) -> List[dict]:
+    def __obter_candidatos(self, nome_produto: str, lista_produtos: List[dict], limite: Optional[int] = None) -> List[dict]:
         """Usa a biblioteca thefuzz para encontrar os melhores candidatos na lista."""
         nomes = [p.nome for p in lista_produtos]
         score = 80 # Definindo um score mínimo de 80 para considerar uma correspondência
@@ -27,7 +25,7 @@ class ProductFinderService:
                     break # para não adicionar o mesmo produto duas vezes
         return candidatos
 
-    def find_product(self, nome_produto_mencionado: str, id_produtor: int) -> Optional[dict]:
+    def obterPossiveisProdutos(self, nome_produto_mencionado: str, id_produtor: int) -> Optional[dict]:
         """
         Orquestra a busca pelo produto.
         """
@@ -37,8 +35,8 @@ class ProductFinderService:
         produtos_mais_usados = []
 
         # 1. Primeira chamada: Buscar produtos
-        produtos_do_produtor = self.api.buscar_produtos_do_produtor(self.id_produtor)
-        produtos_similares = self._obter_candidatos(nome_produto_mencionado, produtos_do_produtor)
+        produtos_do_produtor = self.api.buscar_produtos_do_produtor(id_produtor)
+        produtos_similares = self.__obter_candidatos(nome_produto_mencionado, produtos_do_produtor)
 
         if not produtos_similares:
             print("[SERVICE] Nenhum produto encontrado.")
@@ -54,14 +52,11 @@ class ProductFinderService:
             nomes_similares = [c.nome for c in produtos_similares]
             print(f"[SERVICE] Múltiplos produtos_similares encontrados: {nomes_similares}. Verificando estoque e consumo...")
             
-            produtos_em_estoque = self.api.buscar_produtos_em_estoque(self.id_produtor, produtos_similares)
-            produtos_mais_usados = self.api.buscar_produtos_mais_consumidos(self.id_produtor, produtos_similares)
+            produtos_em_estoque = self.api.buscar_produtos_em_estoque(id_produtor, produtos_similares)
+            produtos_mais_usados = self.api.buscar_produtos_mais_consumidos(id_produtor, produtos_similares)
 
         return {
             "produtos_similares": produtos_similares,
             "produtos_em_estoque": produtos_em_estoque,
             "produtos_mais_usados": produtos_mais_usados
         }
-
-# Instância do serviço para ser usada pelas ferramentas
-product_finder_service = ProductFinderService(api=RotasAgriwin())

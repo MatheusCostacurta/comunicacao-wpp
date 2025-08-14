@@ -2,8 +2,7 @@ from typing import List, Dict
 from src.comunicacao_wpp_ia.aplicacao.dtos.validacao_intencao import ValidacaoIntencao
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 
-# TODO: deixar metodo private
-def obter_prompt_sistema() -> str:
+def __obter_prompt_sistema() -> str:
     return """
         Você é um assistente de segurança rigoroso. Sua função é analisar a mensagem de um usuário, **levando em conta o histórico da conversa**, para determinar se a intenção é válida.
 
@@ -24,8 +23,7 @@ def obter_prompt_sistema() -> str:
         - Se o histórico estiver vazio, a mensagem do usuário **DEVE** ser um novo registro de consumo para ser válida.
     """
 
-# TODO: deixar metodo private
-def obter_mensagem_usuario(mensagem_usuario: str, historico: List[Dict]) -> str:
+def __obter_mensagem_usuario(mensagem_usuario: str, historico: List[Dict]) -> str:
     historico_formatado = "\n".join(f"{m['role']}: {m['content']}" for m in historico)
     return f"""
         Histórico da Conversa:
@@ -45,8 +43,8 @@ def validar_intencao_do_usuario(mensagem_usuario: str, historico: List[Dict], ll
     """
     print("\n--- ETAPA 0: Validando a Intenção do Usuário (com Contexto) ---")
     
-    prompt_sistema = obter_prompt_sistema()
-    prompt_usuario = obter_mensagem_usuario(mensagem_usuario, historico)
+    prompt_sistema = __obter_prompt_sistema()
+    prompt_usuario = __obter_mensagem_usuario(mensagem_usuario, historico)
     dados = {"mensagem": prompt_usuario}
     if historico:
         dados["historico"] = historico

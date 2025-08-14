@@ -2,8 +2,7 @@ from typing import List
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 
-# TODO: deixar metodo private
-def obter_prompt_sistema() -> str:
+def __obter_prompt_sistema() -> str:
     return """
         Você é um assistente especialista em extrair informações de consumo agrícola a partir de um texto. Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário.
 
@@ -18,8 +17,7 @@ def obter_prompt_sistema() -> str:
          - **Sua Extração:** `{{"produto_mencionado": "tordon", "quantidade": "15 litros", "talhao_mencionado": "campo da sede", "maquina_mencionada": "Nenhuma"}}`
     """
 
-# TODO: deixar metodo private
-def obter_mensagem_usuario() -> str:
+def __obter_mensagem_usuario() -> str:
     return "Analise e extraia as informações do seguinte texto: {mensagem}"
 
 def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: List[str], llm: ServicoLLM) -> (str | Consumo):
@@ -29,8 +27,8 @@ def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: Lis
     """
     print("--- ETAPA 1: Checando informações obrigatórias ---")
 
-    prompt_sistema = obter_prompt_sistema()
-    prompt_usuario = obter_mensagem_usuario()
+    prompt_sistema = __obter_prompt_sistema()
+    prompt_usuario = __obter_mensagem_usuario()
     
     agente = llm.criar_agente(prompt_sistema, prompt_usuario, Consumo) 
     dados_extraidos = agente.executar({"mensagem": mensagem_usuario})
