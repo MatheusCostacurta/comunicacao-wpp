@@ -15,8 +15,8 @@ class _ExecutorAgenteGroq(Agente[T]):
     def __init__(self, cadeia_langchain: Any):
         self._cadeia = cadeia_langchain
 
-    def executar(self, entrada: str) -> T:
-        return self._cadeia.invoke({"mensagem": entrada})
+    def executar(self, entrada: Any) -> T:
+        return self._cadeia.invoke(entrada)
     
 class _ExecutorAgenteComFerramentasGroq(AgenteComFerramentas):
     def __init__(self, executor_langchain: AgentExecutor):

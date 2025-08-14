@@ -26,9 +26,10 @@ def obter_prompt_sistema() -> str:
 
 # TODO: deixar metodo private
 def obter_mensagem_usuario(mensagem_usuario: str, historico: List[Dict]) -> str:
+    historico_formatado = "\n".join(f"{m['role']}: {m['content']}" for m in historico)
     return f"""
         Histórico da Conversa:
-        {historico}
+        {historico_formatado}
         
         Nova Mensagem do Usuário: 
         '{mensagem_usuario}'

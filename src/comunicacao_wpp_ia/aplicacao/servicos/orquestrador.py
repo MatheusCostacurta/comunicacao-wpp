@@ -29,12 +29,11 @@ class Orquestrador:
         - O usuário disse: {input}
         - Histórico da conversa até agora: {historico}"""
 
-        agente_com_ferramentas = self._servico_llm.criar_agente(prompt_template=prompt_orquestrador, ferramentas=self.ferramentas)
+        agente_com_ferramentas = self._servico_llm.criar_agente_com_ferramentas(prompt_template=prompt_orquestrador, ferramentas=self.ferramentas)
         entradas_agente = {
             "input": mensagem_usuario,
             "dados_iniciais": dados_iniciais.dict(),
             "historico": historico_conversa
         }
         resultado = agente_com_ferramentas.executar(entradas_agente)
-
-        return resultado.get("output", "Não foi possível determinar a resposta final.")
+        return resultado

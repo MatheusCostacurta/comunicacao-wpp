@@ -19,7 +19,7 @@ def obter_prompt_sistema() -> str:
     """
 
 # TODO: deixar metodo private
-def obter_mensagem_usuario(mensagem: str) -> str:
+def obter_mensagem_usuario() -> str:
     return "Analise e extraia as informações do seguinte texto: {mensagem}"
 
 def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: List[str], llm: ServicoLLM) -> (str | Consumo):
@@ -30,10 +30,10 @@ def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: Lis
     print("--- ETAPA 1: Checando informações obrigatórias ---")
 
     prompt_sistema = obter_prompt_sistema()
-    prompt_usuario = obter_mensagem_usuario(mensagem_usuario)
-
+    prompt_usuario = obter_mensagem_usuario()
+    
     agente = llm.criar_agente(prompt_sistema, prompt_usuario, Consumo) 
-    dados_extraidos = agente.executar({"mensagem": prompt_usuario})
+    dados_extraidos = agente.executar({"mensagem": mensagem_usuario})
 
     print(f"Dados extraídos na checagem inicial: {dados_extraidos}")
 
