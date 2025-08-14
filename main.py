@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from conversasao import processar_mensagem
-from memoria import GerenciadorMemoria
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.persistencia.redis_adapter import AdaptadorRedis
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import AdaptadorGroq
 
 def run():
@@ -15,7 +15,7 @@ def run():
     llm = AdaptadorGroq()
 
     # Cria uma instância única do gerenciador de memória
-    gerenciador_memoria = GerenciadorMemoria()
+    gerenciador_memoria = AdaptadorRedis()
 
     # --- Simulação de conversas ---
     # Usuário 2: Envia uma mensagem incompleta
@@ -26,9 +26,9 @@ def run():
     print("\n" + "="*50 + "\n")
 
     # Usuário 1: Envia uma mensagem completa
-    numero_usuario_1 = "+5541999991111"
-    mensagem_completa = "Boa tarde, pode registrar aí o consumo de 15 litros de tordon no talhão da estrada. Usei o pulverizador uniport."
-    processar_mensagem(mensagem_completa, numero_usuario_1, gerenciador_memoria, llm)
+    # numero_usuario_1 = "+5541999991111"
+    # mensagem_completa = "Boa tarde, pode registrar aí o consumo de 15 litros de tordon no talhão da estrada. Usei o pulverizador uniport."
+    # processar_mensagem(mensagem_completa, numero_usuario_1, gerenciador_memoria, llm)
 
     print("\n" + "="*50 + "\n")
 
