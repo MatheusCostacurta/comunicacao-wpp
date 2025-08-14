@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 from langchain.tools import tool
-from comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarProdutoService 
+from src.comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarProdutoService 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.clientes_api.agriwin_rotas import RotasAgriwin
 
 ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
