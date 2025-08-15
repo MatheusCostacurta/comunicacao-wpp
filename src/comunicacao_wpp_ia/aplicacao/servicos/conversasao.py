@@ -16,8 +16,6 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
     estado_conversa = memoria.obter_estado(numero_telefone)
     historico = estado_conversa["historico"]
 
-    campos_obrigatorios = ["produto_mencionado", "quantidade", "talhao_mencionado"]
-
     # --- ETAPA 0: VALIDAÇÃO DE SEGURANÇA ---
     resultado_validacao = validar_intencao_do_usuario(mensagem, historico, llm)
     if not resultado_validacao.intencao_valida:
@@ -28,7 +26,7 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
         #? Enviar a má intenção para o amplitude para análise
         return
     
-    resultado_checagem = checar_informacoes_faltantes(mensagem, historico, campos_obrigatorios, llm)
+    resultado_checagem = checar_informacoes_faltantes(mensagem, historico, llm)
     
     if isinstance(resultado_checagem, str):
         print("\n--- RESULTADO FINAL (FALTAM DADOS) ---")
