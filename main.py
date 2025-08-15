@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
+import os
 from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import processar_mensagem
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.persistencia.redis_adapter import AdaptadorRedis
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.persistencia.memoria_local_adapter import AdaptadorMemoriaLocal
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import AdaptadorGroq
 
 def run():
@@ -14,8 +16,12 @@ def run():
     # Estes objetos serão compartilhados por todas as chamadas durante a execução da aplicação.
     llm = AdaptadorGroq()
 
-    # Cria uma instância única do gerenciador de memória
-    gerenciador_memoria = AdaptadorRedis()
+    ambiente = os.getenv("AMBIENTE", "dev")
+    if ambiente == "prod":
+        gerenciador_memoria = AdaptadorRedis()
+    else:
+       gerenciador_memoria = AdaptadorMemoriaLocal()
+    
 
     # --- Simulação de conversas ---
     # Usuário 2: Envia uma mensagem incompleta
