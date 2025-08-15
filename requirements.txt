@@ -1,12 +1,18 @@
-langchain
-pydantic
-python-dotenv
-redis
-python-Levenshtein
-thefuzz
-google-cloud-aiplatform # Google Cloud AI Platform - usado para imagens
-openai # OpenAI - usado para transcrição de áudio
+# infra / utilitários
+pydantic==2.9.1
+python-dotenv==1.0.1
+redis==6.4.0
+python-Levenshtein==0.27.1
+thefuzz==0.22.1
+tqdm>=4.66.5
 
-langchain-openai # OpenAI - usado para LLMs
-langchain-google-genai
-langchain-groq
+# LangChain core + integrações alinhadas (versões compatíveis entre si)
+langchain==0.3.27
+langchain-openai==0.2.0
+openai==1.44.0
+
+langchain-google-genai==2.1.9
+google-cloud-aiplatform==1.109.0
+
+langchain-groq==0.3.7
+groq>=0.31.0
