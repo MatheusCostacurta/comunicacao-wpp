@@ -15,9 +15,6 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
     
     estado_conversa = memoria.obter_estado(numero_telefone)
     historico = estado_conversa["historico"]
-    
-    historico_para_analise = historico + [{"role": "user", "content": mensagem}]
-    texto_completo_conversa = "\n".join(m["content"] for m in historico_para_analise)
 
     campos_obrigatorios = ["produto_mencionado", "quantidade", "talhao_mencionado"]
 
@@ -31,20 +28,20 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
         #? Enviar a má intenção para o amplitude para análise
         return
     
-    resultado_checaem = checar_informacoes_faltantes(texto_completo_conversa, campos_obrigatorios, llm)
+    resultado_checagem = checar_informacoes_faltantes(mensagem, historico, campos_obrigatorios, llm)
     
-    if isinstance(resultado_checaem, str):
+    if isinstance(resultado_checagem, str):
         print("\n--- RESULTADO FINAL (FALTAM DADOS) ---")
-        print(f"Resposta para o usuário: {resultado_checaem}")
+        print(f"Resposta para o usuário: {resultado_checagem}")
         
         historico.append({"role": "user", "content": mensagem})
-        historico.append({"role": "assistant", "content": resultado_checaem})
+        historico.append({"role": "assistant", "content": resultado_checagem})
         memoria.salvar_estado(numero_telefone, historico)
         return
 
-    if isinstance(resultado_checaem, Consumo):
+    if isinstance(resultado_checagem, Consumo):
         orquestrador = Orquestrador(llm)
-        resultado_agente_str = orquestrador.executar(mensagem, resultado_checaem, historico)
+        resultado_agente_str = orquestrador.executar(mensagem, resultado_checagem, historico)
                 
         try:
             # Tenta decodificar o resultado como JSON. Se funcionar, é uma operação de salvamento.

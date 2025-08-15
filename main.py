@@ -46,9 +46,6 @@ def run():
     
     # Simula a passagem do tempo para testar a limpeza de memória
     print("Aguardando para simular inatividade...")
-    # No exemplo, para não esperar 30 minutos, vamos forçar a limpeza
-    # Em um cenário real, a linha abaixo seria `time.sleep(1800)` ou um job agendado.
-    gerenciador_memoria.limpar_conversas_inativas()
 
 
 if __name__ == "__main__":

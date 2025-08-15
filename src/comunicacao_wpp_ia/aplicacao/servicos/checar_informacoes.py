@@ -18,9 +18,17 @@ def __obter_prompt_sistema() -> str:
     """
 
 def __obter_mensagem_usuario() -> str:
-    return "Analise e extraia as informações do seguinte texto: {mensagem}"
+    return """
+        Analise o histórico e a nova mensagem para extrair as informações de consumo.
 
-def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: List[str], llm: ServicoLLM) -> (str | Consumo):
+        Histórico da Conversa:
+        {historico}
+
+        Nova Mensagem do Usuário:
+        '{mensagem}'
+    """
+
+def checar_informacoes_faltantes(mensagem_usuario: str, historico: list, campos_obrigatorios: List[str], llm: ServicoLLM) -> (str | Consumo):
     """
     Usa o LLM para fazer uma extração estruturada rápida.
     Se um campo obrigatório não for extraído, formula a pergunta para o usuário.
@@ -29,9 +37,11 @@ def checar_informacoes_faltantes(mensagem_usuario: str, campos_obrigatorios: Lis
 
     prompt_sistema = __obter_prompt_sistema()
     prompt_usuario = __obter_mensagem_usuario()
+
+    historico_formatado = "\n".join(f"{m['role']}: {m['content']}" for m in historico)
     
     agente = llm.criar_agente(prompt_sistema, prompt_usuario, Consumo) 
-    dados_extraidos = agente.executar({"mensagem": mensagem_usuario})
+    dados_extraidos = agente.executar({"mensagem": mensagem_usuario, "historico": historico_formatado})
 
     print(f"Dados extraídos na checagem inicial: {dados_extraidos}")
 

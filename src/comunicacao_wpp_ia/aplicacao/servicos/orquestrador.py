@@ -24,6 +24,9 @@ class Orquestrador:
         4.  Como passo final, e apenas se todas as informações estiverem confirmadas, chame a ferramenta 'salvar_registro_consumo'.
         5.  A resposta da ferramenta 'salvar_registro_consumo' contém 'status_code' e 'message'. Se você chamar essa ferramenta, sua resposta final **DEVE** ser um objeto JSON válido contendo APENAS esses dois campos.
         5.1. Exemplo de Resposta caso chegue ao passo final -> "status_code": 200, "message": "Consumo registrado com sucesso."
+
+        **LINGUAGEM:**
+        1. Responda sempre na linguagem português-br.
          
         - Dados Iniciais Extraídos: {dados_iniciais}
         - O usuário disse: {input}
