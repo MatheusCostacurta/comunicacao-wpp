@@ -26,7 +26,7 @@ def run():
     # --- Simulação de conversas ---
     # Usuário 2: Envia uma mensagem incompleta
     numero_usuario_2 = "+5511988882222"
-    mensagem_incompleta_1 = "gastei 20kg de adubo super simples do retiro"
+    mensagem_incompleta_1 = "gastei 20kg de adubo super simples"
     processar_mensagem(mensagem_incompleta_1, numero_usuario_2, gerenciador_memoria, llm)
 
     print("\n" + "="*50 + "\n")
@@ -45,8 +45,8 @@ def run():
     print("\n" + "="*50 + "\n")
 
     # Usuário 2: Completa a informação
-    # mensagem_incompleta_3 = "na sede"
-    # processar_mensagem(mensagem_incompleta_3, numero_usuario_2, gerenciador_memoria, llm)
+    mensagem_incompleta_3 = "na sede"
+    processar_mensagem(mensagem_incompleta_3, numero_usuario_2, gerenciador_memoria, llm)
     
     # Simula a passagem do tempo para testar a limpeza de memória
     print("Aguardando para simular inatividade...")

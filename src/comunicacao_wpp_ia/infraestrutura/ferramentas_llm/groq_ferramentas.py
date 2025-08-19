@@ -37,7 +37,7 @@ def buscar_produto_por_nome(nome_produto: str) -> str:
     A IA deve então usar esse map para encontrar o ID do produto que o usuário mencionou, priorizando produtos que já foram consumidos ou que possuem estoque para casos de desempate.
     Retorna um JSON string com listas de produtos similares, em estoque e mais consumidos.
     """
-    produto_service = LocalizarProdutoService(api=RotasAgriwin())
+    produto_service = LocalizarProdutoService(api=api_agriwin)
     resultado = produto_service.obterPossiveisProdutos(nome_produto_mencionado=nome_produto, id_produtor=ID_PRODUTOR_EXEMPLO)
     resultado_serializado = serializar_para_json(resultado)
     return json.dumps(resultado_serializado)
@@ -47,14 +47,14 @@ def buscar_talhoes_disponiveis() -> str:
     """Use esta ferramenta para obter uma lista de TODOS os talhões (áreas ou campos) disponíveis na fazenda do produtor. A IA deve então usar esta lista para encontrar o ID do talhão que o usuário mencionou.
     Retorna um JSON string com a lista de TODOS os talhões disponíveis."""
     resultados = api_agriwin.buscar_talhoes_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
-    return json.dumps([r.dict() for r in resultados])
+    return json.dumps(serializar_para_json(resultados))
 
 @tool
 def buscar_maquinas_disponiveis() -> str:
     """Use esta ferramenta para obter uma lista de TODAS as máquinas (imobilizados) disponíveis para o produtor. A IA deve então usar esta lista para encontrar o ID da máquina que o usuário mencionou.
     Retorna um JSON string com a lista de TODAS as máquinas disponíveis."""
     resultados = api_agriwin.buscar_maquinas_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
-    return json.dumps([r.dict() for r in resultados])
+    return json.dumps(serializar_para_json(resultados))
 
 @tool
 def buscar_pontos_de_estoque_disponiveis(nome_ponto_estoque: str) -> str:
