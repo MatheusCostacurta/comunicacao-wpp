@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from thefuzz import process # Usaremos uma biblioteca para a busca de strings aproximada
 
 class LocalizarProdutoService:
@@ -25,9 +25,9 @@ class LocalizarProdutoService:
                     break # para não adicionar o mesmo produto duas vezes
         return candidatos
 
-    def obterPossiveisProdutos(self, nome_produto_mencionado: str, id_produtor: int) -> Optional[dict]:
+    def obterPossiveisProdutos(self, nome_produto_mencionado: str, id_produtor: int) -> Dict[str, Any]:
         """
-        Orquestra a busca pelo produto.
+        Orquestra a busca pelo produto e SEMPRE retorna um dicionário.
         """
         print(f"\n[SERVICE] Iniciando busca complexa para o produto: '{nome_produto_mencionado}'")
         produtos_similares = []
@@ -40,12 +40,20 @@ class LocalizarProdutoService:
 
         if not produtos_similares:
             print("[SERVICE] Nenhum produto encontrado.")
-            return None
+            return {
+                "produtos_similares": [],
+                "produtos_em_estoque": [],
+                "produtos_mais_usados": []
+            }
         
         if len(produtos_similares) == 1:
             produto_encontrado = produtos_similares[0]
             print(f"[SERVICE] Sucesso! Encontrado 1 produto: {produto_encontrado.nome}")
-            return produto_encontrado
+            return {
+                "produtos_similares": produtos_similares,
+                "produtos_em_estoque": [],
+                "produtos_mais_usados": []
+            }
         
         # 2. Segunda chamada: Buscar produtos em estoque
         if len(produtos_similares) > 1:

@@ -5,6 +5,7 @@ from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_informacoes_faltantes
 from src.comunicacao_wpp_ia.aplicacao.servicos.orquestrador import Orquestrador
 from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
+from src.comunicacao_wpp_ia.aplicacao.dtos.dados_remetente import DadosRemetente
 
 def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemoria, llm: ServicoLLM):
     """
@@ -12,11 +13,17 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
     chamando os agentes em sequência e gerenciando a memória.
     """
     print(f"\n--- INICIANDO PROCESSAMENTO PARA: '{mensagem}' (Remetente: {numero_telefone}) ---")
-    
+
+    produtor_id = 1  # Simulando a busca do ID do produtor. Na prática, isso deve ser obtido de uma API ou banco de dados.
+    if not produtor_id:
+        print("[ERROR] Não foi possível encontrar o id do produtor para o numero de telefone na conversa.")
+        print(f"Resposta para o usuário: Não foi possível identificar o produtor associado ao número {numero_telefone}.")
+        return
+    remetente = DadosRemetente(produtor_id=produtor_id, numero_telefone=numero_telefone)  
+
     estado_conversa = memoria.obter_estado(numero_telefone)
     historico = estado_conversa["historico"]
 
-    # --- ETAPA 0: VALIDAÇÃO DE SEGURANÇA ---
     resultado_validacao = validar_intencao_do_usuario(mensagem, historico, llm)
     if not resultado_validacao.intencao_valida:
         print("\n--- RESULTADO FINAL (INTENÇÃO MALICIOSA/INVÁLIDA) ---")
@@ -39,7 +46,7 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
 
     if isinstance(resultado_checagem, Consumo):
         orquestrador = Orquestrador(llm)
-        resultado_agente_str = orquestrador.executar(mensagem, resultado_checagem, historico)
+        resultado_agente_str = orquestrador.executar(remetente, mensagem, resultado_checagem, historico)
                 
         try:
             # Tenta decodificar o resultado como JSON. Se funcionar, é uma operação de salvamento.

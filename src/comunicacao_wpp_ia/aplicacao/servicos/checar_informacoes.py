@@ -1,22 +1,27 @@
-from typing import List
+from datetime import date
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 from src.comunicacao_wpp_ia.dominio.servicos.validador_consumo import ValidadorConsumo
 
 def __obter_prompt_sistema() -> str:
     return """
-        Você é um assistente especialista em extrair informações de consumo agrícola a partir de um texto. Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário.
+        Você é um assistente especialista em extrair informações de consumo agrícola a partir de um texto. 
+        Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário e no histórico.
 
         Siga estas regras estritamente:
-        1.  Extraia `produto_mencionado`, `quantidade`, e `talhao_mencionado`.
-        2.  O campo `maquina_mencionada` é opcional. Extraia-o apenas se for explicitamente mencionado.
-        3.  Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquina_mencionada` com o valor nulo (null).
-        4.  Se um campo obrigatório não estiver na mensagem, seu valor deve ser nulo (null).
-
-        **Exemplo de Extração:**
-        - **Mensagem do Usuário:** "anota aí 15 litros de tordon no campo da sede, foi aplicação manual."
-         - **Sua Extração:** `{{"produto_mencionado": "tordon", "quantidade": "15 litros", "talhao_mencionado": "campo da sede", "maquina_mencionada": "Nenhuma"}}`
+        1.  Extraia `produto_mencionado`, `quantidade`, `talhao_mencionado`, `ponto_estoque_mencionado`.
+        2.  Extraia a `data_mencionada`. Se nenhuma data for mencionada, seu valor deve ser nulo (null).
+        3.  Determine o `tipo_rateio`. Se a mensagem mencionar um talhão, o tipo é 'talhao'. Se mencionar a fazenda ou propriedade em geral, é 'propriedade'.
+        4.  Os campos `maquina_mencionada` e `safra_mencionada` são opcionais. Extraia apenas se mencionados.
+        4.1. Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquina_mencionada` com o valor nulo (null).
+        4.2. A safra pode ser mencionada apenas através de numeros (ex: 23/24, 2023/2024, 24/24 ou 24)
+        5.  Se um campo obrigatório não estiver na mensagem, seu valor deve ser nulo (null).
     """
+
+# **Exemplo de Extração:**
+# - **Mensagem do Usuário:** "anota aí 15 litros de tordon no campo da sede, foi aplicação manual."
+#  - **Sua Extração:** `{{"produto_mencionado": "tordon", "quantidade": "15 litros", "talhao_mencionado": "campo da sede", "maquina_mencionada": "Nenhuma"}}`
+ 
 
 def __obter_mensagem_usuario() -> str:
     return """
@@ -31,8 +36,7 @@ def __obter_mensagem_usuario() -> str:
 
 def checar_informacoes_faltantes(mensagem_usuario: str, historico: list, llm: ServicoLLM) -> (str | Consumo):
     """
-    Usa o LLM para fazer uma extração estruturada rápida.
-    Se um campo obrigatório não for extraído, formula a pergunta para o usuário.
+    Usa o LLM para fazer uma extração estruturada rápida. Se um campo obrigatório não for extraído, formula a pergunta para o usuário.
     """
     print("--- ETAPA 1: Checando informações obrigatórias ---")
 
@@ -45,6 +49,10 @@ def checar_informacoes_faltantes(mensagem_usuario: str, historico: list, llm: Se
     dados_extraidos = agente.executar({"mensagem": mensagem_usuario, "historico": historico_formatado})
 
     print(f"Dados extraídos na checagem inicial: {dados_extraidos}")
+
+    # Se a data não foi extraída, preenchemos com a data atual.
+    if not dados_extraidos.data_mencionada:
+        dados_extraidos.data_mencionada = date.today()
 
     eh_valido, perguntas_faltantes = ValidadorConsumo.validar(dados_extraidos)
 

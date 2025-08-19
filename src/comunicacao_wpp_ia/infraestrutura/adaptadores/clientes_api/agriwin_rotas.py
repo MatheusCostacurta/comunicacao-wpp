@@ -1,12 +1,22 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto
 from src.comunicacao_wpp_ia.dominio.modelos.talhao import Talhao
 from src.comunicacao_wpp_ia.dominio.modelos.imobilizado import Imobilizado
+from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
+from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
+from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
+
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_produto import RepositorioProduto
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_imobilizado import RepositorioImobilizado
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_talhao import RepositorioTalhao
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_ponto_estoque import RepositorioPontoEstoque
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_safra import RepositorioSafra
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_responsavel import RepositorioResponsavel
 
-class RotasAgriwin(RepositorioProduto, RepositorioImobilizado, RepositorioTalhao):
+class RotasAgriwin(
+    RepositorioProduto, RepositorioImobilizado, RepositorioTalhao,
+    RepositorioPontoEstoque, RepositorioSafra, RepositorioResponsavel
+):
     """
     Adaptador que implementa as interfaces de repositório utilizando a API do Agriwin.
     """
@@ -76,6 +86,40 @@ class RotasAgriwin(RepositorioProduto, RepositorioImobilizado, RepositorioTalhao
         ]
     
         return [Imobilizado(**data) for data in imobilizados_data]
+    
+    def buscar_pontos_estoque_do_produtor(self, id_produtor: int) -> List[PontoEstoque]:
+        print(f"\n[API MOCK] Buscando pontos de estoque para o produtor {id_produtor}...")
+        estoque_data = [
+            {"id": 401, "nome": "Galpão Sede"},
+            {"id": 402, "nome": "Depósito Retiro"},
+            {"id": 403, "nome": "Sede"},
+        ]
+        return [PontoEstoque(**data) for data in estoque_data]
+    
+    def buscar_safras_do_produtor(self, id_produtor: int) -> List[Safra]:
+        print(f"\n[API MOCK] Buscando safras para o produtor {id_produtor}...")
+        safra_data = [
+            {"id": 501, "nome": "Safra 24/25 Soja", "esta_ativa": True},
+            {"id": 502, "nome": "Safrinha 24/25 Milho", "esta_ativa": False},
+            {"id": 503, "nome": "Safra 23/24 Soja", "esta_ativa": False},
+        ]
+        return [Safra(**data) for data in safra_data]
+    
+    def buscar_responsaveis_do_produtor(self, id_produtor: int) -> List[Responsavel]:
+        print(f"\n[API MOCK] Buscando responsáveis para o produtor {id_produtor}...")
+        responsavel_data = [
+            {"id": 601, "nome": "João da Silva", "telefone": "+5511988882222"},
+            {"id": 602, "nome": "Maria Oliveira", "telefone": "+5541999991111"},
+        ]
+        return [Responsavel(**data) for data in responsavel_data]
+    
+    def buscar_responsavel_por_telefone(self, id_produtor: int, telefone: str) -> Optional[Responsavel]:
+        print(f"\n[API MOCK] Buscando responsável pelo telefone {telefone}...")
+        todos = self.buscar_responsaveis_do_produtor(id_produtor)
+        for r in todos:
+            if r.telefone == telefone:
+                return r
+        return None
     
     def salvar_consumo(self, dados_consumo: Dict) -> Tuple[int, Dict]:
         """
