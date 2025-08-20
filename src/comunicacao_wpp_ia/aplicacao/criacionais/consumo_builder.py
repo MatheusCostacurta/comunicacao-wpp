@@ -1,9 +1,9 @@
-from typing import Any, List
+from typing import List
 from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
-from src.comunicacao_wpp_ia.aplicacao.dtos.dados_remetente import DadosRemetente
+from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 
-class Orquestrador:
+class ConsumoBuilder:
     """
     Este caso de uso orquestra o registro de um consumo utilizando um agente com ferramentas.
     """

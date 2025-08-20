@@ -3,9 +3,9 @@ from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
 from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_informacoes_faltantes
-from src.comunicacao_wpp_ia.aplicacao.servicos.orquestrador import Orquestrador
+from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo_builder import ConsumoBuilder
 from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
-from src.comunicacao_wpp_ia.aplicacao.dtos.dados_remetente import DadosRemetente
+from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_remetente import RepositorioRemetente
 
 class ServicoConversa:
@@ -62,8 +62,8 @@ class ServicoConversa:
             return
 
         if isinstance(resultado_checagem, Consumo):
-            orquestrador = Orquestrador(self._llm)
-            resultado_agente_str = orquestrador.executar(remetente, mensagem, resultado_checagem, historico)
+            builder_consumo = ConsumoBuilder(self._llm)
+            resultado_agente_str = builder_consumo.executar(remetente, mensagem, resultado_checagem, historico)
                     
             try:
                 # Tenta decodificar o resultado como JSON. Se funcionar, é uma operação de salvamento.
