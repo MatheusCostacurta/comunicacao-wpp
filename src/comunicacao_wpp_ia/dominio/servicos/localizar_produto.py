@@ -2,8 +2,8 @@ from typing import List, Optional, Dict, Any
 from thefuzz import process # Usaremos uma biblioteca para a busca de strings aproximada
 
 class LocalizarProdutoService:
-    def __init__(self, api):
-        self.api = api
+    def __init__(self, api_ferramentas):
+        self.api = api_ferramentas
 
     def __obter_candidatos(self, nome_produto: str, lista_produtos: List[dict], limite: Optional[int] = None) -> List[dict]:
         """Usa a biblioteca thefuzz para encontrar os melhores candidatos na lista."""

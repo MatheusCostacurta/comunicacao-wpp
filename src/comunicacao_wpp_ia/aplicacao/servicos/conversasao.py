@@ -6,25 +6,42 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_
 from src.comunicacao_wpp_ia.aplicacao.servicos.orquestrador import Orquestrador
 from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
 from src.comunicacao_wpp_ia.aplicacao.dtos.dados_remetente import DadosRemetente
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_remetente import RepositorioRemetente
 
-def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemoriaConversa, llm: ServicoLLM):
+class ServicoConversa:
+    """
+    Serviço de aplicação responsável por orquestrar o fluxo de uma conversa.
+    """
+    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, repo_remetente: RepositorioRemetente):
+        self._memoria = memoria
+        self._llm = llm
+        self._repo_remetente = repo_remetente
+
+def obter_remetente(self, telefone: str) -> DadosRemetente:
+    """
+    Busca os dados do remetente (produtor) com base no número de telefone.
+    """
+    print(f"\n[API MOCK] Buscando produtor pelo telefone {telefone}...")
+    remetente = self._repo_remetente.buscar_remetente_por_telefone(telefone)
+    
+    if not remetente:
+        print(f"[ERROR] Não foi possível encontrar um produtor associado ao número {telefone}.")
+        return None
+    
+    return remetente
+
+
+def processar_mensagem(self, mensagem: str, remetente: DadosRemetente):
     """
     Orquestra o fluxo de processamento da mensagem,
     chamando os agentes em sequência e gerenciando a memória.
     """
-    print(f"\n--- INICIANDO PROCESSAMENTO PARA: '{mensagem}' (Remetente: {numero_telefone}) ---")
+    print(f"\n--- INICIANDO PROCESSAMENTO PARA: '{mensagem}' (Remetente: {remetente.numero_telefone}) ---")
 
-    produtor_id = 1  # Simulando a busca do ID do produtor. Na prática, isso deve ser obtido de uma API ou banco de dados.
-    if not produtor_id:
-        print("[ERROR] Não foi possível encontrar o id do produtor para o numero de telefone na conversa.")
-        print(f"Resposta para o usuário: Não foi possível identificar o produtor associado ao número {numero_telefone}.")
-        return
-    remetente = DadosRemetente(produtor_id=produtor_id, numero_telefone=numero_telefone)  
-
-    estado_conversa = memoria.obter_estado(numero_telefone)
+    estado_conversa = self._memoria.obter_estado(remetente.numero_telefone)
     historico = estado_conversa["historico"]
 
-    resultado_validacao = validar_intencao_do_usuario(mensagem, historico, llm)
+    resultado_validacao = validar_intencao_do_usuario(mensagem, historico, self._llm)
     if not resultado_validacao.intencao_valida:
         print("\n--- RESULTADO FINAL (INTENÇÃO MALICIOSA/INVÁLIDA) ---")
         # Não damos detalhes do erro para o usuário.
@@ -33,7 +50,7 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
         #? Enviar a má intenção para o amplitude para análise
         return
     
-    resultado_checagem = checar_informacoes_faltantes(mensagem, historico, llm)
+    resultado_checagem = checar_informacoes_faltantes(mensagem, historico, self._llm)
     
     if isinstance(resultado_checagem, str):
         print("\n--- RESULTADO FINAL (FALTAM DADOS) ---")
@@ -41,11 +58,11 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
         
         historico.append({"role": "user", "content": mensagem})
         historico.append({"role": "assistant", "content": resultado_checagem})
-        memoria.salvar_estado(numero_telefone, historico)
+        self._memoria.salvar_estado(remetente.numero_telefone, historico)
         return
 
     if isinstance(resultado_checagem, Consumo):
-        orquestrador = Orquestrador(llm)
+        orquestrador = Orquestrador(self._llm)
         resultado_agente_str = orquestrador.executar(remetente, mensagem, resultado_checagem, historico)
                 
         try:
@@ -60,14 +77,14 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
 
             if status_code == 200:
                 print("Operação bem-sucedida (Status 200). Limpando o histórico da conversa.")
-                memoria.limpar_memoria_conversa(numero_telefone)
+                self._memoria.limpar_memoria_conversa(remetente.numero_telefone)
                 resposta_usuario = "Seu registro foi salvo com sucesso!"
             else:
                 print(f"Operação falhou (Status {status_code}). Mantendo o histórico para correção.")
                 resposta_usuario = mensagem_api
                 historico.append({"role": "user", "content": mensagem})
                 historico.append({"role": "assistant", "content": resposta_usuario})
-                memoria.salvar_estado(numero_telefone, historico)
+                self._memoria.salvar_estado(remetente.numero_telefone, historico)
 
         except json.JSONDecodeError:
             # Se falhar a decodificação, é a pergunta de desambiguação do agente.
@@ -78,6 +95,6 @@ def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemo
             # tenha o contexto da pergunta.
             historico.append({"role": "user", "content": mensagem})
             historico.append({"role": "assistant", "content": resposta_usuario})
-            memoria.salvar_estado(numero_telefone, historico)
+            self._memoria.salvar_estado(remetente.numero_telefone, historico)
 
         print(f"Resposta final para o usuário: {resposta_usuario}")

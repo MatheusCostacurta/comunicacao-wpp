@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Optional
+from typing import List, Optional
 from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto
 from src.comunicacao_wpp_ia.dominio.modelos.talhao import Talhao
 from src.comunicacao_wpp_ia.dominio.modelos.imobilizado import Imobilizado
@@ -6,17 +6,10 @@ from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
 from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
 
-from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_produto import RepositorioProduto
-from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_imobilizado import RepositorioImobilizado
-from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_talhao import RepositorioTalhao
-from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_ponto_estoque import RepositorioPontoEstoque
-from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_safra import RepositorioSafra
-from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_responsavel import RepositorioResponsavel
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_ferramentas import RepositorioFerramentas
 
-class RotasAgriwin(
-    RepositorioProduto, RepositorioImobilizado, RepositorioTalhao,
-    RepositorioPontoEstoque, RepositorioSafra, RepositorioResponsavel
-):
+
+class RepoAgriwinFerramentas(RepositorioFerramentas):
     """
     Adaptador que implementa as interfaces de repositório utilizando a API do Agriwin.
     """
@@ -121,25 +114,3 @@ class RotasAgriwin(
                 return r
         return None
     
-    def salvar_consumo(self, dados_consumo: Dict) -> Tuple[int, Dict]:
-        """
-        Simula o POST para salvar os dados de consumo na API interna.
-        Retorna uma tupla contendo o status_code e o corpo da resposta em JSON.
-        """
-        print(f"\n[API MOCK] Recebido POST para salvar consumo: {dados_consumo}")
-        
-        # Simulação de erro de validação da API (Internal Server Error)
-        if dados_consumo.get("quantidade") == "20 kg" and dados_consumo.get("id_produto") == 102:
-            response_body = {
-                "error": "VALIDATION_ERROR",
-                "message": "Erro de validação: A quantidade '20 kg' para 'Adubo Super Simples' excede o limite permitido por aplicação."
-            }
-            return 500, response_body
-        
-        # Simulação de sucesso (OK)
-        response_body = {
-            "status": "sucesso",
-            "message": f"Consumo do produto ID {dados_consumo.get('id_produto')} registrado com sucesso no talhão ID {dados_consumo.get('id_talhao')}.",
-            "registro_id": 12345 
-        }
-        return 200, response_body

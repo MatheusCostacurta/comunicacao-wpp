@@ -3,11 +3,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
 from typing import Dict, Any
 
-from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import processar_mensagem
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.redis_adapter import AdaptadorRedis
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.memoria_local_adapter import AdaptadorMemoriaLocal
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import AdaptadorGroq
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.entrada.whatsapp.zapi_adapter import AdaptadorZAPI
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_remetente import RepoAgriwinRemetente
+from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
+from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import ServicoConversa
 
 # --- 1. Inicialização da Aplicação e Carregamento de Configurações ---
 # Carrega as variáveis de ambiente do arquivo .env
@@ -23,38 +26,54 @@ app = FastAPI(
 # --- 2. Injeção de Dependência (Singleton) ---
 # Para garantir que os adaptadores sejam inicializados apenas uma vez e reutilizados
 # em todas as requisições, seguimos o padrão Singleton.
-def inicializar_adaptadores():
+def inicializar_servicos_e_adaptadores():
     """
     Inicializa e retorna instâncias únicas dos adaptadores necessários para a aplicação.
     A escolha do gerenciador de memória (Redis ou Local) é feita com base na variável de ambiente.
     """
     print("--- INICIALIZANDO ADAPTADORES DA APLICAÇÃO ---")
-    llm = AdaptadorGroq()
-    whatsapp = AdaptadorZAPI()
+    llm_adapter = AdaptadorGroq()
+    whatsapp_adapter = AdaptadorZAPI()
+    repo_remetente = RepoAgriwinRemetente()
 
     ambiente = os.getenv("AMBIENTE", "dev")
     if ambiente == "prod":
-        gerenciador_memoria = AdaptadorRedis()
+        memoria_adapter = AdaptadorRedis()
     else:
-        gerenciador_memoria = AdaptadorMemoriaLocal()
+        memoria_adapter = AdaptadorMemoriaLocal()
+
+    servico_conversa = ServicoConversa(
+        memoria = memoria_adapter,
+        llm = llm_adapter,
+        repo_remetente = repo_remetente
+    )
     
-    return llm, gerenciador_memoria, whatsapp
+    return servico_conversa, whatsapp_adapter
 
 # Instancia os adaptadores que serão usados nas rotas
-llm_adapter, memoria_adapter, whatsapp_adapter = inicializar_adaptadores()
+servico_conversa, whatsapp_adapter = inicializar_servicos_e_adaptadores()
 
+
+def processar_webhook_em_background(mensagem: MensagemRecebida):
+    """
+    Função de trabalho executada em segundo plano.
+    1. Obtém os dados do remetente.
+    2. Se o remetente for encontrado, inicia o processamento da mensagem.
+    """
+    # Etapa 1: Obter o remetente
+    remetente = servico_conversa.obter_remetente(telefone=mensagem.telefone_remetente)
+
+    # Etapa 2: Chamar o processamento principal apenas se o remetente existir
+    if remetente:
+        servico_conversa.processar_mensagem(mensagem=mensagem.texto_conteudo, remetente=remetente)
+    # Se o remetente não for encontrado, a tarefa termina silenciosamente.
+    # O erro já foi logado pela função obter_remetente.
 
 # --- 3. Definição das Rotas (Endpoints) ---
 @app.post("/webhook/zapi", status_code=200)
 async def receber_webhook_zapi(request: Request, background_tasks: BackgroundTasks):
     """
     Endpoint para receber as notificações (webhooks) da Z-API.
-
-    Esta rota é o ponto de entrada principal para as mensagens do WhatsApp.
-    1. Recebe o payload JSON da Z-API.
-    2. Usa o AdaptadorZAPI para traduzir o payload em um DTO da aplicação.
-    3. Adiciona o processamento da mensagem a uma tarefa em segundo plano (BackgroundTasks)
-       para retornar uma resposta 200 OK imediatamente para a Z-API, evitando timeouts.
     """
     try:
         payload = await request.json()
@@ -66,11 +85,8 @@ async def receber_webhook_zapi(request: Request, background_tasks: BackgroundTas
         # Usamos tarefas em background para processar a lógica principal.
         # Isso libera a API para responder imediatamente, uma prática recomendada para webhooks.
         background_tasks.add_task(
-            processar_mensagem,
-            mensagem=mensagem_recebida.texto_conteudo,
-            numero_telefone=mensagem_recebida.telefone_remetente,
-            memoria=memoria_adapter,
-            llm=llm_adapter
+            processar_webhook_em_background,
+            mensagem=mensagem_recebida
         )
         
         return {"status": "Mensagem recebida e agendada para processamento."}

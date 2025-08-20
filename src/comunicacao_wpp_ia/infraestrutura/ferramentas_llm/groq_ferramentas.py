@@ -1,13 +1,13 @@
 import json
-from typing import Dict, List, Optional
+from typing import Optional
 from langchain.tools import tool
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarProdutoService 
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_ponto_estoque import LocalizarPontoEstoqueService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_safra import LocalizarSafraService
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin import RotasAgriwin
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
 
 ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
-api_agriwin = RotasAgriwin()
+api_agriwin_ferramentas = RepoAgriwinFerramentas()
 
 class GroqFerramentas:
     """
@@ -37,7 +37,7 @@ def buscar_produto_por_nome(nome_produto: str) -> str:
     A IA deve então usar esse map para encontrar o ID do produto que o usuário mencionou, priorizando produtos que já foram consumidos ou que possuem estoque para casos de desempate.
     Retorna um JSON string com listas de produtos similares, em estoque e mais consumidos.
     """
-    produto_service = LocalizarProdutoService(api=api_agriwin)
+    produto_service = LocalizarProdutoService(api_ferramentas = api_agriwin_ferramentas)
     resultado = produto_service.obterPossiveisProdutos(nome_produto_mencionado=nome_produto, id_produtor=ID_PRODUTOR_EXEMPLO)
     resultado_serializado = serializar_para_json(resultado)
     return json.dumps(resultado_serializado)
@@ -46,21 +46,21 @@ def buscar_produto_por_nome(nome_produto: str) -> str:
 def buscar_talhoes_disponiveis() -> str:
     """Use esta ferramenta para obter uma lista de TODOS os talhões (áreas ou campos) disponíveis na fazenda do produtor. A IA deve então usar esta lista para encontrar o ID do talhão que o usuário mencionou.
     Retorna um JSON string com a lista de TODOS os talhões disponíveis."""
-    resultados = api_agriwin.buscar_talhoes_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
+    resultados = api_agriwin_ferramentas.buscar_talhoes_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
     return json.dumps(serializar_para_json(resultados))
 
 @tool
 def buscar_maquinas_disponiveis() -> str:
     """Use esta ferramenta para obter uma lista de TODAS as máquinas (imobilizados) disponíveis para o produtor. A IA deve então usar esta lista para encontrar o ID da máquina que o usuário mencionou.
     Retorna um JSON string com a lista de TODAS as máquinas disponíveis."""
-    resultados = api_agriwin.buscar_maquinas_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
+    resultados = api_agriwin_ferramentas.buscar_maquinas_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
     return json.dumps(serializar_para_json(resultados))
 
 @tool
 def buscar_pontos_de_estoque_disponiveis(nome_ponto_estoque: str) -> str:
     """Use esta ferramenta para encontrar o ID do ponto de estoque (depósito) que o usuário mencionou. Forneça o nome mencionado para encontrar o melhor candidato.
     Retorna um JSON string com o melhor candidato para o ponto de estoque mencionado."""
-    service = LocalizarPontoEstoqueService(api=api_agriwin)
+    service = LocalizarPontoEstoqueService(api_ferramentas = api_agriwin_ferramentas)
     resultado = service.obterMelhorCandidato(nome_mencionado=nome_ponto_estoque, id_produtor=ID_PRODUTOR_EXEMPLO)
     return json.dumps(resultado.dict() if resultado else None)
 
@@ -73,7 +73,7 @@ def buscar_safra_disponivel(nome_safra: Optional[str] = None) -> str:
 
     Retorna um JSON string com a safra encontrada (pelo nome ou a safra ativa).
     """
-    service = LocalizarSafraService(api=api_agriwin)
+    service = LocalizarSafraService(api_ferramentas = api_agriwin_ferramentas)
     resultado = service.obterSafra(id_produtor=ID_PRODUTOR_EXEMPLO, nome_mencionado=nome_safra)
     return json.dumps(resultado.dict() if resultado else None)
 
@@ -81,7 +81,7 @@ def buscar_safra_disponivel(nome_safra: Optional[str] = None) -> str:
 def buscar_responsavel_por_telefone(telefone: str) -> str:
     """Use esta ferramenta para encontrar o ID do responsável com base no número de telefone do remetente.
     Retorna um JSON string com o responsável encontrado pelo telefone."""
-    resultado = api_agriwin.buscar_responsavel_por_telefone(id_produtor=ID_PRODUTOR_EXEMPLO, telefone=telefone)
+    resultado = api_agriwin_ferramentas.buscar_responsavel_por_telefone(id_produtor=ID_PRODUTOR_EXEMPLO, telefone=telefone)
     return json.dumps(resultado.dict() if resultado else None)
 
 @tool
@@ -104,7 +104,7 @@ def salvar_registro_consumo(id_produto: int, quantidade: str, id_talhao: int,  i
     if id_maquina:
         dados_para_salvar["id_maquina"] = id_maquina
 
-    status_code, response_body = api_agriwin.salvar_consumo(dados_consumo=dados_para_salvar)
+    status_code, response_body = api_agriwin_ferramentas.salvar_consumo(dados_consumo=dados_para_salvar)
     
     resultado_final = {
         "status_code": status_code,

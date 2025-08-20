@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import Optional
 from thefuzz import process
 from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 
 class LocalizarPontoEstoqueService:
-    def __init__(self, api):
-        self.api = api
+    def __init__(self, api_ferramentas):
+        self.api = api_ferramentas
 
     def obterMelhorCandidato(self, nome_mencionado: str, id_produtor: int) -> Optional[PontoEstoque]:
         """Encontra o ponto de estoque mais provável com base no nome."""
