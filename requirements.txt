@@ -1,23 +1,31 @@
-# infra / utilitários
-pydantic==2.9.1
-python-dotenv==1.0.1
-redis==6.4.0
-python-Levenshtein==0.27.1
-thefuzz==0.22.1
-tqdm>=4.66.5
-
-# APIs
+# --- Frameworks e Servidores ---
 fastapi==0.111.0
 uvicorn==0.29.0
-requests==2.31.0
 
-# LangChain core + integrações alinhadas (versões compatíveis entre si)
+# --- Validação e Utilitários ---
+pydantic==2.9.1
+python-dotenv==1.0.1
+
+# --- Bibliotecas de IA (LangChain & LLMs) ---
+# Manteremos as versões do Langchain e OpenAI
 langchain==0.3.27
 langchain-openai==0.2.0
 openai==1.44.0
 
-langchain-google-genai==2.1.9
-google-cloud-aiplatform==1.109.0
-
+# Integrações com Google e Groq
+langchain-google-genai==2.1.9 
 langchain-groq==0.3.7
 groq>=0.31.0
+
+# --- Banco de Dados e Cache ---
+redis==6.4.0
+
+# --- Processamento de String e Ferramentas ---
+python-Levenshtein==0.27.1
+thefuzz==0.22.1
+tqdm>=4.66.5
+
+# --- Comunicação HTTP ---
+# Forçamos uma versão recente e compatível do httpx
+requests==2.31.0
+httpx==0.27.0
