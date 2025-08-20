@@ -3,7 +3,7 @@ from typing import Optional, Literal
 
 TipoMensagem = Literal["TEXTO", "AUDIO", "IMAGEM", "DESCONHECIDO"]
 
-class MensagemRecebidaDTO(BaseModel):
+class MensagemRecebida(BaseModel):
     """
     DTO genérico e agnóstico para representar qualquer mensagem recebida.
     Ele lida com o conteúdo bruto (seja texto ou bytes de mídia).
