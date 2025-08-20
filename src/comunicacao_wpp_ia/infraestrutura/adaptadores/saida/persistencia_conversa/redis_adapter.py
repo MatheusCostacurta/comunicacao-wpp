@@ -2,12 +2,12 @@ import redis
 import json
 import os
 from typing import Dict, List, Any
-from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoria
+from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
 
 # Tempo máximo em segundos para uma conversa inativa permanecer no Redis
 TEMPO_MAXIMO_INATIVIDADE_SEGUNDOS = 1800  # 30 minutos
 
-class AdaptadorRedis(ServicoMemoria):
+class AdaptadorRedis(ServicoMemoriaConversa):
     """
     Implementação concreta (Adaptador) da porta ServicoMemoria usando Redis como backend.
     """

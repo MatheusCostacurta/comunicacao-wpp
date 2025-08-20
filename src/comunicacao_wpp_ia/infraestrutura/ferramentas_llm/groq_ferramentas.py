@@ -4,7 +4,7 @@ from langchain.tools import tool
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarProdutoService 
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_ponto_estoque import LocalizarPontoEstoqueService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_safra import LocalizarSafraService
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.clientes_api.agriwin_rotas import RotasAgriwin
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin import RotasAgriwin
 
 ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
 api_agriwin = RotasAgriwin()

@@ -4,8 +4,8 @@ from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
 from typing import Dict, Any
 
 from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import processar_mensagem
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.persistencia.redis_adapter import AdaptadorRedis
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.persistencia.memoria_local_adapter import AdaptadorMemoriaLocal
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.redis_adapter import AdaptadorRedis
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.memoria_local_adapter import AdaptadorMemoriaLocal
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import AdaptadorGroq
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.entrada.whatsapp.zapi_adapter import AdaptadorZAPI
 

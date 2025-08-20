@@ -1,13 +1,13 @@
 import json
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
-from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoria
+from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
 from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_informacoes_faltantes
 from src.comunicacao_wpp_ia.aplicacao.servicos.orquestrador import Orquestrador
 from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
 from src.comunicacao_wpp_ia.aplicacao.dtos.dados_remetente import DadosRemetente
 
-def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemoria, llm: ServicoLLM):
+def processar_mensagem(mensagem: str, numero_telefone: str, memoria: ServicoMemoriaConversa, llm: ServicoLLM):
     """
     Orquestra o fluxo de processamento da mensagem,
     chamando os agentes em sequência e gerenciando a memória.

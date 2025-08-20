@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any
 
-class ServicoMemoria(ABC):
+class ServicoMemoriaConversa(ABC):
     """
     Define a interface (Porta) para um serviço de gerenciamento de memória de conversa.
     A camada de aplicação dependerá desta abstração.

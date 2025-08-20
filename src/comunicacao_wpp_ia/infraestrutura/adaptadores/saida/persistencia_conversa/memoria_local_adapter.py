@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Any
-from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoria
+from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
 
-class AdaptadorMemoriaLocal(ServicoMemoria):
+class AdaptadorMemoriaLocal(ServicoMemoriaConversa):
     """
     Gerencia o estado da conversa para múltiplos usuários (números de telefone).
     Armazena o histórico e o tempo da última interação.
