@@ -6,6 +6,11 @@ python-Levenshtein==0.27.1
 thefuzz==0.22.1
 tqdm>=4.66.5
 
+# APIs
+fastapi==0.111.0
+uvicorn==0.29.0
+requests==2.31.0
+
 # LangChain core + integrações alinhadas (versões compatíveis entre si)
 langchain==0.3.27
 langchain-openai==0.2.0
