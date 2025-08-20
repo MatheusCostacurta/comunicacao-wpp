@@ -5,9 +5,11 @@ from src.comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarP
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_ponto_estoque import LocalizarPontoEstoqueService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_safra import LocalizarSafraService
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
 
 ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
 api_agriwin_ferramentas = RepoAgriwinFerramentas()
+api_agriwin_consumo = RepoAgriwinConsumo()
 
 class GroqFerramentas:
     """
@@ -85,7 +87,7 @@ def buscar_responsavel_por_telefone(telefone: str) -> str:
     return json.dumps(resultado.dict() if resultado else None)
 
 @tool
-def salvar_registro_consumo(id_produto: int, quantidade: str, id_talhao: int,  id_ponto_estoque: int, id_safra: int, id_responsavel: int, data_aplicacao: str, tipo_rateio: str, id_maquina: Optional[int] = None) -> str:
+def salvar_registro_consumo(id_produto: int, quantidade: str, id_talhao: int,  id_ponto_estoque: int, id_safra: int, data_aplicacao: str, tipo_rateio: str, id_responsavel: Optional[int] = None, id_maquina: Optional[int] = None) -> str:
     """
     Use esta ferramenta como a ETAPA FINAL para salvar o registro de consumo.
     A data deve estar no formato 'YYYY-MM-DD'.
@@ -97,14 +99,16 @@ def salvar_registro_consumo(id_produto: int, quantidade: str, id_talhao: int,  i
         "id_talhao": id_talhao,
         "id_ponto_estoque": id_ponto_estoque,
         "id_safra": id_safra,
-        "id_responsavel": id_responsavel,
         "data_aplicacao": data_aplicacao,
         "tipo_rateio": tipo_rateio,
     }
+    
+    if id_responsavel:
+        dados_para_salvar["id_responsavel"] = id_responsavel
     if id_maquina:
         dados_para_salvar["id_maquina"] = id_maquina
 
-    status_code, response_body = api_agriwin_ferramentas.salvar_consumo(dados_consumo=dados_para_salvar)
+    status_code, response_body = api_agriwin_consumo.salvar_consumo(dados_consumo=dados_para_salvar)
     
     resultado_final = {
         "status_code": status_code,
