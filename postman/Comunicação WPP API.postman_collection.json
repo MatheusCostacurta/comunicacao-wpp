@@ -78,6 +78,42 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Enviar Arquivo Imagem",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "phone",
+							"value": "5541999991117",
+							"type": "text"
+						},
+						{
+							"key": "image_file",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8000/webhook/zapi/test-image",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"webhook",
+						"zapi",
+						"test-image"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

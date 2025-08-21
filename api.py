@@ -117,3 +117,40 @@ async def receber_audio_para_teste(
     except Exception as e:
         print(f"[API TEST CRITICAL] Erro inesperado no endpoint de teste de áudio: {e}")
         raise HTTPException(status_code=500, detail="Ocorreu um erro interno no servidor.")
+
+
+@app.post("/webhook/zapi/test-image", status_code=200, tags=["Testes"])
+async def receber_imagem_para_teste(
+    background_tasks: BackgroundTasks,
+    phone: str = Form(...),
+    image_file: UploadFile = File(...)
+):
+    """
+    Endpoint de teste para simular o recebimento de uma mensagem de imagem via upload direto.
+    """
+    try:
+        print(f"\n[API TEST] Imagem recebida para o telefone {phone} | Nome do arquivo: {image_file.filename}")
+
+        # Lê os bytes do arquivo de imagem enviado
+        image_bytes = await image_file.read()
+
+        # Cria o DTO padronizado da aplicação
+        mensagem_recebida = MensagemRecebida(
+            telefone_remetente=phone,
+            tipo="IMAGEM",
+            media_conteudo=image_bytes,
+            media_mime_type=image_file.content_type
+        )
+        
+        # Delega para o mesmo serviço de aplicação
+        background_tasks.add_task(
+            servico_conversa.processar_mensagem_recebida,
+            mensagem_recebida=mensagem_recebida
+        )
+        
+        return {"status": "Imagem de teste recebida e agendada para processamento."}
+
+    except Exception as e:
+        print(f"[API TEST CRITICAL] Erro inesperado no endpoint de teste de imagem: {e}")
+        raise HTTPException(status_code=500, detail="Ocorreu um erro interno no servidor.")
+
