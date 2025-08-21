@@ -1,0 +1,83 @@
+{
+	"info": {
+		"_postman_id": "57dc734e-4d2f-4891-b86d-61c28686d331",
+		"name": "Comunicação WPP API",
+		"description": "Coleção para testar a API de webhook que processa mensagens de consumo agrícola.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15165527",
+		"_collection_link": "https://universal-star-477867.postman.co/workspace/My-Workspace~4857bc7a-9e23-4001-8f2b-d1df24ad4fe6/collection/15165527-57dc734e-4d2f-4891-b86d-61c28686d331?action=share&source=collection_link&creator=15165527"
+	},
+	"item": [
+		{
+			"name": "Receber Webhook Z-API",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"phone\": \"+5541999991117\",\n    \"type\": \"chat\",\n    \"text\": \"gastei 15L de tordon no talhão da estrada, usei o pulverizador uniport\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/webhook/zapi",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"webhook",
+						"zapi"
+					]
+				},
+				"description": "Simula o recebimento de uma mensagem de texto do WhatsApp através do webhook da Z-API.\n\n**Como usar:**\n1. Certifique-se de que a API Python (`python main.py`) está em execução.\n2. Altere o corpo (Body) da requisição com um dos exemplos fornecidos para testar diferentes cenários.\n3. Envie a requisição e observe o terminal onde a API está rodando para ver os logs do processamento."
+			},
+			"response": []
+		},
+		{
+			"name": "Enviar Arquivo Audio",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "phone",
+							"value": "5541999991117",
+							"type": "text"
+						},
+						{
+							"key": "audio_file",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8000/webhook/zapi/test-audio",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"webhook",
+						"zapi",
+						"test-audio"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

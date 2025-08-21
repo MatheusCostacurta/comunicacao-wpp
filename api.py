@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Request, HTTPException, BackgroundTasks, UploadFile, File, Form
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.redis_adapter import AdaptadorRedis
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.memoria_local_adapter import AdaptadorMemoriaLocal
@@ -81,4 +81,39 @@ async def receber_webhook_zapi(request: Request, background_tasks: BackgroundTas
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         print(f"[API CRITICAL] Erro inesperado no endpoint do webhook: {e}")
+        raise HTTPException(status_code=500, detail="Ocorreu um erro interno no servidor.")
+    
+@app.post("/webhook/zapi/test-audio", status_code=200, tags=["Testes"])
+async def receber_audio_para_teste(
+    background_tasks: BackgroundTasks,
+    phone: str = Form(...),
+    audio_file: UploadFile = File(...)
+):
+    """
+    Endpoint de teste para simular o recebimento de uma mensagem de áudio via upload direto.
+    """
+    try:
+        print(f"\n[API TEST] Áudio recebido para o telefone {phone} | Nome do arquivo: {audio_file.filename}")
+
+        # Lê os bytes do arquivo de áudio enviado
+        audio_bytes = await audio_file.read()
+
+        # Cria o DTO padronizado da aplicação, assim como o adaptador da Z-API faria
+        mensagem_recebida = MensagemRecebida(
+            telefone_remetente=phone,
+            tipo="AUDIO",
+            media_conteudo=audio_bytes,
+            media_mime_type=audio_file.content_type
+        )
+        
+        # Delega para o mesmo serviço de aplicação, garantindo que o fluxo seja idêntico
+        background_tasks.add_task(
+            servico_conversa.processar_mensagem_recebida,
+            mensagem_recebida=mensagem_recebida
+        )
+        
+        return {"status": "Áudio de teste recebido e agendado para processamento."}
+
+    except Exception as e:
+        print(f"[API TEST CRITICAL] Erro inesperado no endpoint de teste de áudio: {e}")
         raise HTTPException(status_code=500, detail="Ocorreu um erro interno no servidor.")
