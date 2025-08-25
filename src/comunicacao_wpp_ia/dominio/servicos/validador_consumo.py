@@ -9,7 +9,6 @@ class ValidadorConsumo:
     _campos_obrigatorios = [
         "produto_mencionado", 
         "quantidade", 
-        "talhao_mencionado",
         "ponto_estoque_mencionado",
         "data_mencionada"
     ]
@@ -17,7 +16,7 @@ class ValidadorConsumo:
     _mapa_perguntas = {
         "produto_mencionado": "Qual foi o produto utilizado?",
         "quantidade": "Qual foi a quantidade consumida?",
-        "talhao_mencionado": "Em qual propriedade ou talhão foi feita a aplicação?",
+        "local": "Em qual propriedade/talhão foi feita a aplicação?",
         "ponto_estoque_mencionado": "De qual depósito/ponto de estoque o produto saiu?",
         "data_mencionada": "Em que data foi a aplicação?"
     }
@@ -35,13 +34,19 @@ class ValidadorConsumo:
         campos_faltantes = []
         for campo in cls._campos_obrigatorios:
             if not getattr(consumo, campo):
-                campos_faltantes.append(cls._mapa_perguntas[campo])
+                chave_pergunta = "local" if "talhao" in campo or "propriedade" in campo else campo  # Remapeia o nome do campo para a pergunta genérica se necessário
+                if cls._mapa_perguntas[chave_pergunta] not in campos_faltantes:
+                    campos_faltantes.append(cls._mapa_perguntas[chave_pergunta])
 
-        #TODO: preciso ver ainda como fazer isso, por causa que pode ser um ou outro
-        # Regra específica: se o rateio é por talhão, o talhão precisa ser informado.
-        if consumo.tipo_rateio == 'talhao' and not consumo.talhao_mencionado:
-             if cls._mapa_perguntas["talhao_mencionado"] not in campos_faltantes:
-                campos_faltantes.append(cls._mapa_perguntas["talhao_mencionado"])
+        local_informado = False
+        if consumo.tipo_rateio == 'talhao' and consumo.talhoes_mencionados:
+            local_informado = True
+        elif consumo.tipo_rateio == 'propriedade' and consumo.propriedades_mencionadas:
+            local_informado = True
+        
+        if not local_informado:
+            if cls._mapa_perguntas["local"] not in campos_faltantes:
+                campos_faltantes.append(cls._mapa_perguntas["local"])
         
         if campos_faltantes:
             return False, campos_faltantes

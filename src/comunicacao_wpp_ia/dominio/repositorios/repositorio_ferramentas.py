@@ -6,6 +6,7 @@ from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
 from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto
 from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 from src.comunicacao_wpp_ia.dominio.modelos.talhao import Talhao
+from src.comunicacao_wpp_ia.dominio.modelos.propriedade import Propriedade
 
 class RepositorioFerramentas(ABC):
     """
@@ -45,4 +46,8 @@ class RepositorioFerramentas(ABC):
 
     @abstractmethod
     def buscar_talhoes_do_produtor(self, id_produtor: int) -> List[Talhao]:
+        pass
+    
+    @abstractmethod
+    def buscar_propriedades_do_produtor(self, id_produtor: int) -> List[Propriedade]:
         pass

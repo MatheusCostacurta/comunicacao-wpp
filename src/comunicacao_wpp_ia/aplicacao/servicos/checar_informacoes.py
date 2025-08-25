@@ -9,13 +9,18 @@ def __obter_prompt_sistema() -> str:
         Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário e no histórico.
 
         Siga estas regras estritamente:
-        1.  Extraia `produto_mencionado`, `quantidade`, `talhao_mencionado`, `ponto_estoque_mencionado`.
-        2.  Extraia a `data_mencionada`. Se nenhuma data for mencionada, seu valor deve ser nulo (null).
-        3.  Determine o `tipo_rateio`. Se a mensagem mencionar um talhão, o tipo é 'talhao'. Se mencionar a fazenda ou propriedade em geral, é 'propriedade'.
-        4.  Os campos `maquina_mencionada` e `safra_mencionada` são opcionais. Extraia apenas se mencionados.
-        4.1. Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquina_mencionada` com o valor nulo (null).
-        4.2. A safra pode ser mencionada apenas através de numeros (ex: 23/24, 2023/2024, 24/24 ou 24)
-        5.  Se um campo obrigatório não estiver na mensagem, seu valor deve ser nulo (null).
+        1.  Extraia `produto_mencionado`, `quantidade`, `ponto_estoque_mencionado`.
+        2.  Extraia `talhoes_mencionados` e/ou `propriedades_mencionadas` como listas de strings.
+            - Ex: "no talhão A e B" -> `talhoes_mencionados: ["A", "B"]`
+            - Ex: "na fazenda C" -> `propriedades_mencionadas: ["C"]`
+        3.  Determine o `tipo_rateio` com base na seguinte prioridade:
+            - Se a mensagem mencionar um ou mais talhões/glebas, o tipo é 'talhao'. Ignore qualquer menção à fazenda/propriedade no mesmo comando.
+            - Se a mensagem mencionar APENAS uma ou mais fazendas/propriedades, o tipo é 'propriedade'.
+        4.  Extraia a `data_mencionada`. Se nenhuma data for mencionada, seu valor deve ser nulo (null).
+        5.  Os campos `maquina_mencionada` e `safra_mencionada` são opcionais. Extraia apenas se mencionados.
+        5.1. Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquina_mencionada` com o valor nulo (null).
+        5.2. A safra pode ser mencionada apenas através de numeros (ex: 23/24, 2023/2024, 24/24 ou 24)
+        6.  Se um campo obrigatório não estiver na mensagem, seu valor deve ser nulo (null).
     """
 
 # **Exemplo de Extração:**

@@ -26,9 +26,12 @@ class RepoAgriwinConsumo(RepositorioConsumo):
             return 500, response_body
         
         # Simulação de sucesso (OK)
+        id_locais = dados_consumo.get('ids_talhoes') or dados_consumo.get('ids_propriedades', [])
+        local_str = "talhão(ões) ID(s)" if 'ids_talhoes' in dados_consumo else "propriedade(s) ID(s)"
+
         response_body = {
             "status": "sucesso",
-            "message": f"Consumo do produto ID {dados_consumo.get('id_produto')} registrado com sucesso no talhão ID {dados_consumo.get('id_talhao')}.",
+            "message": f"Consumo do produto ID {dados_consumo.get('id_produto')} registrado com sucesso no(a) {local_str} {id_locais}.",
             "registro_id": 12345 
         }
         return 200, response_body

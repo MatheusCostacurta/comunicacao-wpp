@@ -1,6 +1,7 @@
 from typing import List, Optional
 from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto
 from src.comunicacao_wpp_ia.dominio.modelos.talhao import Talhao
+from src.comunicacao_wpp_ia.dominio.modelos.propriedade import Propriedade
 from src.comunicacao_wpp_ia.dominio.modelos.imobilizado import Imobilizado
 from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
@@ -70,6 +71,14 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         ]
 
         return [Talhao(**data) for data in talhoes_data]
+    
+    def buscar_propriedades_do_produtor(self, id_produtor: int) -> List[Propriedade]:
+        print(f"\n[API MOCK] Buscando todas as propriedades para o produtor {id_produtor}...")
+        propriedades_data = [
+            {"id": 701, "nome": "Fazenda São João"},
+            {"id": 702, "nome": "Fazenda Vitória"},
+        ]
+        return [Propriedade(**data) for data in propriedades_data]
     
     def buscar_maquinas_do_produtor(self, id_produtor: int) -> List[Imobilizado]:
         print(f"\n[API MOCK] Buscando todas as máquinas para o produtor {id_produtor}...")

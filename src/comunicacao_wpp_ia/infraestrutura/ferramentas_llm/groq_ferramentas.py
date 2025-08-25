@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Optional, List
 from langchain.tools import tool
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarProdutoService 
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_ponto_estoque import LocalizarPontoEstoqueService
@@ -21,6 +21,7 @@ class GroqFerramentas:
         self.todas_ferramentas = [
             buscar_produto_por_nome, 
             buscar_talhoes_disponiveis, 
+            buscar_propriedades_disponiveis,
             buscar_maquinas_disponiveis, 
             buscar_pontos_de_estoque_disponiveis,
             buscar_safra_disponivel,             
@@ -49,6 +50,13 @@ def buscar_talhoes_disponiveis() -> str:
     """Use esta ferramenta para obter uma lista de TODOS os talhões (áreas ou campos) disponíveis na fazenda do produtor. A IA deve então usar esta lista para encontrar o ID do talhão que o usuário mencionou.
     Retorna um JSON string com a lista de TODOS os talhões disponíveis."""
     resultados = api_agriwin_ferramentas.buscar_talhoes_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
+    return json.dumps(serializar_para_json(resultados))
+
+@tool
+def buscar_propriedades_disponiveis() -> str:
+    """Use esta ferramenta para obter uma lista de TODAS as propriedades (fazendas) disponíveis para o produtor. A IA deve usar esta lista para encontrar o(s) ID(s) da(s) propriedade(s) que o usuário mencionou.
+    Retorna um JSON string com a lista de TODAS as propriedades disponíveis."""
+    resultados = api_agriwin_ferramentas.buscar_propriedades_do_produtor(id_produtor=ID_PRODUTOR_EXEMPLO)
     return json.dumps(serializar_para_json(resultados))
 
 @tool
@@ -87,22 +95,27 @@ def buscar_responsavel_por_telefone(telefone: str) -> str:
     return json.dumps(resultado.dict() if resultado else None)
 
 @tool
-def salvar_registro_consumo(id_produto: int, quantidade: str, id_talhao: int,  id_ponto_estoque: int, id_safra: int, data_aplicacao: str, tipo_rateio: str, id_responsavel: Optional[int] = None, id_maquina: Optional[int] = None) -> str:
+def salvar_registro_consumo(id_produto: int, quantidade: str, id_ponto_estoque: int, id_safra: int, data_aplicacao: str, tipo_rateio: str, ids_talhoes: Optional[List[int]] = None, ids_propriedades: Optional[List[int]] = None, id_responsavel: Optional[int] = None, id_maquina: Optional[int] = None) -> str:
     """
     Use esta ferramenta como a ETAPA FINAL para salvar o registro de consumo.
     A data deve estar no formato 'YYYY-MM-DD'.
+    Se o tipo_rateio for 'talhao', você DEVE fornecer uma lista de IDs em 'ids_talhoes'.
+    Se o tipo_rateio for 'propriedade', você DEVE fornecer uma lista de IDs em 'ids_propriedades'.
     Esta ferramenta fará o POST para a API e retorna um JSON string com o 'status_code' e a 'mensagem' da API.
     """
     dados_para_salvar = {
         "id_produto": id_produto,
         "quantidade": quantidade,
-        "id_talhao": id_talhao,
         "id_ponto_estoque": id_ponto_estoque,
         "id_safra": id_safra,
         "data_aplicacao": data_aplicacao,
         "tipo_rateio": tipo_rateio,
     }
     
+    if ids_talhoes:
+        dados_para_salvar["ids_talhoes"] = ids_talhoes
+    if ids_propriedades:
+        dados_para_salvar["ids_propriedades"] = ids_propriedades
     if id_responsavel:
         dados_para_salvar["id_responsavel"] = id_responsavel
     if id_maquina:

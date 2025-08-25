@@ -29,6 +29,7 @@ class ConsumoBuilder:
             -   **Produto:** Encontre o ID usando `buscar_produto_por_nome`.
             -   **Ponto de Estoque:** Encontre o ID usando `buscar_pontos_de_estoque_disponiveis`.
             -   **Talhão:** Encontre o ID usando `buscar_talhoes_disponiveis`.
+            -   **Propriedade:** Encontre o ID usando `buscar_propriedades_disponiveis`.
             -   **Safra:** Encontre o ID da safra ativa usando `buscar_safra_disponivel` (chame sem parâmetros se o usuário não especificou uma).
             -   **Máquina (Opcional):** Se uma máquina foi mencionada, encontre o ID com `buscar_maquinas_disponiveis`.
 
