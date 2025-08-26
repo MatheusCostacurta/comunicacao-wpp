@@ -1,29 +1,39 @@
 from typing import List, Optional, Dict, Any
-from thefuzz import process # Usaremos uma biblioteca para a busca de strings aproximada
+from thefuzz import fuzz
+from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto
 
 class LocalizarProdutoService:
     def __init__(self, api_ferramentas):
         self.api = api_ferramentas
 
-    def __obter_candidatos(self, nome_produto: str, lista_produtos: List[dict], limite: Optional[int] = None) -> List[dict]:
-        """Usa a biblioteca thefuzz para encontrar os melhores candidatos na lista."""
-        nomes = [p.nome for p in lista_produtos]
-        score = 80 # Definindo um score mínimo de 80 para considerar uma correspondência
+    def __obter_candidatos(self, nome_mencionado: str, lista_produtos: List[dict], limite: Optional[int] = None) -> List[dict]:
+        """
+        Encontra produtos candidatos com base na similaridade do nome (score >= 80) 
+        OU dos ingredientes ativos (score >= 90).
+        """
+        candidatos_encontrados = {}  # Usar um dicionário para evitar duplicatas, com ID como chave
+        nome_mencionado_lower = nome_mencionado.lower()
+        score_nome_minimo = 80
+        score_ingrediente_minimo = 90
 
-        # Se limite não for informado, retorna todos acima do cutoff
-        if limite is None:
-            matches = process.extractBests(nome_produto, nomes, score_cutoff=score)
-        else:
-            matches = process.extractBests(nome_produto, nomes, score_cutoff=score, limit=limite)
+        for produto in lista_produtos:
+            # 1. Compara com o nome do produto
+            score_nome = fuzz.ratio(nome_mencionado_lower, produto.nome.lower())
+            if score_nome >= score_nome_minimo:
+                candidatos_encontrados[produto.id] = produto
+                continue  # Pula para o próximo produto, pois a condição já foi atendida
+
+            # 2. Se não encontrou pelo nome, compara com os ingredientes ativos
+            if produto.ingredientes_ativos:
+                for ingrediente in produto.ingredientes_ativos:
+                    score_ingrediente = fuzz.ratio(nome_mencionado_lower, ingrediente.lower())
+                    if score_ingrediente >= score_ingrediente_minimo:
+                        candidatos_encontrados[produto.id] = produto
+                        break  # Sai do loop de ingredientes, pois já adicionou o produto
         
-        # Mapeia os nomes de volta para os objetos de produto completos
-        candidatos = []
-        for nome_match, score in matches:
-            for produto in lista_produtos:
-                if produto.nome == nome_match:
-                    candidatos.append(produto)
-                    break # para não adicionar o mesmo produto duas vezes
-        return candidatos
+        print(candidatos_encontrados)
+        print(list(candidatos_encontrados.values()))
+        return list(candidatos_encontrados.values())
 
     def obterPossiveisProdutos(self, nome_produto_mencionado: str, id_produtor: int) -> Dict[str, Any]:
         """

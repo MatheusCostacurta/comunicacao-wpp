@@ -42,9 +42,11 @@ class LangChainFerramentas:
 @tool
 def buscar_produto_por_nome(nome_produto: str) -> str:
     """
-    Use esta ferramenta para obter um map de produtos similares ao produto que usuário mencionou.
-    Esse map é composto por 3 listas: produtos em estoque, produtos mais consumidos e produtos similares. 
-    A IA deve então usar esse map para encontrar o ID do produto que o usuário mencionou, priorizando produtos que já foram consumidos ou que possuem estoque para casos de desempate.
+    Use esta ferramenta para obter um map de produtos similares com base no produto que usuário mencionou.
+    A menção do usuário pode ser o nome do produto (ex: 'Tordon') ou um ingrediente ativo (ex: 'Glifosato').
+    Esse map é composto por 3 listas: 'produtos_similares', 'produtos_em_estoque' e 'produtos_mais_consumidos'.
+    Cada produto no retorno conterá seu ID, nome, descrição, e também uma lista de 'unidades_medida' e 'ingredientes_ativos'.
+    A IA deve usar esse map para encontrar o ID do produto que o usuário mencionou, priorizando produtos que já foram consumidos ou que possuem estoque para casos de desempate.
     Retorna um JSON string com listas de produtos similares, em estoque e mais consumidos.
     """
     produto_service = LocalizarProdutoService(api_ferramentas = api_agriwin_ferramentas)

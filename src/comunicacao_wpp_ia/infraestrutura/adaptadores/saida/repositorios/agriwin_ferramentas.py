@@ -20,14 +20,46 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
     def buscar_produtos_do_produtor(self, id_produtor: int) -> List[Produto]:
         print(f"\n[API MOCK] Buscando todos os produtos para o produtor {id_produtor}...")
         produtos_data = [
-            {"id": 101, "nome": "Glifosato Pro", "descricao": "Herbicida de amplo espectro"},
-            {"id": 102, "nome": "Adubo Super Simples", "descricao": "Fertilizante fosfatado"},
-            {"id": 103, "nome": "Tordon XT", "descricao": "Herbicida para pastagem"},
-            {"id": 107, "nome": "Tordon", "descricao": "Herbicida para pastagem"},
-            {"id": 108, "nome": "TordonXT", "descricao": "Herbicida para pastagem"},
-            {"id": 109, "nome": "Tordon H", "descricao": "Herbicida para pastagem"},
-            {"id": 110, "nome": "Tordon X", "descricao": "Herbicida para pastagem"},
-            {"id": 104, "nome": "Óleo Mineral Assist", "descricao": "Adjuvante agrícola"},
+            {
+                "id": 101, "nome": "Glifosato Pro", "descricao": "Herbicida de amplo espectro",
+                "unidades_medida": ["Litros", "Galões"],
+                "ingredientes_ativos": ["Glifosato"]
+            },
+            {
+                "id": 102, "nome": "Adubo Super Simples", "descricao": "Fertilizante fosfatado",
+                "unidades_medida": ["Kg", "Sacos"],
+                "ingredientes_ativos": ["Fósforo", "Enxofre"]
+            },
+            {
+                "id": 103, "nome": "Tordon XT", "descricao": "Herbicida para pastagem",
+                "unidades_medida": ["Litros"],
+                "ingredientes_ativos": ["Picloram", "2,4-D"]
+            },
+            {
+                "id": 107, "nome": "Produto B", "descricao": "Herbicida para pastagem",
+                "unidades_medida": ["Litros"],
+                "ingredientes_ativos": ["Picloram"]
+            },
+            {
+                "id": 108, "nome": "TordonXT", "descricao": "Herbicida para pastagem",
+                "unidades_medida": ["Litros"],
+                "ingredientes_ativos": ["Picloram", "2,4-D"]
+            },
+            {
+                "id": 109, "nome": "Tordon H", "descricao": "Herbicida para pastagem",
+                "unidades_medida": ["Litros"],
+                "ingredientes_ativos": ["Picloram", "Halauxifen-metil"]
+            },
+            {
+                "id": 110, "nome": "Tordon X", "descricao": "Herbicida para pastagem",
+                "unidades_medida": ["Litros"],
+                "ingredientes_ativos": ["Picloram"]
+            },
+            {
+                "id": 104, "nome": "Óleo Mineral Assist", "descricao": "Adjuvante agrícola",
+                "unidades_medida": ["Litros"],
+                "ingredientes_ativos": ["Óleo mineral"]
+            },
         ]
 
         return [Produto(**data) for data in produtos_data]
