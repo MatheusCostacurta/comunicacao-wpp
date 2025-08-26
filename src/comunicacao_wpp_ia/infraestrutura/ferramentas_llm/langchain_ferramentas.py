@@ -18,7 +18,7 @@ ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
 api_agriwin_ferramentas = RepoAgriwinFerramentas()
 api_agriwin_consumo = RepoAgriwinConsumo()
 
-class GroqFerramentas:
+class LangChainFerramentas:
     """
     Define as ferramentas que a IA pode usar para interagir com o sistema.
     """

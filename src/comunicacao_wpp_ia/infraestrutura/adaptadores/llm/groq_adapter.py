@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor
 from langchain.agents.format_scratchpad.tools import format_to_tool_messages
 from langchain.agents.output_parsers.tools import ToolsAgentOutputParser
-from src.comunicacao_wpp_ia.infraestrutura.ferramentas_llm.groq_ferramentas import GroqFerramentas
+from comunicacao_wpp_ia.infraestrutura.ferramentas_llm.langchain_ferramentas import LangChainFerramentas
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.agente_com_ferramentas import AgenteComFerramentas
 from src.comunicacao_wpp_ia.aplicacao.portas.agente import Agente
@@ -34,7 +34,7 @@ class AdaptadorGroq(ServicoLLM):
     """
     def __init__(self, modelo: str = "llama3-70b-8192", temperatura: float = 0):
         self._llm = ChatGroq(model_name=modelo, temperature=temperatura)
-        self.ferramentas = GroqFerramentas().obter()
+        self.ferramentas = LangChainFerramentas().obter()
         print("[INFRA] Adaptador Groq inicializado.")
 
     def criar_agente(self, prompt_sistema: str, prompt_usuario: str, modelo_saida: Type[T]) -> T:
