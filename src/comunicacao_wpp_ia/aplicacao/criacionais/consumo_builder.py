@@ -31,7 +31,7 @@ class ConsumoBuilder:
             -   **Talhão:** Encontre o ID usando `buscar_talhoes_disponiveis`.
             -   **Propriedade:** Encontre o ID usando `buscar_propriedades_disponiveis`.
             -   **Safra:** Encontre o ID da safra ativa usando `buscar_safra_disponivel` (chame sem parâmetros se o usuário não especificou uma).
-            -   **Máquina (Opcional):** Se uma máquina foi mencionada, encontre o ID com `buscar_maquinas_disponiveis`.
+            -   **Máquina (Opcional):** Se uma máquina/imobilizado for mencionada (nome ou número de série), encontre o ID com `buscar_maquinas_disponiveis`; Se o usuário mencionou uma máquina mas não informou o horímetro (ou odômetro) inicial e final, **PARE** e pergunte por essa informação. Ex: "Qual era o horímetro inicial e final do trator JD6110J?".
 
         3.  **Fase de Decisão:**
             -   **Ambiguidade:** Se alguma busca retornar múltiplos resultados e você não tiver certeza de qual usar (ex: dois produtos com nomes parecidos), **PARE** a coleta e pergunte ao usuário para esclarecer. Sua resposta final deve ser apenas a pergunta.

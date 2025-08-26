@@ -115,8 +115,18 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
     def buscar_maquinas_do_produtor(self, id_produtor: int) -> List[Imobilizado]:
         print(f"\n[API MOCK] Buscando todas as máquinas para o produtor {id_produtor}...")
         imobilizados_data = [
-            {"id": 301, "nome": "Trator John Deere 6110J", "tipo": "Trator"},
-            {"id": 302, "nome": "Pulverizador Autopropelido Uniport 3030", "tipo": "Pulverizador"},
+            {
+                "id": 301, "nome": "Trator John Deere 6110J", "numero_serie": "JD6110JBR",
+                "horimetro_inicio": 1250.5, "horimetro_fim": None
+            },
+            {
+                "id": 302, "nome": "Pulverizador Autopropelido Uniport 3030", "numero_serie": "UN3030PR",
+                "horimetro_inicio": 875.0, "horimetro_fim": None
+            },
+             {
+                "id": 303, "nome": "Trator Valtra A950", "numero_serie": "VTA950SP",
+                "horimetro_inicio": 2100.0, "horimetro_fim": None
+            },
         ]
     
         return [Imobilizado(**data) for data in imobilizados_data]

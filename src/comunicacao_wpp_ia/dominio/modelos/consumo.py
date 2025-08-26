@@ -11,7 +11,10 @@ class Consumo(BaseModel):
     propriedades_mencionadas: Optional[List[str]] = Field(default=None, description="Uma lista com os nomes das propriedades ou fazendas onde o insumo foi aplicado.")
     tipo_rateio: Optional[Literal['talhao', 'propriedade']] = Field(default=None, description="Indica se o custo do consumo deve ser rateado por 'talhao' ou para a 'propriedade' inteira, identificado por nós")
 
-    maquina_mencionada: Optional[str] = Field(default=None, description="O nome da máquina ou trator utilizado na operação.")
+    maquina_mencionada: Optional[str] = Field(default=None, description="O nome ou número de série da máquina ou trator utilizado na operação.")
+    horimetro_inicio: Optional[float] = Field(default=None, description="O valor inicial do horímetro ou odômetro da máquina (ex: 1250.5).")
+    horimetro_fim: Optional[float] = Field(default=None, description="O valor final do horímetro ou odômetro da máquina (ex: 1255.0).")
+    
     ponto_estoque_mencionado: Optional[str] = Field(default=None, description="O nome do ponto de estoque de onde o produto saiu.")
     data_mencionada: Optional[date] = Field(default=None, description="A data da aplicação. Se não mencionada, deve ser a data atual.")
     safra_mencionada: Optional[str] = Field(default=None, description="O nome da safra para a qual o consumo deve ser alocado (ex: 'safra de soja').")

@@ -71,12 +71,18 @@ def buscar_propriedades_disponiveis() -> str:
     return json.dumps(serializar_para_json(resultados))
 
 @tool
-def buscar_maquinas_disponiveis() -> str:
-    """Use esta ferramenta para obter uma lista de TODAS as máquinas (imobilizados) disponíveis para o produtor. A IA deve então usar esta lista para encontrar o ID da máquina que o usuário mencionou.
-    Retorna um JSON string com a lista de TODAS as máquinas disponíveis."""
+def buscar_maquinas_disponiveis(nome_maquina: str) -> str:
+    """
+    Use esta ferramenta para encontrar uma ou mais máquinas (imobilizados) com base no que o usuário mencionou.
+    O termo de busca pode ser o nome da máquina (ex: 'Trator John Deere') ou o seu número de série (ex: 'JD6110JBR').
+    A ferramenta buscará por similaridade no nome (score 80) ou por correspondência exata no número de série.
+    A IA deve então usar esta lista para encontrar o ID da máquina que o usuário mencionou
+
+    Retorna um JSON string com a lista de máquinas encontradas.
+    """
     
     maquina_service = LocalizarMaquinaService(api_ferramentas=api_agriwin_ferramentas)
-    resultado = maquina_service.obter(id_produtor=ID_PRODUTOR_EXEMPLO)
+    resultado = maquina_service.obter(id_produtor=ID_PRODUTOR_EXEMPLO, termo_busca=nome_maquina)
     return json.dumps(serializar_para_json(resultado))
 
 @tool
@@ -90,7 +96,7 @@ def buscar_pontos_de_estoque_disponiveis(nome_ponto_estoque: str) -> str:
     """
     service = LocalizarPontoEstoqueService(api_ferramentas = api_agriwin_ferramentas)
     resultado = service.obter(id_produtor=ID_PRODUTOR_EXEMPLO,nome_mencionado=nome_ponto_estoque)
-    return json.dumps([r.model_dump() for r in resultado], default=json_converter)
+    return json.dumps(serializar_para_json(resultado))
 
 @tool
 def buscar_safra_disponivel(nome_safra: Optional[str] = None) -> str:
@@ -114,10 +120,24 @@ def buscar_responsavel_por_telefone(telefone: str) -> str:
     return json.dumps(resultado.dict() if resultado else None)
 
 @tool
-def salvar_registro_consumo(id_produto: int, quantidade: str, id_ponto_estoque: int, id_safra: int, data_aplicacao: str, tipo_rateio: str, ids_talhoes: Optional[List[int]] = None, ids_propriedades: Optional[List[int]] = None, id_responsavel: Optional[int] = None, id_maquina: Optional[int] = None) -> str:
+def salvar_registro_consumo(
+    id_produto: int, 
+    quantidade: str, 
+    id_ponto_estoque: int, 
+    id_safra: int, 
+    data_aplicacao: str, 
+    tipo_rateio: str, 
+    ids_talhoes: Optional[List[int]] = None, 
+    ids_propriedades: Optional[List[int]] = None, 
+    id_responsavel: Optional[int] = None, 
+    id_maquina: Optional[int] = None,
+    horimetro_inicio: Optional[float] = None,
+    horimetro_fim: Optional[float] = None
+) -> str:   
     """
     Use esta ferramenta como a ETAPA FINAL para salvar o registro de consumo.
     A data deve estar no formato 'YYYY-MM-DD'.
+    Se uma máquina foi usada, inclua os parâmetros 'id_maquina', 'horimetro_inicio' e 'horimetro_fim'.
     Se o tipo_rateio for 'talhao', você DEVE fornecer uma lista de IDs em 'ids_talhoes'.
     Se o tipo_rateio for 'propriedade', você DEVE fornecer uma lista de IDs em 'ids_propriedades'.
     Esta ferramenta fará o POST para a API e retorna um JSON string com o 'status_code' e a 'mensagem' da API.
@@ -139,6 +159,8 @@ def salvar_registro_consumo(id_produto: int, quantidade: str, id_ponto_estoque: 
         dados_para_salvar["id_responsavel"] = id_responsavel
     if id_maquina:
         dados_para_salvar["id_maquina"] = id_maquina
+        dados_para_salvar["horimetro_inicio"] = horimetro_inicio
+        dados_para_salvar["horimetro_fim"] = horimetro_fim
 
     status_code, response_body = api_agriwin_consumo.salvar_consumo(dados_consumo=dados_para_salvar)
     
@@ -152,7 +174,7 @@ def salvar_registro_consumo(id_produto: int, quantidade: str, id_ponto_estoque: 
 
 def serializar_para_json(dados):
     if hasattr(dados, 'model_dump'): # Para objetos Pydantic
-        return dados.model_dump()
+        return dados.model_dump(mode='json')
     if isinstance(dados, list): # Para listas de objetos
         return [serializar_para_json(item) for item in dados]
     if isinstance(dados, dict): # Para dicionários
