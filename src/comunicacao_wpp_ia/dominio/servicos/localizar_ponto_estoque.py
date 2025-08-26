@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from thefuzz import process
 from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 
@@ -6,24 +6,46 @@ class LocalizarPontoEstoqueService:
     def __init__(self, api_ferramentas):
         self.api = api_ferramentas
 
-    def obterMelhorCandidato(self, nome_mencionado: str, id_produtor: int) -> Optional[PontoEstoque]:
-        """Encontra o ponto de estoque mais provável com base no nome."""
-        print(f"\n[SERVICE] Iniciando busca por Ponto de Estoque: '{nome_mencionado}'")
+    def obter(self, id_produtor: int, nome_mencionado: Optional[str] = None) -> List[PontoEstoque]:
+        """
+        Encontra pontos de estoque com base em um nome mencionado ou retorna o padrão se for o único disponível.
+        - Se houver apenas um ponto de estoque, retorna-o como padrão.
+        - Se um nome for mencionado, retorna todos os pontos com similaridade >= 80.
+        - Se nenhum nome for mencionado e houver múltiplos pontos, retorna uma lista vazia.
+        """
+        print(f"\n[SERVICE] Iniciando busca por Ponto de Estoque: '{nome_mencionado or 'Nenhum'}'")
         todos_pontos_estoque = self.api.buscar_pontos_estoque_do_produtor(id_produtor)
         
         if not todos_pontos_estoque:
-            return None
+            return []
 
+        # Se houver apenas um ponto de estoque, ele é o padrão.
+        if len(todos_pontos_estoque) == 1:
+            print(f"[SERVICE] Encontrado um único ponto de estoque como padrão: {todos_pontos_estoque[0].nome}")
+            return todos_pontos_estoque
+
+        # Se o usuário não mencionou um nome e há múltiplos, não há o que fazer.
+        if not nome_mencionado:
+            print("[SERVICE] Nenhum nome de ponto de estoque foi mencionado e existem múltiplos disponíveis.")
+            return []
+
+        # Se mencionou, busca por similaridade
         nomes_pontos_estoque = [p.nome for p in todos_pontos_estoque]
+        score_minimo = 80
         
-        # Usamos extractOne para pegar o melhor resultado acima de um score
-        melhor_match, score = process.extractOne(nome_mencionado, nomes_pontos_estoque)
+        # Usamos extractBests para pegar todos os resultados acima de um score
+        matches = process.extractBests(nome_mencionado, nomes_pontos_estoque, score_cutoff=score_minimo)
         
-        if score >= 80:
-            print(f"[SERVICE] Ponto de estoque encontrado: {melhor_match} (Score: {score})")
-            for ponto in todos_pontos_estoque:
-                if ponto.nome == melhor_match:
-                    return ponto
+        if not matches:
+            print("[SERVICE] Nenhum ponto de estoque compatível encontrado.")
+            return []
+
+        pontos_encontrados = []
+        nomes_encontrados = [match[0] for match in matches]
         
-        print("[SERVICE] Nenhum ponto de estoque compatível encontrado.")
-        return None
+        print(f"[SERVICE] Pontos de estoque encontrados com similaridade: {nomes_encontrados}")
+        for ponto in todos_pontos_estoque:
+            if ponto.nome in nomes_encontrados:
+                pontos_encontrados.append(ponto)
+        
+        return pontos_encontrados

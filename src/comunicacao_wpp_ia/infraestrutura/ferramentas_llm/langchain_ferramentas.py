@@ -81,11 +81,16 @@ def buscar_maquinas_disponiveis() -> str:
 
 @tool
 def buscar_pontos_de_estoque_disponiveis(nome_ponto_estoque: str) -> str:
-    """Use esta ferramenta para encontrar o ID do ponto de estoque (depósito) que o usuário mencionou. Forneça o nome mencionado para encontrar o melhor candidato.
-    Retorna um JSON string com o melhor candidato para o ponto de estoque mencionado."""
+    """
+    Use esta ferramenta para encontrar o ID do ponto de estoque (depósito) que o usuário mencionou. 
+    - Se o usuário mencionou um nome (ex: 'depósito da sede'), passe a string para o parâmetro 'nome_ponto_estoque'. A ferramenta retornará uma lista de pontos de estoque com nome similar.
+    - Se o usuário NÃO mencionou um ponto de estoque, chame a ferramenta sem nenhum parâmetro. Se houver apenas um ponto de estoque no sistema, ele será retornado como padrão. Se houver vários, a lista será vazia.
+    
+    Retorna um JSON string com uma lista de pontos de estoque encontrados.
+    """
     service = LocalizarPontoEstoqueService(api_ferramentas = api_agriwin_ferramentas)
-    resultado = service.obterMelhorCandidato(nome_mencionado=nome_ponto_estoque, id_produtor=ID_PRODUTOR_EXEMPLO)
-    return json.dumps(resultado.dict() if resultado else None)
+    resultado = service.obter(id_produtor=ID_PRODUTOR_EXEMPLO,nome_mencionado=nome_ponto_estoque)
+    return json.dumps([r.model_dump() for r in resultado], default=json_converter)
 
 @tool
 def buscar_safra_disponivel(nome_safra: Optional[str] = None) -> str:
