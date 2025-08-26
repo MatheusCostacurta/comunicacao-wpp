@@ -133,9 +133,18 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
     def buscar_safras_do_produtor(self, id_produtor: int) -> List[Safra]:
         print(f"\n[API MOCK] Buscando safras para o produtor {id_produtor}...")
         safra_data = [
-            {"id": 501, "nome": "Safra 24/25 Soja", "esta_ativa": True},
-            {"id": 502, "nome": "Safrinha 24/25 Milho", "esta_ativa": False},
-            {"id": 503, "nome": "Safra 23/24 Soja", "esta_ativa": False},
+            {
+                "id": 500, "nome": "Safra 2025/2026", "ano_inicio": 2025, "ano_termino": 2026,
+                "data_inicio": "2025-09-01", "data_termino": "2026-08-31"
+            },
+            {
+                "id": 501, "nome": "Safra 2024/2025", "ano_inicio": 2024, "ano_termino": 2025,
+                "data_inicio": "2024-09-01", "data_termino": "2025-08-31"
+            },
+            {
+                "id": 502, "nome": "Safra 2023/2024", "ano_inicio": 2023, "ano_termino": 2024,
+                "data_inicio": "2023-09-01", "data_termino": "2024-08-31"
+            },
         ]
         return [Safra(**data) for data in safra_data]
     

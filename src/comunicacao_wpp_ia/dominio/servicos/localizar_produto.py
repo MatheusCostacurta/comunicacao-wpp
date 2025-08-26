@@ -31,8 +31,6 @@ class LocalizarProdutoService:
                         candidatos_encontrados[produto.id] = produto
                         break  # Sai do loop de ingredientes, pois já adicionou o produto
         
-        print(candidatos_encontrados)
-        print(list(candidatos_encontrados.values()))
         return list(candidatos_encontrados.values())
 
     def obterPossiveisProdutos(self, nome_produto_mencionado: str, id_produtor: int) -> Dict[str, Any]:

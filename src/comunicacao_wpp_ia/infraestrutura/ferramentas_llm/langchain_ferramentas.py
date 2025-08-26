@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from typing import Optional, List
 from langchain.tools import tool
 
@@ -90,15 +91,14 @@ def buscar_pontos_de_estoque_disponiveis(nome_ponto_estoque: str) -> str:
 def buscar_safra_disponivel(nome_safra: Optional[str] = None) -> str:
     """
     Use esta ferramenta para encontrar a safra. 
-    - Se o usuário mencionou um nome de safra (ex: 'safra de soja'), passe o nome para o parâmetro 'nome_safra'.
-    - Se o usuário NÃO mencionou uma safra, chame a ferramenta sem parâmetros para obter a safra atual/ativa.
+    - Se o usuário mencionou um período (ex: 'safra 24/25', '2023/2024'), passe a string para o parâmetro 'nome_safra'.
+    - Se o usuário NÃO mencionou um período de safra, chame a ferramenta sem nenhum parâmetro para obter a safra atual com base na data de hoje.
 
     Retorna um JSON string com a safra encontrada (pelo nome ou a safra ativa).
     """
     service = LocalizarSafraService(api_ferramentas = api_agriwin_ferramentas)
-    resultado = service.obterSafra(id_produtor=ID_PRODUTOR_EXEMPLO, nome_mencionado=nome_safra)
-    return json.dumps(resultado.dict() if resultado else None)
-
+    resultado = service.obter(id_produtor=ID_PRODUTOR_EXEMPLO, nome_mencionado=nome_safra)
+    return json.dumps(resultado.model_dump() if resultado else None, default=json_converter)
 @tool
 def buscar_responsavel_por_telefone(telefone: str) -> str:
     """Use esta ferramenta para encontrar o ID do responsável com base no número de telefone do remetente.
@@ -152,4 +152,12 @@ def serializar_para_json(dados):
         return [serializar_para_json(item) for item in dados]
     if isinstance(dados, dict): # Para dicionários
         return {k: serializar_para_json(v) for k, v in dados.items()}
+    if isinstance(dados, date):
+        return dados.isoformat()
     return dados
+
+# TODO: MELHORAR
+def json_converter(o):
+    if isinstance(o, date):
+        return o.isoformat()
+    raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
