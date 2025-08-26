@@ -10,6 +10,10 @@ from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.agente_com_ferramentas import AgenteComFerramentas
 from src.comunicacao_wpp_ia.aplicacao.portas.agente import Agente
 
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
+
 T = TypeVar('T', bound=BaseModel)
 
 class _ExecutorAgenteGroq(Agente[T]):
@@ -32,9 +36,12 @@ class AdaptadorGroq(ServicoLLM):
     """
     Implementação concreta (Adaptador) da porta ServicoLLM para a API da Groq.
     """
-    def __init__(self, modelo: str = "llama3-70b-8192", temperatura: float = 0):
-        self._llm = ChatGroq(model_name=modelo, temperature=temperatura)
-        self.ferramentas = LangChainFerramentas().obter()
+    def __init__(self, agriwin_cliente: AgriwinCliente):
+        self._llm = ChatGroq(model_name="llama3-70b-8192", temperature=0)
+
+        repo_ferramentas = RepoAgriwinFerramentas(agriwin_cliente)
+        repo_consumo = RepoAgriwinConsumo(agriwin_cliente)
+        self.ferramentas = LangChainFerramentas(repo_ferramentas, repo_consumo).obter()
         print("[INFRA] Adaptador Groq inicializado.")
 
     def criar_agente(self, prompt_sistema: str, prompt_usuario: str, modelo_saida: Type[T]) -> T:

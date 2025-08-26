@@ -8,13 +8,15 @@ from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
 from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
 
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_ferramentas import RepositorioFerramentas
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
 
 class RepoAgriwinFerramentas(RepositorioFerramentas):
     """
     Adaptador que implementa as interfaces de repositório utilizando a API do Agriwin.
     """
-    def __init__(self):
+    def __init__(self, cliente: AgriwinCliente):
+        self._cliente = cliente
         print("[INFRA] Adaptador do Repositório Agriwin inicializado.")
 
     def buscar_produtos_do_produtor(self, id_produtor: int) -> List[Produto]:
