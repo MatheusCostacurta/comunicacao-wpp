@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks, UploadFile, File, Form
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.redis_adapter import AdaptadorRedis
@@ -15,10 +14,8 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.pre_processamento import PreProce
 from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import ServicoConversa
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
 
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
-# --- 1. Inicialização da Aplicação e Carregamento de Configurações ---
-# Carrega as variáveis de ambiente do arquivo .env
-load_dotenv()
 
 # Cria a instância principal da aplicação FastAPI
 app = FastAPI(
@@ -33,10 +30,14 @@ app = FastAPI(
 def inicializar_servicos_e_adaptadores():
     print("--- INICIALIZANDO ADAPTADORES E SERVIÇOS DA APLICAÇÃO ---")
     
+    # Instancia o AgriwinCliente com as URLs do .env
+    agriwin_urls = ["https://demo.agriwin.com.br"]
+    agriwin_cliente = AgriwinCliente(base_urls=agriwin_urls)
+
     # Adaptadores de Saída (Infraestrutura)
     llm_adapter = AdaptadorGroq()
     whatsapp_adapter = AdaptadorZAPI()
-    repo_remetente = RepoAgriwinRemetente()
+    repo_remetente = RepoAgriwinRemetente(agriwin_cliente=agriwin_cliente)
     whisper_adapter = AdaptadorWhisper()
     gemini_adapter = AdaptadorGeminiVision()
 

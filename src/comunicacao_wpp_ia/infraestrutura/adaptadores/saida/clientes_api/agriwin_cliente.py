@@ -11,10 +11,14 @@ class AgriwinCliente:
         if not base_urls:
             raise ValueError("A lista de URLs base da API Agriwin não pode ser vazia.")
         self._base_urls = base_urls
-        self._usuario = os.getenv("AGRIWIN_USUARIO", "secreto")
-        self._senha = os.getenv("AGRIWIN_SENHA", "secreto")
+        self._usuario = os.getenv("AGRIWIN_USUARIO")
+        self._senha = os.getenv("AGRIWIN_SENHA")
+        if not self._usuario or not self._senha:
+            raise ValueError("As variáveis de ambiente 'AGRIWIN_USUARIO' e 'AGRIWIN_SENHA' não foram configuradas.")
+        
         self._token: Optional[str] = None
         self._url_base_atual: Optional[str] = None
+        self._autenticar()
         print("[INFRA] AgriwinClient inicializado.")
 
     def _autenticar(self) -> None:
@@ -28,16 +32,21 @@ class AgriwinCliente:
         for url in self._base_urls:
             try:
                 url_completa = f"{url.rstrip('/')}{endpoint_login}"
+                payload = {
+                    "login": self._usuario,
+                    "senha": self._senha
+                }
                 print(f"[AGRIWIN CLIENT] Tentando login em {url_completa}...")
-                response = requests.post(url_completa, json={"usuario": self._usuario, "senha": self._senha})
-                
+                response = requests.post(url_completa, json=payload)
+
                 if response.status_code == 200:
-                    self._token = response.json().get("token")
+                    self._token = response.json().get("dados").get("tokenDeAcesso")
                     self._url_base_atual = url
                     print(f"[AGRIWIN CLIENT] Autenticação bem-sucedida na URL: {self._url_base_atual}")
                     return
                 else:
                     print(f"[AGRIWIN CLIENT] Falha na autenticação em {url}: Status {response.status_code}")
+                    print(f"[AGRIWIN CLIENT] Falha na autenticação em {url}: Status {response.json().get('mensagem')}")
 
             except requests.exceptions.RequestException as e:
                 print(f"[AGRIWIN CLIENT ERROR] Erro ao tentar conectar em {url}: {e}")

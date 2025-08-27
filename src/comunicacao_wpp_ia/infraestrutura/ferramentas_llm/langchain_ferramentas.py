@@ -14,9 +14,13 @@ from src.comunicacao_wpp_ia.dominio.servicos.localizar_responsavel import Locali
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
 
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
+
 ID_PRODUTOR_EXEMPLO = 1 # ID fixo para este exemplo
-api_agriwin_ferramentas = RepoAgriwinFerramentas()
-api_agriwin_consumo = RepoAgriwinConsumo()
+agriwin_urls = ["https://demo.agriwin.com.br"]
+agriwin_cliente = AgriwinCliente(base_urls=agriwin_urls)
+api_agriwin_ferramentas = RepoAgriwinFerramentas(agriwin_cliente=agriwin_cliente)
+api_agriwin_consumo = RepoAgriwinConsumo(agriwin_cliente=agriwin_cliente)
 
 class LangChainFerramentas:
     """

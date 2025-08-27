@@ -1,5 +1,9 @@
 import uvicorn
-from api import app  # Importa a instância do FastAPI do arquivo api.py
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from api import app # Importa a instância do FastAPI do arquivo api.py
 
 def run():
     """
