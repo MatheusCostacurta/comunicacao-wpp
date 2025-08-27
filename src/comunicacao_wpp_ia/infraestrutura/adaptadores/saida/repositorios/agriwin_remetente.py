@@ -1,7 +1,6 @@
 from typing import Optional
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_remetente import RepositorioRemetente
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente 
 
 
 class RepoAgriwinRemetente(RepositorioRemetente):
@@ -9,8 +8,7 @@ class RepoAgriwinRemetente(RepositorioRemetente):
     Adaptador que implementa as interfaces de repositório para o remetente.
     """
 
-    def __init__(self, cliente: AgriwinCliente):
-        self._cliente = cliente
+    def __init__(self):
         print("[INFRA] Adaptador do Repositório AgriwinRemetente inicializado.")
     
     def buscar_remetente_por_telefone(self, telefone: str) -> Optional[DadosRemetente]:

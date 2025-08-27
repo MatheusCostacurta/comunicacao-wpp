@@ -1,14 +1,12 @@
 from typing import Dict, Tuple
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_consumo import RepositorioConsumo
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente 
 
 
 class RepoAgriwinConsumo(RepositorioConsumo):
     """
     Adaptador que implementa as interfaces de repositório para o remetente.
     """
-    def __init__(self, cliente: AgriwinCliente):
-        self._cliente = cliente
+    def __init__(self):
         print("[INFRA] Adaptador do Repositório AgriwinRemetente inicializado.")
     
 

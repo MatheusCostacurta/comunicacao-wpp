@@ -6,6 +6,14 @@ class LocalizarPontoEstoqueService:
     def __init__(self, api_ferramentas):
         self.api = api_ferramentas
 
+    from typing import Optional
+from thefuzz import process
+from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
+
+class LocalizarPontoEstoqueService:
+    def __init__(self, api_ferramentas):
+        self.api = api_ferramentas
+    
     def obter(self, id_produtor: int, nome_mencionado: Optional[str] = None) -> List[PontoEstoque]:
         """
         Encontra pontos de estoque com base em um nome mencionado ou retorna o padrão se for o único disponível.
@@ -35,6 +43,9 @@ class LocalizarPontoEstoqueService:
         
         # Usamos extractBests para pegar todos os resultados acima de um score
         matches = process.extractBests(nome_mencionado, nomes_pontos_estoque, score_cutoff=score_minimo)
+        print(matches)
+        melhor_match, score = process.extractOne(nome_mencionado, nomes_pontos_estoque)
+        print(melhor_match)
         
         if not matches:
             print("[SERVICE] Nenhum ponto de estoque compatível encontrado.")

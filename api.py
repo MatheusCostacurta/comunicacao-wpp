@@ -15,8 +15,6 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.pre_processamento import PreProce
 from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import ServicoConversa
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
 
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente 
-
 
 # --- 1. Inicialização da Aplicação e Carregamento de Configurações ---
 # Carrega as variáveis de ambiente do arquivo .env
@@ -34,15 +32,11 @@ app = FastAPI(
 # em todas as requisições, seguimos o padrão Singleton.
 def inicializar_servicos_e_adaptadores():
     print("--- INICIALIZANDO ADAPTADORES E SERVIÇOS DA APLICAÇÃO ---")
-
-    agriwin_urls = ["https://sistema.agriwin.com.br","https://castrolanda.agriwin.com.br","https://frisia.agriwin.com.br","https://capal.agriwin.com.br","https://demo.agriwin.com.br"]
-    agriwin_cliente = AgriwinCliente(
-        base_urls=[url.strip() for url in agriwin_urls if url.strip()],
-    )
     
-    llm_adapter = AdaptadorGroq(agriwin_cliente)
+    # Adaptadores de Saída (Infraestrutura)
+    llm_adapter = AdaptadorGroq()
     whatsapp_adapter = AdaptadorZAPI()
-    repo_remetente = RepoAgriwinRemetente(agriwin_cliente)
+    repo_remetente = RepoAgriwinRemetente()
     whisper_adapter = AdaptadorWhisper()
     gemini_adapter = AdaptadorGeminiVision()
 
