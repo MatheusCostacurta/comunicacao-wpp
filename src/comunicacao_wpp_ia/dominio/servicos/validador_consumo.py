@@ -7,15 +7,13 @@ class ValidadorConsumo:
     """
     
     _campos_obrigatorios = [
-        "produto_mencionado", 
-        "quantidade", 
+        "produtos_mencionados", 
         "ponto_estoque_mencionado",
         "data_mencionada"
     ]
 
     _mapa_perguntas = {
-        "produto_mencionado": "Qual foi o produto utilizado?",
-        "quantidade": "Qual foi a quantidade consumida?",
+        "produtos_mencionados": "Qual foi o produto e quantidade utilizado?",
         "local": "Em qual propriedade/talhão foi feita a aplicação?",
         "ponto_estoque_mencionado": "De qual depósito/ponto de estoque o produto saiu?",
         "data_mencionada": "Em que data foi a aplicação?"
@@ -32,12 +30,23 @@ class ValidadorConsumo:
             - Uma lista com as perguntas correspondentes aos campos faltantes.
         """
         campos_faltantes = []
+
+        # 1. Validação granular da lista de produtos
+        if not consumo.produtos_mencionados:
+            campos_faltantes.append(cls._mapa_perguntas["produtos_mencionados"])
+        else:
+            for produto in consumo.produtos_mencionados:
+                if not produto.quantidade:
+                    campos_faltantes.append(f"Qual foi a quantidade para o produto {produto.nome}?")
+
+        # 2. Validação dos outros campos obrigatórios (não relacionados a produtos)
         for campo in cls._campos_obrigatorios:
-            if not getattr(consumo, campo):
+            if campo != "produtos_mencionados" and not getattr(consumo, campo):
                 chave_pergunta = "local" if "talhao" in campo or "propriedade" in campo else campo  # Remapeia o nome do campo para a pergunta genérica se necessário
                 if cls._mapa_perguntas[chave_pergunta] not in campos_faltantes:
                     campos_faltantes.append(cls._mapa_perguntas[chave_pergunta])
 
+        # 3. Validação do local (talhão ou propriedade)
         local_informado = False
         if consumo.tipo_rateio == 'talhao' and consumo.talhoes_mencionados:
             local_informado = True
