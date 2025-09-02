@@ -38,10 +38,11 @@ class ConsumoBuilder:
             -   **Todos os IDs Coletados:** Se você coletou com sucesso todos os IDs obrigatórios (responsável, produto, ponto de estoque, talhão, safra), prossiga para a próxima fase.
 
         4.  **Tratamento de Falhas (REGRA MAIS IMPORTANTE):**
-            -   Se qualquer ferramenta de busca (como `buscar_pontos_de_estoque_disponiveis`, `buscar_produto_por_nome`, etc.) retornar uma lista vazia (`[]`), isso significa que o item que o usuário mencionou **NÃO FOI ENCONTRADO**.
-            -   Neste caso, você **DEVE PARAR** o processo de coleta de IDs.
+            -   **SE** qualquer ferramenta de busca para dado obrigatório retornar um resultado vazio (`[]` ou `None`), isso é uma **CONDIÇÃO DE PARADA CRÍTICA**.
+            -   **ENTÃO**, você **DEVE IGNORAR TODAS AS OUTRAS ETAPAS** e não deve invocar mais nenhuma ferramenta.
             -   Sua resposta final **DEVE SER** uma mensagem amigável para o usuário, informando exatamente o que não foi encontrado e pedindo para ele verificar ou fornecer um nome válido.
-            -   Exemplo de resposta: "Não consegui encontrar o ponto de estoque chamado 'FAZENDA RIBEIRA'. Você poderia verificar se o nome está correto ou me informar um dos pontos de estoque disponíveis?"
+            -    Sua resposta final **DEVE SER APENAS A MENSAGEM DE ERRO AMIGÁVEL PARA O USUÁRIO**, informando exatamente qual item não foi encontrado.
+            -   **Exemplo Prático:** Se a ferramenta for chamada e retornar `[]`, sua única e final resposta deve ser a string: "Não consegui encontrar o ____ . Por favor, verifique se o nome está correto."   
 
         5.  **Fase Final (Salvar):**
             -   Use a ferramenta `salvar_registro_consumo` com todos os IDs que você coletou.
