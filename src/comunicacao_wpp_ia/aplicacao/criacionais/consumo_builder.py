@@ -37,7 +37,13 @@ class ConsumoBuilder:
             -   **Ambiguidade:** Se alguma busca retornar múltiplos resultados e você não tiver certeza de qual usar (ex: dois produtos com nomes parecidos), **PARE** a coleta e pergunte ao usuário para esclarecer. Sua resposta final deve ser apenas a pergunta.
             -   **Todos os IDs Coletados:** Se você coletou com sucesso todos os IDs obrigatórios (responsável, produto, ponto de estoque, talhão, safra), prossiga para a próxima fase.
 
-        4.  **Fase Final (Salvar):**
+        4.  **Tratamento de Falhas (REGRA MAIS IMPORTANTE):**
+            -   Se qualquer ferramenta de busca (como `buscar_pontos_de_estoque_disponiveis`, `buscar_produto_por_nome`, etc.) retornar uma lista vazia (`[]`), isso significa que o item que o usuário mencionou **NÃO FOI ENCONTRADO**.
+            -   Neste caso, você **DEVE PARAR** o processo de coleta de IDs.
+            -   Sua resposta final **DEVE SER** uma mensagem amigável para o usuário, informando exatamente o que não foi encontrado e pedindo para ele verificar ou fornecer um nome válido.
+            -   Exemplo de resposta: "Não consegui encontrar o ponto de estoque chamado 'FAZENDA RIBEIRA'. Você poderia verificar se o nome está correto ou me informar um dos pontos de estoque disponíveis?"
+
+        5.  **Fase Final (Salvar):**
             -   Use a ferramenta `salvar_registro_consumo` com todos os IDs que você coletou.
             -   Sua resposta final **DEVE** ser o JSON exato retornado por esta ferramenta. Não adicione nenhuma outra palavra.
 

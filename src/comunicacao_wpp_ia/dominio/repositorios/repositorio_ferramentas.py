@@ -33,10 +33,6 @@ class RepositorioFerramentas(ABC):
         pass
 
     @abstractmethod
-    def buscar_responsaveis_do_produtor(self, id_produtor: int) -> List[Responsavel]:
-        pass
-
-    @abstractmethod
     def buscar_responsavel_por_telefone(self, id_produtor: int, telefone: str) -> Optional[Responsavel]:
         pass
 

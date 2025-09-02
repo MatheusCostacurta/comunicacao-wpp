@@ -1,6 +1,7 @@
+import json
 from typing import Dict, Tuple
+from requests import HTTPError
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_consumo import RepositorioConsumo
-
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
 
@@ -15,26 +16,34 @@ class RepoAgriwinConsumo(RepositorioConsumo):
 
     def salvar_consumo(self, dados_consumo: Dict) -> Tuple[int, Dict]:
         """
-        Simula o POST para salvar os dados de consumo na API interna.
+        Envia os dados de consumo para a API Agriwin através de um POST.
         Retorna uma tupla contendo o status_code e o corpo da resposta em JSON.
         """
-        print(f"\n[API MOCK] Recebido POST para salvar consumo: {dados_consumo}")
-        
-        # Simulação de erro de validação da API (Internal Server Error)
-        if dados_consumo.get("quantidade") == "20 kg" and dados_consumo.get("id_produto") == 102:
-            response_body = {
-                "error": "VALIDATION_ERROR",
-                "message": "Erro de validação: A quantidade '20 kg' para 'Adubo Super Simples' excede o limite permitido por aplicação."
-            }
-            return 500, response_body
-        
-        # Simulação de sucesso (OK)
-        id_locais = dados_consumo.get('ids_talhoes') or dados_consumo.get('ids_propriedades', [])
-        local_str = "talhão(ões) ID(s)" if 'ids_talhoes' in dados_consumo else "propriedade(s) ID(s)"
+        endpoint = "/api/v1/consumo" # Endpoint hipotético para registrar consumo
+        print(f"\n[API] Enviando POST para salvar consumo em {endpoint}: {dados_consumo}")
 
-        response_body = {
-            "status": "sucesso",
-            "message": f"Consumo do produto ID {dados_consumo.get('id_produto')} registrado com sucesso no(a) {local_str} {id_locais}.",
-            "registro_id": 12345 
-        }
-        return 200, response_body
+        try:
+            response = self._cliente.post(endpoint, data=dados_consumo)
+            
+            # A resposta de sucesso (2xx) já é tratada no AgriwinCliente.
+            # Se chegamos aqui, a requisição foi bem-sucedida.
+            response_body = response.json()
+            return response.status_code, response_body
+
+        except HTTPError as e:
+            # O AgriwinCliente lança HTTPError para respostas 4xx e 5xx.
+            # Podemos capturar o erro para extrair o corpo da resposta de erro da API.
+            print(f"[API ERROR] Erro ao salvar consumo: {e.response.status_code} - {e.response.text}")
+            try:
+                # Tenta extrair o JSON do corpo da resposta de erro
+                error_body = e.response.json()
+            except json.JSONDecodeError:
+                # Se o corpo do erro não for um JSON válido
+                error_body = {"message": e.response.text or "Erro desconhecido na API."}
+                
+            return e.response.status_code, error_body
+        
+        except Exception as e:
+            # Captura outras exceções (ex: falha de conexão)
+            print(f"[API CRITICAL] Erro inesperado ao salvar consumo: {e}")
+            return 500, {"message": "Ocorreu um erro interno ao se comunicar com a API."}

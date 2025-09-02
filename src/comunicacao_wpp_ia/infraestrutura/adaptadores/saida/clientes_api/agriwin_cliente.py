@@ -18,7 +18,6 @@ class AgriwinCliente:
         
         self._token: Optional[str] = None
         self._url_base_atual: Optional[str] = None
-        self._autenticar()
         print("[INFRA] AgriwinClient inicializado.")
 
     def _autenticar(self) -> None:
@@ -27,7 +26,7 @@ class AgriwinCliente:
         Armazena o token e a URL ativa na primeira autenticação bem-sucedida.
         """
         print("[AGRIWIN CLIENT] Tentando autenticar...")
-        endpoint_login = "/api/v1/autenticacao" # Exemplo de endpoint
+        endpoint_login = "/api/v1/autenticacao"
         
         for url in self._base_urls:
             try:
@@ -40,10 +39,18 @@ class AgriwinCliente:
                 response = requests.post(url_completa, json=payload)
 
                 if response.status_code == 200:
-                    self._token = response.json().get("dados").get("tokenDeAcesso")
-                    self._url_base_atual = url
-                    print(f"[AGRIWIN CLIENT] Autenticação bem-sucedida na URL: {self._url_base_atual}")
-                    return
+                    response_data = response.json()
+                    dados = response_data.get("dados")
+                    if isinstance(dados, dict):
+                        self._token = dados.get("token")
+
+                    if self._token:
+                        self._url_base_atual = url
+                        print(f"[AGRIWIN CLIENT] Autenticação bem-sucedida. Token extraído com sucesso.")
+                        return
+                    else:
+                        print("[AGRIWIN CLIENT ERROR] Autenticação retornou sucesso (200), mas o token não foi encontrado no JSON com a chave 'token'.")
+                    
                 else:
                     print(f"[AGRIWIN CLIENT] Falha na autenticação em {url}: Status {response.status_code}")
                     print(f"[AGRIWIN CLIENT] Falha na autenticação em {url}: Status {response.json().get('mensagem')}")
@@ -68,9 +75,9 @@ class AgriwinCliente:
         """Executa uma requisição GET para um endpoint da API Agriwin."""
         headers = self._get_headers()
         url = f"{self._url_base_atual.rstrip('/')}{endpoint}"
-        print(f"[AGRIWIN CLIENT] Executando GET em: {url}")
+        print(f"[AGRIWIN CLIENT] Executando GET em: {url} com params: {params}")
         response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status() # Lança exceção para status 4xx/5xx
+        response.raise_for_status()
         return response
 
     def post(self, endpoint: str, data: dict) -> requests.Response:
