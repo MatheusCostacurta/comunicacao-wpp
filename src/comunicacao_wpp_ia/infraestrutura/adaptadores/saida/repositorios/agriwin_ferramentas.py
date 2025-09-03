@@ -5,8 +5,7 @@ import requests
 # --- DTOs da Camada de Infraestrutura ---
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_dtos import (
     ProdutoAgriwinDTO,
-    TalhaoAgriwinDTO,
-    PropriedadeAgriwinDTO,
+    PlantioAgriwinDTO,
     ImobilizadoAgriwinDTO,
     PontoEstoqueAgriwinDTO,
     SafraAgriwinDTO,
@@ -92,14 +91,14 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         endpoint = "/api/v1/plantios"
         params = {"identificador_produtor": id_produtor}
         response = self._cliente.get(endpoint, params=params)
-        return self._processar_e_mapear_resposta(response, TalhaoAgriwinDTO, AgriwinMapeador.para_talhao_dominio)
+        return self._processar_e_mapear_resposta(response, PlantioAgriwinDTO, AgriwinMapeador.para_talhao_dominio)
     
     def buscar_propriedades_do_produtor(self, id_produtor: int) -> List[Propriedade]:
         print(f"\n[API] Buscando todas as propriedades para o produtor {id_produtor}...")
         endpoint = "/api/v1/plantios"
         params = {"identificador_produtor": id_produtor}
         response = self._cliente.get(endpoint, params=params)
-        return self._processar_e_mapear_resposta(response, PropriedadeAgriwinDTO, AgriwinMapeador.para_propriedade_dominio)
+        return self._processar_e_mapear_resposta(response, PlantioAgriwinDTO, AgriwinMapeador.para_propriedade_dominio)
     
     def buscar_maquinas_do_produtor(self, id_produtor: int) -> List[Imobilizado]:
         print(f"\n[API] Buscando todas as máquinas para o produtor {id_produtor}...")
@@ -120,8 +119,17 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         print(f"\n[API] Buscando safras para o produtor {id_produtor}...")
         endpoint = "/api/v1/safras"
         params = {"identificador_produtor": id_produtor}
-        response = self._cliente.get(endpoint, params=params)
-        return self._processar_e_mapear_resposta(response, SafraAgriwinDTO, AgriwinMapeador.para_safra_dominio)
+        # response = self._cliente.get(endpoint, params=params)
+        # return self._processar_e_mapear_resposta(response, SafraAgriwinDTO, AgriwinMapeador.para_safra_dominio)
+
+        safra_data = [
+            {"identificador": 601, "ano_inicio": 2024, "ano_termino": 2025, "data_inicio": "01/01/2024", "data_termino": "01/01/2025"},
+            {"identificador": 602, "ano_inicio": 2025, "ano_termino": 2026, "data_inicio": "01/01/2025", "data_termino": "01/01/2026"},
+        ]
+        response_mock = requests.Response()
+        response_mock.status_code = 200
+        response_mock.json = lambda: {"dados": safra_data}
+        return self._processar_e_mapear_resposta(response_mock, SafraAgriwinDTO, AgriwinMapeador.para_safra_dominio)
     
     def _buscar_responsaveis_do_produtor(self, id_produtor: int) -> List[Responsavel]:
         print(f"\n[API] Buscando responsáveis para o produtor {id_produtor}...")

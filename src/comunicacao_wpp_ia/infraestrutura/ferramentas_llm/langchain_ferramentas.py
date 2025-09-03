@@ -149,7 +149,7 @@ def salvar_registro_consumo(
 ) -> str:   
     """
     Use esta ferramenta como a ETAPA FINAL para salvar o registro de consumo.
-    A data deve estar no formato 'YYYY-MM-DD'.
+    A data deve estar no formato 'DD/MM/YYYY'.
     Se uma máquina foi usada, inclua os parâmetros 'id_maquina', 'horimetro_inicio' e 'horimetro_fim'.
     Se o tipo_rateio for 'talhao', você DEVE fornecer uma lista de IDs em 'ids_talhoes'.
     Se o tipo_rateio for 'propriedade', você DEVE fornecer uma lista de IDs em 'ids_propriedades'.

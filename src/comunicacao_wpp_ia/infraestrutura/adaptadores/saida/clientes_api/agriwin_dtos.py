@@ -23,16 +23,23 @@ class ProdutoAgriwinDTO(BaseModel):
     unidades_medida: Optional[List[UnidadeMedidaDTO]] = []
     ingredientes_ativo: Optional[List[IngredienteAtivoDTO]] = []
 
-# --- DTO para Talhao ---
-class TalhaoAgriwinDTO(BaseModel):
+class _PropriedadePlantioDTO(BaseModel):
     identificador: int
-    nome: str
-    area_ha: Optional[float] = None
+    descricao: str
 
-# --- DTO para Propriedade ---
-class PropriedadeAgriwinDTO(BaseModel):
+class _TalhaoPlantioDTO(BaseModel):
     identificador: int
-    nome: str
+    descricao: str
+    propriedade: _PropriedadePlantioDTO
+
+class _SafraPlantioDTO(BaseModel):
+    identificador: int
+
+# --- DTO Principal para a resposta de /plantios ---
+class PlantioAgriwinDTO(BaseModel):
+    identificador: int
+    safra: _SafraPlantioDTO
+    talhao: _TalhaoPlantioDTO
 
 # --- DTO para Imobilizado (Máquina) ---
 class ImobilizadoAgriwinDTO(BaseModel):
@@ -51,7 +58,6 @@ class PontoEstoqueAgriwinDTO(BaseModel):
 # --- DTO para Safra ---
 class SafraAgriwinDTO(BaseModel):
     identificador: int
-    nome: str
     ano_inicio: int
     ano_termino: int
     data_inicio: str  # A API retorna a data como string

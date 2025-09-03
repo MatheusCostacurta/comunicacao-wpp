@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import datetime
 
 # --- Modelos de Domínio (Camada Interna) ---
-from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto, UnidadeMedida, IngredienteAtivo
+from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto
 from src.comunicacao_wpp_ia.dominio.modelos.talhao import Talhao
 from src.comunicacao_wpp_ia.dominio.modelos.propriedade import Propriedade
 from src.comunicacao_wpp_ia.dominio.modelos.imobilizado import Imobilizado
@@ -12,8 +12,7 @@ from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
 # --- DTOs da Infraestrutura (Camada Externa) ---
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_dtos import (
     ProdutoAgriwinDTO,
-    TalhaoAgriwinDTO,
-    PropriedadeAgriwinDTO,
+    PlantioAgriwinDTO,
     ImobilizadoAgriwinDTO,
     PontoEstoqueAgriwinDTO,
     SafraAgriwinDTO,
@@ -39,18 +38,18 @@ class AgriwinMapeador:
         )
 
     @staticmethod
-    def para_talhao_dominio(dto: TalhaoAgriwinDTO) -> Talhao:
+    def para_talhao_dominio(dto: PlantioAgriwinDTO) -> Talhao:
         return Talhao(
-            id=dto.identificador,
-            nome=dto.nome,
-            area_ha=dto.area_ha or 0.0
+            id=dto.talhao.identificador,
+            nome=dto.talhao.descricao,
+            area_ha=0.0  # O endpoint de plantios não fornece a área
         )
 
     @staticmethod
-    def para_propriedade_dominio(dto: PropriedadeAgriwinDTO) -> Propriedade:
+    def para_propriedade_dominio(dto: PlantioAgriwinDTO) -> Propriedade:
         return Propriedade(
-            id=dto.identificador,
-            nome=dto.nome
+            id=dto.talhao.propriedade.identificador,
+            nome=dto.talhao.propriedade.descricao
         )
     
     @staticmethod
@@ -75,11 +74,11 @@ class AgriwinMapeador:
     def para_safra_dominio(dto: SafraAgriwinDTO) -> Safra:
         return Safra(
             id=dto.identificador,
-            nome=dto.nome,
+            nome="Safra " + str(dto.ano_inicio) + " - " + str(dto.ano_termino),
             ano_inicio=dto.ano_inicio,
             ano_termino=dto.ano_termino,
-            data_inicio=date.fromisoformat(dto.data_inicio), # Converte string para date
-            data_termino=date.fromisoformat(dto.data_termino)  # Converte string para date
+            data_inicio=datetime.strptime(dto.data_inicio, "%d/%m/%Y").date(),
+            data_termino=datetime.strptime(dto.data_termino, "%d/%m/%Y").date()
         )
 
     @staticmethod

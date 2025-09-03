@@ -25,12 +25,11 @@ class ConsumoBuilder:
 
         2.  **Fase de Coleta de IDs (Use as Ferramentas):**
             -   Sua missão é preencher todos os IDs necessários para o registro. Use as seguintes ferramentas para encontrar cada um:
-            -   **Responsável:** Encontre o ID usando `buscar_responsavel_por_telefone`.
-            -   **Produto:** Encontre o ID usando `buscar_produto_por_nome`.
-            -   **Ponto de Estoque:** Encontre o ID usando `buscar_pontos_de_estoque_disponiveis`.
-            -   **Talhão:** Encontre o ID usando `buscar_talhoes_disponiveis`.
-            -   **Propriedade:** Encontre o ID usando `buscar_propriedades_disponiveis`.
-            -   **Safra:** Encontre o ID da safra ativa usando `buscar_safra_disponivel` (chame sem parâmetros se o usuário não especificou uma).
+            -   **Responsável (Opcional):** Encontre o ID usando `buscar_responsavel_por_telefone`.
+            -   **Produto (Obrigatório):** Encontre o ID usando `buscar_produto_por_nome`.
+            -   **Ponto de Estoque (Opcional):** Encontre o ID usando `buscar_pontos_de_estoque_disponiveis`.
+            -   **Talhão ou Propriedade (Obrigatório):** Encontre o ID usando `buscar_talhoes_disponiveis` ou `buscar_propriedades_disponiveis.
+            -   **Safra (Opcional):** Encontre o ID da safra ativa usando `buscar_safra_disponivel` (chame sem parâmetros se o usuário não especificou uma).
             -   **Máquina (Opcional):** Se uma máquina/imobilizado for mencionada (nome ou número de série), encontre o ID com `buscar_maquinas_disponiveis`; Se o usuário mencionou uma máquina mas não informou o horímetro (ou odômetro) inicial e final, **PARE** e pergunte por essa informação. Ex: "Qual era o horímetro inicial e final do trator JD6110J?".
 
         3.  **Fase de Decisão:**
