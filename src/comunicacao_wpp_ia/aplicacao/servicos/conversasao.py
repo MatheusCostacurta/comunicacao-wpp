@@ -3,7 +3,7 @@ from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
 from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_informacoes_faltantes
-from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo_builder import ConsumoBuilder
+from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_builder import ConsumoBuilder
 from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
 from src.comunicacao_wpp_ia.aplicacao.portas.pre_processamento_texto import ServicoPreProcessamento
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente

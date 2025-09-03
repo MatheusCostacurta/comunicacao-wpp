@@ -155,7 +155,9 @@ def salvar_registro_consumo(
     Se o tipo_rateio for 'propriedade', você DEVE fornecer uma lista de IDs em 'ids_propriedades'.
     Esta ferramenta fará o POST para a API e retorna um JSON string com o 'status_code' e a 'mensagem' da API.
     """
-
+    
+    print("Iniciou ferramenta salvar_registro_consumo")
+    
     campos_obrigatorios = {
         "id_produto": id_produto,
         "quantidade": quantidade,
@@ -190,6 +192,7 @@ def salvar_registro_consumo(
         dados_para_salvar["horimetro_inicio"] = horimetro_inicio
         dados_para_salvar["horimetro_fim"] = horimetro_fim
 
+    print("Dados preparados para salvar consumo:", dados_para_salvar)
     status_code, response_body = api_agriwin_consumo.salvar_consumo(dados_consumo=dados_para_salvar)
     
     resultado_final = {
