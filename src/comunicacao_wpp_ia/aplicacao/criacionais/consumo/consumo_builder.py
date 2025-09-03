@@ -15,7 +15,7 @@ class ConsumoBuilder:
         historico_conversa = historico_conversa or []
 
         prompt_orquestrador = f"""Você é um assistente especialista em registros agrícolas e seu objetivo é registrar um consumo.
-        Sua tarefa é usar as ferramentas disponíveis para encontrar os IDs corretos para cada item mencionado pelo usuário, e após isso, registrar o consumo.
+        Sua tarefa é usar as ferramentas disponíveis para encontrar os IDs corretos para cada item mencionado pelo usuário, fazer perguntas caso necessário, e após isso, registrar o consumo.
 
         1.  **Análise Inicial:**
             -   Você recebeu estes dados iniciais: {{dados_iniciais}}.
@@ -25,29 +25,21 @@ class ConsumoBuilder:
 
         2.  **Fase de Coleta de IDs (Use as Ferramentas):**
             -   Sua missão é preencher todos os IDs necessários para o registro. Use as seguintes ferramentas para encontrar cada um:
-            -   **Responsável (Opcional):** Encontre o ID usando `buscar_responsavel_por_telefone`.
-            -   **Produto (Obrigatório):** Encontre o ID usando `buscar_produto_por_nome`.
-            -   **Ponto de Estoque (Opcional):** Encontre o ID usando `buscar_pontos_de_estoque_disponiveis`.
-            -   **Talhão ou Propriedade (Obrigatório):** Encontre o ID usando `buscar_talhoes_disponiveis` ou `buscar_propriedades_disponiveis.
-            -   **Safra (Opcional):** Encontre o ID da safra ativa usando `buscar_safra_disponivel` (chame sem parâmetros se o usuário não especificou uma).
-            -   **Máquina (Opcional):** Se uma máquina/imobilizado for mencionada (nome ou número de série), encontre o ID com `buscar_maquinas_disponiveis`; Se o usuário mencionou uma máquina mas não informou o horímetro (ou odômetro) inicial e final, **PARE** e pergunte por essa informação. Ex: "Qual era o horímetro inicial e final do trator JD6110J?".
+            -   **Responsável:** Encontre o ID usando `buscar_responsavel_por_telefone`.
+            -   **Produto:** Encontre o ID usando `buscar_produto_por_nome`.
+            -   **Ponto de Estoque:** Encontre o ID usando `buscar_pontos_de_estoque_disponiveis`.
+            -   **Talhão:** Encontre o ID usando `buscar_talhoes_disponiveis`.
+            -   **Propriedade:** Encontre o ID usando `buscar_propriedades_disponiveis`.
+            -   **Safra:** Encontre o ID da safra usando `buscar_safra_disponivel` (chame sem parâmetros se o usuário não especificou uma).
+            -   **Máquina:** Encontre o ID da maquina usando `buscar_maquinas_disponiveis` (usuário pode ter enviado nome ou número de série).
 
         3.  **Fase de Decisão:**
             -   **Ambiguidade:** Se alguma busca retornar múltiplos resultados e você não tiver certeza de qual usar (ex: dois produtos com nomes parecidos), **PARE** a coleta e pergunte ao usuário para esclarecer. Sua resposta final deve ser apenas a pergunta.
-            -   **Todos os IDs Coletados:** Se você coletou com sucesso todos os IDs obrigatórios (responsável, produto, ponto de estoque, talhão, safra), prossiga para a próxima fase.
-
-        4.  **Tratamento de Falhas (REGRA MAIS IMPORTANTE):**
-            -   **SE** qualquer ferramenta de busca para dado obrigatório retornar um resultado vazio (`[]` ou `None`), isso é uma **CONDIÇÃO DE PARADA CRÍTICA**.
-            -   **ENTÃO**, você **DEVE IGNORAR TODAS AS OUTRAS ETAPAS** e não deve invocar mais nenhuma ferramenta.
-            -   Sua resposta final **DEVE SER** uma mensagem amigável para o usuário, informando exatamente o que não foi encontrado e pedindo para ele verificar ou fornecer um nome válido.
-            -    Sua resposta final **DEVE SER APENAS A MENSAGEM DE ERRO AMIGÁVEL PARA O USUÁRIO**, informando exatamente qual item não foi encontrado.
-            -   **Exemplo Prático:** Se a ferramenta for chamada e retornar `[]`, sua única e final resposta deve ser a string: "Não consegui encontrar o ____ . Por favor, verifique se o nome está correto."   
 
         5.  **Fase Final (Salvar):**
             -   Use a ferramenta `salvar_registro_consumo` com todos os IDs que você coletou.
             -   Sua resposta final **DEVE** ser o JSON exato retornado por esta ferramenta. Não adicione nenhuma outra palavra.
 
-        **NÃO** tente salvar o registro antes de ter todos os IDs obrigatórios.
         Responda sempre em português (Brasil)."""
 
         agente_com_ferramentas = self._servico_llm.criar_agente_com_ferramentas(prompt_template=prompt_orquestrador, ferramentas=self.ferramentas)

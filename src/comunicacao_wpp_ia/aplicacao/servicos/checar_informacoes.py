@@ -21,8 +21,9 @@ def __obter_prompt_sistema() -> str:
             - Se a mensagem mencionar APENAS uma ou mais fazendas/propriedades, o tipo é 'propriedade'.
         5.  **Data:** Extraia a `data_mencionada` como uma string EXATAMENTE como o usuário falou (ex: "ontem", "dia 20", "20/07", "24 de julho").
         6.  **Safra:** A safra pode ser mencionada apenas através de numeros (ex: 23/24, 2023/2024, 24/24 ou 24)
-        7.  Se um campo não for mencionado, seu valor deve ser nulo (null).
-        7.1. Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquina_mencionada` com o valor nulo (null).
+        7.  Se algum campo(produtos_mencionados, propriedades_mencionadas, talhoes_mencionados, maquinas_mencionadas) não for mencionado, seu valor deve ser [].
+        7.1. Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquinas_mencionadas` com o valor [].
+        8.  Se algum campo(ponto_estoque_mencionado, data_mencionada, safra_mencionada, id_responsavel, tipo_rateio) não for mencionado, seu valor deve ser nulo (None).
     """
 
 def _parse_data_mencionada(data_str: str) -> date:

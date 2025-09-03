@@ -14,16 +14,20 @@ class RepoAgriwinConsumo(RepositorioConsumo):
         print("[INFRA] Adaptador do Repositório AgriwinRemetente inicializado.")
     
 
-    def salvar_consumo(self, dados_consumo: Dict) -> Tuple[int, Dict]:
+    def salvar_consumo(self, produtor_id: int, dados_consumo: Dict) -> Tuple[int, Dict]:
         """
         Envia os dados de consumo para a API Agriwin através de um POST.
         Retorna uma tupla contendo o status_code e o corpo da resposta em JSON.
         """
-        endpoint = "/api/v1/consumo" # Endpoint hipotético para registrar consumo
-        print(f"\n[API] Enviando POST para salvar consumo em {endpoint}: {dados_consumo}")
+        endpoint = "/api/v1/consumo"
+        payload_completo = {
+            "produtor_id": produtor_id,
+            "consumo": dados_consumo
+        }
+        print(f"\n[API] Enviando POST para salvar consumo em {endpoint}: {json.dumps(payload_completo, indent=4)}")
 
         try:
-            response = self._cliente.post(endpoint, data=dados_consumo)
+            response = self._cliente.post(endpoint, data=payload_completo)
             
             # A resposta de sucesso (2xx) já é tratada no AgriwinCliente.
             # Se chegamos aqui, a requisição foi bem-sucedida.

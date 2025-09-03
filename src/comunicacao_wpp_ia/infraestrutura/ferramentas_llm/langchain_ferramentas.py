@@ -1,7 +1,8 @@
 import json
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 from langchain.tools import tool
+from pydantic import BaseModel, Field
 
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarProdutoService 
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_ponto_estoque import LocalizarPontoEstoqueService
@@ -11,10 +12,10 @@ from src.comunicacao_wpp_ia.dominio.servicos.localizar_propriedade import Locali
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_maquina import LocalizarMaquinaService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_responsavel import LocalizarResponsavelService
 
+from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ProdutoParaSalvar, MaquinaParaSalvar
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
-
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
 ID_PRODUTOR_EXEMPLO = 57 # ID fixo para este exemplo
@@ -134,8 +135,7 @@ def buscar_responsavel_por_telefone(telefone: str) -> str:
 
 @tool
 def salvar_registro_consumo(
-    id_produto: int, 
-    quantidade: str, 
+    produtos: List[ProdutoParaSalvar],
     id_ponto_estoque: int, 
     id_safra: int, 
     data_aplicacao: str, 
@@ -143,57 +143,61 @@ def salvar_registro_consumo(
     ids_talhoes: Optional[List[int]] = None, 
     ids_propriedades: Optional[List[int]] = None, 
     id_responsavel: Optional[int] = None, 
-    id_maquina: Optional[int] = None,
-    horimetro_inicio: Optional[float] = None,
-    horimetro_fim: Optional[float] = None
+    maquinas: Optional[List[MaquinaParaSalvar]] = None
 ) -> str:   
     """
     Use esta ferramenta como a ETAPA FINAL para salvar o registro de consumo.
-    A data deve estar no formato 'DD/MM/YYYY'.
-    Se uma máquina foi usada, inclua os parâmetros 'id_maquina', 'horimetro_inicio' e 'horimetro_fim'.
+    - 'produtos': Deve ser uma lista de objetos, cada um com 'id' e 'quantidade'.
+    - 'maquinas': (Opcional) Deve ser uma lista de objetos, cada um com 'id', 'horimetro_inicio' e 'horimetro_fim'.
+    - 'data_aplicacao': A data deve estar no formato 'DD/MM/YYYY.
     Se o tipo_rateio for 'talhao', você DEVE fornecer uma lista de IDs em 'ids_talhoes'.
     Se o tipo_rateio for 'propriedade', você DEVE fornecer uma lista de IDs em 'ids_propriedades'.
     Esta ferramenta fará o POST para a API e retorna um JSON string com o 'status_code' e a 'mensagem' da API.
     """
     
     print("Iniciou ferramenta salvar_registro_consumo")
-    
-    campos_obrigatorios = {
-        "id_produto": id_produto,
-        "quantidade": quantidade,
-        "id_ponto_estoque": id_ponto_estoque,
-        "id_safra": id_safra,
-        "data_aplicacao": data_aplicacao,
-        "tipo_rateio": tipo_rateio,
-    }
-    campos_faltantes = [nome for nome, valor in campos_obrigatorios.items() if valor is None]
-    if campos_faltantes:
-        msg_erro = f"Parâmetros obrigatórios ausentes para salvar o consumo: {', '.join(campos_faltantes)}."
-        print(f"[FERRAMENTA BLINDADA] {msg_erro}")
+
+    # Validação de campos obrigatórios
+    if not all([produtos, id_ponto_estoque, id_safra, data_aplicacao, tipo_rateio]):
+        msg_erro = "Parâmetros obrigatórios ausentes. Verifique produtos, ponto_estoque, safra, data e rateio."
         return json.dumps({"status_code": 400, "message": msg_erro})
     
     dados_para_salvar = {
-        "id_produto": id_produto,
-        "quantidade": quantidade,
-        "id_ponto_estoque": id_ponto_estoque,
-        "id_safra": id_safra,
-        "data_aplicacao": data_aplicacao,
-        "tipo_rateio": tipo_rateio,
+        "atividade_id": 1, # TODO: Ajustar atividade conforme necessário
+        "ponto_estoque_id": id_ponto_estoque,
+        "safra_id": id_safra,
+        "data": data_aplicacao,
+        # "tipo_rateio": tipo_rateio, #! LIBERAR
+        "lista_produtos": [p.dict() for p in produtos]
     }
     
-    if ids_talhoes:
-        dados_para_salvar["ids_talhoes"] = ids_talhoes
-    if ids_propriedades:
-        dados_para_salvar["ids_propriedades"] = ids_propriedades
-    if id_responsavel:
-        dados_para_salvar["id_responsavel"] = id_responsavel
-    if id_maquina:
-        dados_para_salvar["id_maquina"] = id_maquina
-        dados_para_salvar["horimetro_inicio"] = horimetro_inicio
-        dados_para_salvar["horimetro_fim"] = horimetro_fim
+    #! LIBERAR
+    # if maquinas: 
+    #     lista_imobilizados = []
+    #     for maquina in maquinas:
+    #         imobilizado_item = {"id": maquina.id}
+    #         if maquina.horimetro_inicio is not None and maquina.horimetro_fim is not None:
+    #             imobilizado_item["quantidade_horimetro_hodometro"] = maquina.horimetro_fim - maquina.horimetro_inicio # TODO: Mudar lógica
+    #         lista_imobilizados.append(imobilizado_item)
+    #     dados_para_salvar["lista_imobilizados"] = lista_imobilizados
+
+    #! LIBERAR
+    # if ids_talhoes:
+    #     dados_para_salvar["lista_rateios"] = ids_talhoes
+    # elif ids_propriedades:
+    #     dados_para_salvar["lista_rateios"] = ids_propriedades
+    # if id_responsavel:
+    #     dados_para_salvar["id_responsavel"] = id_responsavel
+
+    # ! FIZ UM MOCK PARA SALVAR ATÉ AJUSTAR A API
+    dados_para_salvar["epoca"] = "SAFRA"
+    dados_para_salvar["lista_rateios"] = [{"plantio_id": 446}],
 
     print("Dados preparados para salvar consumo:", dados_para_salvar)
-    status_code, response_body = api_agriwin_consumo.salvar_consumo(dados_consumo=dados_para_salvar)
+    status_code, response_body = api_agriwin_consumo.salvar_consumo(
+        produtor_id=ID_PRODUTOR_EXEMPLO,
+        dados_consumo=dados_para_salvar
+    )
     
     resultado_final = {
         "status_code": status_code,
