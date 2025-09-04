@@ -2,17 +2,16 @@ import json
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
 from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
-from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_informacoes_faltantes
+from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_informado_factory import FabricaConsumoInformado
 from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_builder import ConsumoBuilder
-from src.comunicacao_wpp_ia.aplicacao.servicos.salvar_consumo import SalvarConsumo
-from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
+from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.salvar_consumo import SalvarConsumo
+from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.validar_intencao import validar_intencao_do_usuario
 from src.comunicacao_wpp_ia.aplicacao.portas.pre_processamento_texto import ServicoPreProcessamento
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
 from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ConsumoMontado
-from src.comunicacao_wpp_ia.aplicacao.servicos.verificar_consumo_montado import verificar_dados_consumo
+from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.verificar_consumo_montado import verificar_dados_consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
-from src.comunicacao_wpp_ia.aplicacao.servicos.salvar_consumo import SalvarConsumo
 
 
 class ServicoConversa:
@@ -25,6 +24,7 @@ class ServicoConversa:
         self._obter_remetente_service = obter_remetente_service
         self._pre_processador = pre_processador
         self._salvar_consumo_service = salvar_consumo_service
+        self._fabrica_consumo_informado = FabricaConsumoInformado(llm)
         # TODO: acho que seria melhor receber o servico de salvar consumo e não o repositório direto
 
     def processar_mensagem_recebida(self, mensagem_recebida: MensagemRecebida):
@@ -63,14 +63,14 @@ class ServicoConversa:
             return
 
         # Etapa 1: Extrair dados e checar se faltam informações
-        resultado_checagem = checar_informacoes_faltantes(mensagem, historico, self._llm)
-        if isinstance(resultado_checagem, str):
-            self._responder_e_salvar_historico(remetente.numero_telefone, mensagem, resultado_checagem, historico)
+        resultado_construcao = self._fabrica_consumo_informado.criar_de_mensagem(mensagem, historico)
+        if isinstance(resultado_construcao, str):
+            self._responder_e_salvar_historico(remetente.numero_telefone, mensagem, resultado_construcao, historico)
             return
 
-        if isinstance(resultado_checagem, ConsumoInformado):
+        if isinstance(resultado_construcao, ConsumoInformado):
             # Etapa 2: Construir o objeto de consumo completo
-            consumo_informado = resultado_checagem
+            consumo_informado = resultado_construcao
             resultado_builder = self._construir_consumo(remetente, mensagem, consumo_informado, historico)
             if isinstance(resultado_builder, str): # Builder pediu esclarecimento
                 self._responder_e_salvar_historico(remetente.numero_telefone, mensagem, resultado_builder, historico)

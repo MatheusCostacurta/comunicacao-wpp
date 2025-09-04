@@ -16,7 +16,7 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import ServicoConvers
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
 
 from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
-from src.comunicacao_wpp_ia.aplicacao.servicos.salvar_consumo import SalvarConsumo
+from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.salvar_consumo import SalvarConsumo
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
