@@ -101,6 +101,7 @@ def __obter_mensagem_usuario() -> str:
         '{mensagem}'
     """
 
+# TODO: Seria o nome de checar informacoes? Nao seria um builder de ConsumoInformado?
 def checar_informacoes_faltantes(mensagem_usuario: str, historico: list, llm: ServicoLLM) -> (str | ConsumoInformado):
     """
     Usa o LLM para fazer uma extração estruturada rápida. Se um campo obrigatório não for extraído, formula a pergunta para o usuário.

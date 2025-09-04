@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ConsumoMontado
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 
+# TODO: Preciso de um agente para isso?
 class ResultadoVerificacao(BaseModel):
     """Modelo de saída para o agente verificador."""
     aprovado: bool = Field(description="Indica se o consumo está aprovado para ser salvo.")

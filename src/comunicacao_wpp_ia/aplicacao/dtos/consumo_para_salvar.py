@@ -12,6 +12,7 @@ class MaquinaParaSalvar(BaseModel):
     horimetro_inicio: Optional[float] = Field(None, description="O valor inicial do horímetro/odômetro.")
     horimetro_fim: Optional[float] = Field(None, description="O valor final do horímetro/odômetro.")
 
+# TODO: Nao seria modelo de dados, dominio?
 class ConsumoMontado(BaseModel):
     """
     DTO que representa o objeto de consumo após a fase de coleta de IDs, pronto para ser verificado e salvo.

@@ -13,6 +13,7 @@ class ConsumoBuilder:
         self._servico_llm = servico_llm
         self.ferramentas = servico_llm.obter_ferramentas()
 
+    # TODO: receber numero de telefone
     def _criar_prompt(self, remetente: DadosRemetente) -> str:
         return f"""
         Você é um agente especialista em coletar dados agrícolas.
