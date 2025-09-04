@@ -15,6 +15,9 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.pre_processamento import PreProce
 from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import ServicoConversa
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
 
+from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
+from src.comunicacao_wpp_ia.aplicacao.servicos.salvar_consumo import SalvarConsumo
+
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
 
@@ -36,10 +39,10 @@ def inicializar_servicos_e_adaptadores():
     agriwin_cliente = AgriwinCliente(base_urls=agriwin_urls)
 
     # Adaptadores de Saída (Infraestrutura)
-    llm_adapter = AdaptadorGroq()
-    whatsapp_adapter = AdaptadorZAPI()
     repo_remetente = RepoAgriwinRemetente(agriwin_cliente=agriwin_cliente)
     repo_consumo = RepoAgriwinConsumo(agriwin_cliente=agriwin_cliente)
+    llm_adapter = AdaptadorGroq()
+    whatsapp_adapter = AdaptadorZAPI()
     whisper_adapter = AdaptadorWhisper()
     gemini_adapter = AdaptadorGeminiVision()
 
@@ -47,6 +50,9 @@ def inicializar_servicos_e_adaptadores():
     memoria_adapter = AdaptadorRedis() if ambiente == "prod" else AdaptadorMemoriaLocal()
 
     # Serviços de Aplicação (Core)
+    obter_remetente_service = ObterRemetente(repo_remetente=repo_remetente)
+    salvar_consumo_service = SalvarConsumo(repositorio=repo_consumo)
+
     pre_processador = PreProcessamentoService(
         servico_transcricao=whisper_adapter,
         servico_imagem=gemini_adapter
@@ -55,8 +61,8 @@ def inicializar_servicos_e_adaptadores():
     servico_conversa = ServicoConversa(
         memoria=memoria_adapter,
         llm=llm_adapter,
-        repo_remetente=repo_remetente,
-        repo_consumo=repo_consumo,
+        obter_remetente_service=obter_remetente_service,
+        salvar_consumo_service=salvar_consumo_service,
         pre_processador=pre_processador
     )
     

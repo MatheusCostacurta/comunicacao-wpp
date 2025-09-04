@@ -8,37 +8,31 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.salvar_consumo import SalvarConsu
 from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
 from src.comunicacao_wpp_ia.aplicacao.portas.pre_processamento_texto import ServicoPreProcessamento
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
-from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_remetente import RepositorioRemetente
-from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_consumo import RepositorioConsumo
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
 from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ConsumoMontado
 from src.comunicacao_wpp_ia.aplicacao.servicos.verificar_consumo_montado import verificar_dados_consumo
+from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
+from src.comunicacao_wpp_ia.aplicacao.servicos.salvar_consumo import SalvarConsumo
+
 
 class ServicoConversa:
     """
     Serviço de aplicação responsável por orquestrar o fluxo de uma conversa.
     """
-    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, repo_remetente: RepositorioRemetente, repo_consumo: RepositorioConsumo, pre_processador: ServicoPreProcessamento):
+    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, obter_remetente_service: ObterRemetente, salvar_consumo_service: SalvarConsumo, pre_processador: ServicoPreProcessamento):
         self._memoria = memoria
         self._llm = llm
-        self._repo_remetente = repo_remetente
+        self._obter_remetente_service = obter_remetente_service
         self._pre_processador = pre_processador
-        self._repo_consumo = repo_consumo
+        self._salvar_consumo_service = salvar_consumo_service
         # TODO: acho que seria melhor receber o servico de salvar consumo e não o repositório direto
-
-    def _obter_remetente(self, telefone: str) -> DadosRemetente:
-        remetente = self._repo_remetente.buscar_remetente_por_telefone(telefone)
-        if not remetente:
-            print(f"[ERROR] Não foi possível encontrar um produtor associado ao número {telefone}.")
-            return None
-        return remetente
 
     def processar_mensagem_recebida(self, mensagem_recebida: MensagemRecebida):
         """
         Ponto de entrada principal. Orquestra a busca do remetente, pré-processamento
         e o fluxo de conversação.
         """
-        remetente = self._obter_remetente(telefone=mensagem_recebida.telefone_remetente)
+        remetente = self._obter_remetente_service.executar(telefone=mensagem_recebida.telefone_remetente)
         if not remetente:
             # Poderíamos enviar uma mensagem de erro ao usuário aqui.
             print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
