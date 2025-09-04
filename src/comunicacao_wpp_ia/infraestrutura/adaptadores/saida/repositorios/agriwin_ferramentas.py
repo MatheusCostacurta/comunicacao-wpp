@@ -80,7 +80,7 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
     def buscar_produtos_mais_consumidos(self, id_produtor: int, produtos: List[str]) -> List[Produto]:
         print(f"\n[API] Buscando consumo recente de produtos para o produtor {id_produtor}...")
         # TODO: preciso de uma rota para buscar consumos filtrando periodo (obrigatoriamente) e lista de produtos (opcional)
-        endpoint = "/api/v1/consumo/produtos/mais-consumidos"
+        endpoint = "/api/v1/consumos/produtos/mais-consumidos"
         ids_produtos = [p.id for p in produtos]
         params = {"identificador_produtor": id_produtor, "ids": ids_produtos}
         response = self._cliente.get(endpoint, params=params)
@@ -123,8 +123,8 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         # return self._processar_e_mapear_resposta(response, SafraAgriwinDTO, AgriwinMapeador.para_safra_dominio)
 
         safra_data = [
-            {"identificador": 601, "ano_inicio": 2024, "ano_termino": 2025, "data_inicio": "01/01/2024", "data_termino": "01/01/2025"},
-            {"identificador": 602, "ano_inicio": 2025, "ano_termino": 2026, "data_inicio": "01/01/2025", "data_termino": "01/01/2026"},
+            {"identificador": 20, "ano_inicio": 2024, "ano_termino": 2025, "data_inicio": "01/01/2024", "data_termino": "01/01/2025"},
+            {"identificador": 22, "ano_inicio": 2025, "ano_termino": 2026, "data_inicio": "01/01/2025", "data_termino": "01/01/2026"},
         ]
         response_mock = requests.Response()
         response_mock.status_code = 200

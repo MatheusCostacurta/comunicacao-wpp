@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
+from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
 
 class ValidadorConsumo:
     """
@@ -20,7 +20,7 @@ class ValidadorConsumo:
     }
 
     @classmethod
-    def validar(cls, consumo: Consumo) -> Tuple[bool, List[str]]:
+    def validar(cls, consumo: ConsumoInformado) -> Tuple[bool, List[str]]:
         """
         Verifica se o objeto Consumo possui todos os dados obrigatórios.
 

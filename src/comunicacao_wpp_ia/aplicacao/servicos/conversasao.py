@@ -1,24 +1,30 @@
 import json
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
-from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
+from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
 from src.comunicacao_wpp_ia.aplicacao.servicos.checar_informacoes import checar_informacoes_faltantes
 from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_builder import ConsumoBuilder
+from src.comunicacao_wpp_ia.aplicacao.servicos.salvar_consumo import SalvarConsumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.validar_intencao import validar_intencao_do_usuario
 from src.comunicacao_wpp_ia.aplicacao.portas.pre_processamento_texto import ServicoPreProcessamento
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_remetente import RepositorioRemetente
+from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_consumo import RepositorioConsumo
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
+from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ConsumoMontado
+from src.comunicacao_wpp_ia.aplicacao.servicos.verificar_consumo_montado import verificar_dados_consumo
 
 class ServicoConversa:
     """
     Serviço de aplicação responsável por orquestrar o fluxo de uma conversa.
     """
-    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, repo_remetente: RepositorioRemetente, pre_processador: ServicoPreProcessamento):
+    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, repo_remetente: RepositorioRemetente, repo_consumo: RepositorioConsumo, pre_processador: ServicoPreProcessamento):
         self._memoria = memoria
         self._llm = llm
         self._repo_remetente = repo_remetente
         self._pre_processador = pre_processador
+        self._repo_consumo = repo_consumo
+        # TODO: acho que seria melhor receber o servico de salvar consumo e não o repositório direto
 
     def _obter_remetente(self, telefone: str) -> DadosRemetente:
         remetente = self._repo_remetente.buscar_remetente_por_telefone(telefone)
@@ -49,6 +55,8 @@ class ServicoConversa:
             return
 
         self._processar_conteudo_texto(conteudo_texto, remetente)
+        # TODO: O método de processar conteudo texto está verificando e salvando o objeto
+        # TODO: analisar melhor responsabilidades dos métodos
 
     def _processar_conteudo_texto(self, mensagem: str, remetente: DadosRemetente):
         """
@@ -77,32 +85,41 @@ class ServicoConversa:
             self._memoria.salvar_estado(remetente.numero_telefone, historico)
             return
 
-        if isinstance(resultado_checagem, Consumo):
+        if isinstance(resultado_checagem, ConsumoInformado):
             builder_consumo = ConsumoBuilder(self._llm)
-            resultado_agente_str = builder_consumo.executar(remetente, mensagem, resultado_checagem, historico)
-                    
-            try:
-                resultado_api = json.loads(resultado_agente_str)
-                print(f"\n--- RESULTADO DA OPERAÇÃO DE SALVAMENTO ---")
-                print(f"Resposta da API: {resultado_api}")
+            resultado_builder = builder_consumo.executar(remetente, mensagem, resultado_checagem, historico)
 
-                status_code = resultado_api.get("status_code")
-                mensagem_api = resultado_api.get("message")
+            if isinstance(resultado_builder, str): # O builder retornou uma pergunta de esclarecimento
+                print("\n--- RESULTADO FINAL (AMBIGUIDADE DETECTADA, AGUARDANDO USUÁRIO) ---")
+                resposta_usuario = resultado_builder
+                historico.append({"role": "user", "content": mensagem})
+                historico.append({"role": "assistant", "content": resposta_usuario})
+                self._memoria.salvar_estado(remetente.numero_telefone, historico)
+                return
+            
+            if isinstance(resultado_builder, ConsumoMontado):
+                consumo_montado = resultado_builder
+                # eh_valido, msg_verificacao = verificar_dados_consumo(consumo_montado, self._llm)
+
+                # if not eh_valido: # O verificador encontrou inconsistências
+                #     print(f"\n--- RESULTADO FINAL (DADOS INCONSISTENTES) ---")
+                #     resposta_usuario = msg_verificacao
+                #     historico.append({"role": "user", "content": mensagem})
+                #     historico.append({"role": "assistant", "content": resposta_usuario})
+                #     self._memoria.salvar_estado(remetente.numero_telefone, historico)
+                #     return
+                
+                salvar_service = SalvarConsumo(self._repo_consumo)
+                status_code, mensagem_api = salvar_service.executar(remetente.produtor_id, consumo_montado)
 
                 if status_code == 200:
                     self._memoria.limpar_memoria_conversa(remetente.numero_telefone)
                     resposta_usuario = "Seu registro foi salvo com sucesso!"
                 else:
-                    resposta_usuario = mensagem_api
+                    # TODO: a resposta pro usuario está vindo dentro do campo 'dados' do json
+                    resposta_usuario = f"Não foi possível salvar seu registro. Motivo: {mensagem_api}"
                     historico.append({"role": "user", "content": mensagem})
                     historico.append({"role": "assistant", "content": resposta_usuario})
                     self._memoria.salvar_estado(remetente.numero_telefone, historico)
-
-            except json.JSONDecodeError:
-                print("\n--- RESULTADO FINAL (AMBIGUIDADE DETECTADA, AGUARDANDO USUÁRIO) ---")
-                resposta_usuario = resultado_agente_str
-                historico.append({"role": "user", "content": mensagem})
-                historico.append({"role": "assistant", "content": resposta_usuario})
-                self._memoria.salvar_estado(remetente.numero_telefone, historico)
-
-            print(f"Resposta final para o usuário: {resposta_usuario}")
+                
+                print(f"Resposta final para o usuário: {resposta_usuario}")

@@ -31,19 +31,19 @@ class LangChainFerramentas:
     pass
 
     def __init__(self):
-        self.todas_ferramentas = [
+        self.ferramentas_de_coleta = [
             buscar_produto_por_nome, 
             buscar_talhoes_disponiveis, 
             buscar_propriedades_disponiveis,
             buscar_maquinas_disponiveis, 
             buscar_pontos_de_estoque_disponiveis,
             buscar_safra_disponivel,             
-            buscar_responsavel_por_telefone,     
-            salvar_registro_consumo
+            buscar_responsavel_por_telefone
         ]
 
-    def obter(self):
-        return self.todas_ferramentas
+    def obter_ferramentas_de_coleta(self):
+        """Retorna apenas as ferramentas para buscar informações."""
+        return self.ferramentas_de_coleta
     
 @tool
 def buscar_produto_por_nome(nome_produto: str) -> str:
@@ -65,7 +65,8 @@ def buscar_produto_por_nome(nome_produto: str) -> str:
 
 @tool
 def buscar_talhoes_disponiveis() -> str:
-    """Use esta ferramenta para obter uma lista de TODOS os talhões (áreas ou campos) disponíveis na fazenda do produtor. A IA deve então usar esta lista para encontrar o ID do talhão que o usuário mencionou.
+    """Use esta ferramenta para obter uma lista de TODOS os talhões (áreas ou campos) disponíveis na fazenda do produtor. 
+    A IA deve então usar esta lista para encontrar o(s) ID(s) do talhão(s) que o usuário mencionou (pode ser mais de um).
     Retorna um JSON string com a lista de TODOS os talhões disponíveis."""
     talhao_service = LocalizarTalhaoService(api_ferramentas=api_agriwin_ferramentas)
     resultados = talhao_service.obter(id_produtor=ID_PRODUTOR_EXEMPLO)
@@ -73,7 +74,8 @@ def buscar_talhoes_disponiveis() -> str:
 
 @tool
 def buscar_propriedades_disponiveis() -> str:
-    """Use esta ferramenta para obter uma lista de TODAS as propriedades (fazendas) disponíveis para o produtor. A IA deve usar esta lista para encontrar o(s) ID(s) da(s) propriedade(s) que o usuário mencionou.
+    """Use esta ferramenta para obter uma lista de TODAS as propriedades (fazendas) disponíveis para o produtor.
+    A IA deve usar esta lista para encontrar o(s) ID(s) da(s) propriedade(s) que o usuário mencionou (pode ser mais de uma).
     Retorna um JSON string com a lista de TODAS as propriedades disponíveis."""
     propriedade_service = LocalizarPropriedadeService(api_ferramentas=api_agriwin_ferramentas)
     resultados = propriedade_service.obter(id_produtor=ID_PRODUTOR_EXEMPLO)
@@ -132,80 +134,6 @@ def buscar_responsavel_por_telefone(telefone: str) -> str:
     responsavel_service = LocalizarResponsavelService(api_ferramentas=api_agriwin_ferramentas)
     resultado = responsavel_service.obter(telefone=telefone, id_produtor=ID_PRODUTOR_EXEMPLO)
     return json.dumps(resultado.dict() if resultado else None)
-
-@tool
-def salvar_registro_consumo(
-    produtos: List[ProdutoParaSalvar],
-    id_ponto_estoque: int, 
-    id_safra: int, 
-    data_aplicacao: str, 
-    tipo_rateio: str, 
-    ids_talhoes: Optional[List[int]] = None, 
-    ids_propriedades: Optional[List[int]] = None, 
-    id_responsavel: Optional[int] = None, 
-    maquinas: Optional[List[MaquinaParaSalvar]] = None
-) -> str:   
-    """
-    Use esta ferramenta como a ETAPA FINAL para salvar o registro de consumo.
-    - 'produtos': Deve ser uma lista de objetos, cada um com 'id' e 'quantidade'.
-    - 'maquinas': (Opcional) Deve ser uma lista de objetos, cada um com 'id', 'horimetro_inicio' e 'horimetro_fim'.
-    - 'data_aplicacao': A data deve estar no formato 'DD/MM/YYYY.
-    Se o tipo_rateio for 'talhao', você DEVE fornecer uma lista de IDs em 'ids_talhoes'.
-    Se o tipo_rateio for 'propriedade', você DEVE fornecer uma lista de IDs em 'ids_propriedades'.
-    Esta ferramenta fará o POST para a API e retorna um JSON string com o 'status_code' e a 'mensagem' da API.
-    """
-    
-    print("Iniciou ferramenta salvar_registro_consumo")
-
-    # Validação de campos obrigatórios
-    if not all([produtos, id_ponto_estoque, id_safra, data_aplicacao, tipo_rateio]):
-        msg_erro = "Parâmetros obrigatórios ausentes. Verifique produtos, ponto_estoque, safra, data e rateio."
-        return json.dumps({"status_code": 400, "message": msg_erro})
-    
-    dados_para_salvar = {
-        "atividade_id": 1, # TODO: Ajustar atividade conforme necessário
-        "ponto_estoque_id": id_ponto_estoque,
-        "safra_id": id_safra,
-        "data": data_aplicacao,
-        # "tipo_rateio": tipo_rateio, #! LIBERAR
-        "lista_produtos": [p.dict() for p in produtos]
-    }
-    
-    #! LIBERAR
-    # if maquinas: 
-    #     lista_imobilizados = []
-    #     for maquina in maquinas:
-    #         imobilizado_item = {"id": maquina.id}
-    #         if maquina.horimetro_inicio is not None and maquina.horimetro_fim is not None:
-    #             imobilizado_item["quantidade_horimetro_hodometro"] = maquina.horimetro_fim - maquina.horimetro_inicio # TODO: Mudar lógica
-    #         lista_imobilizados.append(imobilizado_item)
-    #     dados_para_salvar["lista_imobilizados"] = lista_imobilizados
-
-    #! LIBERAR
-    # if ids_talhoes:
-    #     dados_para_salvar["lista_rateios"] = ids_talhoes
-    # elif ids_propriedades:
-    #     dados_para_salvar["lista_rateios"] = ids_propriedades
-    # if id_responsavel:
-    #     dados_para_salvar["id_responsavel"] = id_responsavel
-
-    # ! FIZ UM MOCK PARA SALVAR ATÉ AJUSTAR A API
-    dados_para_salvar["epoca"] = "SAFRA"
-    dados_para_salvar["lista_rateios"] = [{"plantio_id": 446}],
-
-    print("Dados preparados para salvar consumo:", dados_para_salvar)
-    status_code, response_body = api_agriwin_consumo.salvar_consumo(
-        produtor_id=ID_PRODUTOR_EXEMPLO,
-        dados_consumo=dados_para_salvar
-    )
-    
-    resultado_final = {
-        "status_code": status_code,
-        "message": response_body.get("message", "Ocorreu um erro desconhecido.")
-    }
-
-    return json.dumps(resultado_final)
-
 
 def serializar_para_json(dados):
     if hasattr(dados, 'model_dump'): # Para objetos Pydantic

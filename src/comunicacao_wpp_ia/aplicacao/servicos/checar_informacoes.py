@@ -1,7 +1,7 @@
 import re
 from datetime import date, timedelta
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
-from src.comunicacao_wpp_ia.dominio.modelos.consumo import Consumo
+from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
 from src.comunicacao_wpp_ia.dominio.servicos.validador_consumo import ValidadorConsumo
 
 def __obter_prompt_sistema() -> str:
@@ -101,7 +101,7 @@ def __obter_mensagem_usuario() -> str:
         '{mensagem}'
     """
 
-def checar_informacoes_faltantes(mensagem_usuario: str, historico: list, llm: ServicoLLM) -> (str | Consumo):
+def checar_informacoes_faltantes(mensagem_usuario: str, historico: list, llm: ServicoLLM) -> (str | ConsumoInformado):
     """
     Usa o LLM para fazer uma extração estruturada rápida. Se um campo obrigatório não for extraído, formula a pergunta para o usuário.
     """
@@ -112,7 +112,7 @@ def checar_informacoes_faltantes(mensagem_usuario: str, historico: list, llm: Se
 
     historico_formatado = "\n".join(f"{m['role']}: {m['content']}" for m in historico)
     
-    agente = llm.criar_agente(prompt_sistema, prompt_usuario, Consumo) 
+    agente = llm.criar_agente(prompt_sistema, prompt_usuario, ConsumoInformado) 
     dados_extraidos = agente.executar({"mensagem": mensagem_usuario, "historico": historico_formatado})
 
     print(f"Dados extraídos na checagem inicial: {dados_extraidos}")

@@ -14,12 +14,12 @@ class RepoAgriwinConsumo(RepositorioConsumo):
         print("[INFRA] Adaptador do Repositório AgriwinRemetente inicializado.")
     
 
-    def salvar_consumo(self, produtor_id: int, dados_consumo: Dict) -> Tuple[int, Dict]:
+    def salvar(self, produtor_id: int, dados_consumo: Dict) -> Tuple[int, Dict]:
         """
         Envia os dados de consumo para a API Agriwin através de um POST.
         Retorna uma tupla contendo o status_code e o corpo da resposta em JSON.
         """
-        endpoint = "/api/v1/consumo"
+        endpoint = "/api/v1/consumos"
         payload_completo = {
             "produtor_id": produtor_id,
             "consumo": dados_consumo
@@ -38,6 +38,7 @@ class RepoAgriwinConsumo(RepositorioConsumo):
             # O AgriwinCliente lança HTTPError para respostas 4xx e 5xx.
             # Podemos capturar o erro para extrair o corpo da resposta de erro da API.
             print(f"[API ERROR] Erro ao salvar consumo: {e.response.status_code} - {e.response.text}")
+            print(f"[API ERROR] Detalhes do erro: {e}")
             try:
                 # Tenta extrair o JSON do corpo da resposta de erro
                 error_body = e.response.json()

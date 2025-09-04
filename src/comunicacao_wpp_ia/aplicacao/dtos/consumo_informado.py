@@ -13,7 +13,7 @@ class MaquinaConsumo(BaseModel):
     horimetro_inicio: Optional[float] = Field(default=None, description="O valor inicial do horímetro.")
     horimetro_fim: Optional[float] = Field(default=None, description="O valor final do horímetro.")
 
-class Consumo(BaseModel):
+class ConsumoInformado(BaseModel):
     """Modelo de dados para a extração inicial de informações da mensagem do usuário."""
     produtos_mencionados: Optional[List[ProdutoConsumo]] = Field(default=None, description="Uma lista de todos os produtos e suas respectivas quantidades mencionados.")
     

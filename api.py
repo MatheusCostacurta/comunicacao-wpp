@@ -6,6 +6,7 @@ from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conver
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import AdaptadorGroq
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.entrada.whatsapp.zapi_adapter import AdaptadorZAPI
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_remetente import RepoAgriwinRemetente
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.pre_processamento_texto.whisper_adapter import AdaptadorWhisper
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.pre_processamento_texto.gemini_vision_adapter import AdaptadorGeminiVision
@@ -38,6 +39,7 @@ def inicializar_servicos_e_adaptadores():
     llm_adapter = AdaptadorGroq()
     whatsapp_adapter = AdaptadorZAPI()
     repo_remetente = RepoAgriwinRemetente(agriwin_cliente=agriwin_cliente)
+    repo_consumo = RepoAgriwinConsumo(agriwin_cliente=agriwin_cliente)
     whisper_adapter = AdaptadorWhisper()
     gemini_adapter = AdaptadorGeminiVision()
 
@@ -54,6 +56,7 @@ def inicializar_servicos_e_adaptadores():
         memoria=memoria_adapter,
         llm=llm_adapter,
         repo_remetente=repo_remetente,
+        repo_consumo=repo_consumo,
         pre_processador=pre_processador
     )
     
