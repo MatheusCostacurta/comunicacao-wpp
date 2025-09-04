@@ -49,71 +49,78 @@ class ServicoConversa:
             return
 
         self._processar_conteudo_texto(conteudo_texto, remetente)
-        # TODO: O método de processar conteudo texto está verificando e salvando o objeto
-        # TODO: analisar melhor responsabilidades dos métodos
 
     def _processar_conteudo_texto(self, mensagem: str, remetente: DadosRemetente):
         """
-        Orquestra o fluxo de processamento do conteúdo textual da mensagem, chamando os agentes em sequência e gerenciando a memória.
+        Orquestra o fluxo de processamento do conteúdo textual da mensagem.
         """
         print(f"\n--- INICIANDO PROCESSAMENTO PARA: '{mensagem}' (Remetente: {remetente.numero_telefone}) ---")
-
         estado_conversa = self._memoria.obter_estado(remetente.numero_telefone)
         historico = estado_conversa["historico"]
 
+        # Etapa 0: Validar intenção
+        if not self._validar_intencao(mensagem, historico):
+            return
+
+        # Etapa 1: Extrair dados e checar se faltam informações
+        resultado_checagem = checar_informacoes_faltantes(mensagem, historico, self._llm)
+        if isinstance(resultado_checagem, str):
+            self._responder_e_salvar_historico(remetente.numero_telefone, mensagem, resultado_checagem, historico)
+            return
+
+        if isinstance(resultado_checagem, ConsumoInformado):
+            # Etapa 2: Construir o objeto de consumo completo
+            consumo_informado = resultado_checagem
+            resultado_builder = self._construir_consumo(remetente, mensagem, consumo_informado, historico)
+            if isinstance(resultado_builder, str): # Builder pediu esclarecimento
+                self._responder_e_salvar_historico(remetente.numero_telefone, mensagem, resultado_builder, historico)
+                return
+            
+            if isinstance(resultado_builder, ConsumoMontado):
+                # Etapa 3: Salvar o consumo e finalizar
+                consumo_montado = resultado_builder
+                self._salvar_consumo(remetente, mensagem, consumo_montado, historico)
+
+    def _validar_intencao(self, mensagem: str, historico: list) -> bool:
         resultado_validacao = validar_intencao_do_usuario(mensagem, historico, self._llm)
         if not resultado_validacao.intencao_valida:
             print("\n--- RESULTADO FINAL (INTENÇÃO MALICIOSA/INVÁLIDA) ---")
             resposta_usuario = "Desculpe, só posso processar registros de consumo. Para outras solicitações, entre em contato com o suporte."
             print(f"Resposta para o usuário: {resposta_usuario}")
             #? Enviar a má intenção para o amplitude para análise se estamos errando na validação
-            return
-        
-        resultado_checagem = checar_informacoes_faltantes(mensagem, historico, self._llm)
-        
-        if isinstance(resultado_checagem, str):
-            print("\n--- RESULTADO FINAL (FALTAM DADOS) ---")
-            print(f"Resposta para o usuário: {resultado_checagem}")
-            historico.append({"role": "user", "content": mensagem})
-            historico.append({"role": "assistant", "content": resultado_checagem})
-            self._memoria.salvar_estado(remetente.numero_telefone, historico)
-            return
+            return False
+        return True
+    
+    def _construir_consumo(self, remetente: DadosRemetente, mensagem: str, consumo_informado: ConsumoInformado, historico: list):
+        """
+        Invoca o ConsumoBuilder para coletar todos os IDs e montar o objeto final.
+        Retorna um ConsumoMontado em caso de sucesso ou uma string (pergunta) em caso de ambiguidade.
+        """
+        builder_consumo = ConsumoBuilder(self._llm)
+        return builder_consumo.executar(remetente, mensagem, consumo_informado, historico)
+    
+    def _responder_e_salvar_historico(self, telefone: str, mensagem_usuario: str, resposta_assistente: str, historico: list):
+        print(f"Resposta para o usuário: {resposta_assistente}")
+        historico.append({"role": "user", "content": mensagem_usuario})
+        historico.append({"role": "assistant", "content": resposta_assistente})
+        self._memoria.salvar_estado(telefone, historico)
+    
+    def _salvar_consumo(self, remetente: DadosRemetente, mensagem: str, consumo_montado: ConsumoMontado, historico: list):
+        # eh_valido, msg_verificacao = verificar_dados_consumo(consumo_montado, self._llm)
+        # if not eh_valido: # O verificador encontrou inconsistências
+        #     print(f"\n--- RESULTADO FINAL (DADOS INCONSISTENTES) ---")
+        #     resposta_usuario = msg_verificacao
+        #     historico.append({"role": "user", "content": mensagem})
+        #     historico.append({"role": "assistant", "content": resposta_usuario})
+        #     self._memoria.salvar_estado(remetente.numero_telefone, historico)
+        #     return
 
-        if isinstance(resultado_checagem, ConsumoInformado):
-            builder_consumo = ConsumoBuilder(self._llm)
-            resultado_builder = builder_consumo.executar(remetente, mensagem, resultado_checagem, historico)
-
-            if isinstance(resultado_builder, str): # O builder retornou uma pergunta de esclarecimento
-                print("\n--- RESULTADO FINAL (AMBIGUIDADE DETECTADA, AGUARDANDO USUÁRIO) ---")
-                resposta_usuario = resultado_builder
-                historico.append({"role": "user", "content": mensagem})
-                historico.append({"role": "assistant", "content": resposta_usuario})
-                self._memoria.salvar_estado(remetente.numero_telefone, historico)
-                return
-            
-            if isinstance(resultado_builder, ConsumoMontado):
-                consumo_montado = resultado_builder
-                # eh_valido, msg_verificacao = verificar_dados_consumo(consumo_montado, self._llm)
-
-                # if not eh_valido: # O verificador encontrou inconsistências
-                #     print(f"\n--- RESULTADO FINAL (DADOS INCONSISTENTES) ---")
-                #     resposta_usuario = msg_verificacao
-                #     historico.append({"role": "user", "content": mensagem})
-                #     historico.append({"role": "assistant", "content": resposta_usuario})
-                #     self._memoria.salvar_estado(remetente.numero_telefone, historico)
-                #     return
-                
-                salvar_service = SalvarConsumo(self._repo_consumo)
-                status_code, mensagem_api = salvar_service.executar(remetente.produtor_id, consumo_montado)
-
-                if status_code == 200:
-                    self._memoria.limpar_memoria_conversa(remetente.numero_telefone)
-                    resposta_usuario = "Seu registro foi salvo com sucesso!"
-                else:
-                    # TODO: a resposta pro usuario está vindo dentro do campo 'dados' do json
-                    resposta_usuario = f"Não foi possível salvar seu registro. Motivo: {mensagem_api}"
-                    historico.append({"role": "user", "content": mensagem})
-                    historico.append({"role": "assistant", "content": resposta_usuario})
-                    self._memoria.salvar_estado(remetente.numero_telefone, historico)
-                
-                print(f"Resposta final para o usuário: {resposta_usuario}")
+        status_code, mensagem_api = self._salvar_consumo_service.executar(remetente.produtor_id, consumo_montado)
+        if status_code == 200:
+            self._memoria.limpar_memoria_conversa(remetente.numero_telefone)
+            resposta_usuario = "Seu registro foi salvo com sucesso!"
+            print(f"Resposta final para o usuário: {resposta_usuario}")
+        else:
+            #TODO: a resposta pro usuario está vindo dentro do campo 'dados' do json
+            resposta_usuario = f"Não foi possível salvar seu registro. Motivo: {mensagem_api}"
+            self._responder_e_salvar_historico(remetente.numero_telefone, mensagem, resposta_usuario, historico)
