@@ -13,7 +13,7 @@ class Produto(BaseModel):
     """
     Representa um Produto dentro do núcleo da aplicação.
     """
-    id: int
+    id: str 
     nome: str
     unidades_medida: List[str] = []
     ingredientes_ativos: List[str] = []

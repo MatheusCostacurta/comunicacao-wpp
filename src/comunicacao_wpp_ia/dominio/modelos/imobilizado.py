@@ -3,7 +3,7 @@ from typing import Optional
 
 class Imobilizado(BaseModel):
     """Modelo de domínio puro para uma máquina ou imobilizado."""
-    id: int
+    id: str 
     nome: str
     ativo: bool
     numero_serie: Optional[str] = None

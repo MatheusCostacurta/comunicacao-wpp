@@ -26,15 +26,15 @@ class ConsumoBuilder:
         3.1 - - Nesse caso, PARE e pergunte ao usuário para esclarecer qual ele quer. Responda sempre em português (Brasil)
         4.  **Formato Final:** Após buscar tudo, sua resposta final DEVE SER APENAS um objeto JSON estruturado com os dados que você encontrou. Use o seguinte formato:
             {{{{
-                "produtos": [{{{{ "id": <int>, "quantidade": <float> }}}}],
-                "id_ponto_estoque": <int | null>,
-                "id_safra": <int | null>,
+                "produtos": [{{{{ "id": <string>, "quantidade": <float> }}}}],
+                "id_ponto_estoque": <string | null>,
+                "id_safra": <string | null>,
                 "data_aplicacao": "<DD/MM/YYYY>",
                 "tipo_rateio": "<'talhao' | 'propriedade'>",
-                "ids_talhoes": [<int>],
-                "ids_propriedades": [<int>],
-                "id_responsavel": <int | null>,
-                "maquinas": [{{{{ "id": <int>, "horimetro_inicio": <float | null>, "horimetro_fim": <float | null> }}}}]
+                "ids_talhoes": [<string>],
+                "ids_propriedades": [<string>],
+                "id_responsavel": <string | null>,
+                "maquinas": [{{{{ "id": <string>, "horimetro_inicio": <float | null>, "horimetro_fim": <float | null> }}}}]
             }}}}
 
         **Dados de Entrada:**
@@ -58,8 +58,19 @@ class ConsumoBuilder:
 
         resultado_str = agente_com_ferramentas.executar(entradas_agente)
         try:
-            dados_json = json.loads(resultado_str)
+            # Remove a formatação de bloco de código Markdown antes de processar o JSON
+            if "```json" in resultado_str:
+                clean_str = resultado_str.split("```json")[1].split("```")[0].strip()
+            elif "```" in resultado_str:
+                clean_str = resultado_str.split("```")[1].split("```")[0].strip()
+            else:
+                clean_str = resultado_str
+
+            dados_json = json.loads(clean_str)
             consumo_montado = ConsumoMontado.model_validate(dados_json)
             return consumo_montado
-        except (json.JSONDecodeError, Exception):
+        except (json.JSONDecodeError, Exception) as e:
+            print(f"[BUILDER ERROR] Falha ao decodificar o JSON do agente: {e}")
+            print(f"[BUILDER ERROR] String recebida: {resultado_str}")
+            # Se falhar, retorna a string original para que o fluxo possa pedir esclarecimento
             return resultado_str

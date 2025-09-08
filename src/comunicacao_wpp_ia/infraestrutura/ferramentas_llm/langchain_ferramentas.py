@@ -18,7 +18,7 @@ from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwi
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
-ID_PRODUTOR_EXEMPLO = 57 # ID fixo para este exemplo
+ID_PRODUTOR_EXEMPLO = "NTc=" # ID fixo para este exemplo
 agriwin_urls = ["https://demo.agriwin.com.br"]
 agriwin_cliente = AgriwinCliente(base_urls=agriwin_urls)
 api_agriwin_ferramentas = RepoAgriwinFerramentas(agriwin_cliente=agriwin_cliente)

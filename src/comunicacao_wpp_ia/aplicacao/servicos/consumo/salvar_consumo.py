@@ -21,62 +21,65 @@ class SalvarConsumo:
 
         if not all([consumo.produtos, consumo.id_ponto_estoque, consumo.id_safra, consumo.data_aplicacao, consumo.tipo_rateio]):
             msg_erro = "Parâmetros obrigatórios ausentes. Verifique produtos, ponto_estoque, safra, data e rateio."
-            return json.dumps({"status_code": 400, "message": msg_erro})
+            return 400, json.dumps({"status_code": 400, "message": msg_erro})
         
-        dados_para_salvar = {
+        rateio_payload = {
             "atividade_id": 1, # TODO: Ajustar atividade conforme necessário
-            "ponto_estoque_id": consumo.id_ponto_estoque,
             "safra_id": consumo.id_safra,
-            "data": consumo.data_aplicacao.strftime('%d/%m/%Y') if hasattr(consumo.data_aplicacao, 'strftime') else consumo.data_aplicacao if consumo.data_aplicacao else None,
-            # "tipo_rateio": tipo_rateio, #! LIBERAR
+            "epoca": "SAFRA", # TODO: Remover dps
+            "tipo": None,
+            "propriedades": None,
+            "plantios": None,
+            "culturas": None,
+            "lotes": None
+        }
+
+        if consumo.tipo_rateio == 'propriedade':
+            rateio_payload["tipo"] = "PROPRIEDADE_AGRICOLA"
+            rateio_payload["propriedades"] = consumo.ids_propriedades
+        elif consumo.tipo_rateio == 'talhao':
+            rateio_payload["tipo"] = "PLANTIO" 
+            rateio_payload["plantios"] = consumo.ids_talhoes
+
+
+        # Montagem da lista de imobilizados (máquinas)
+        lista_imobilizados = None
+        if consumo.maquinas:
+            lista_imobilizados = []
+            for maquina in consumo.maquinas:
+                imobilizado_item = {"id": maquina.id}
+                if maquina.horimetro_inicio is not None and maquina.horimetro_fim is not None:
+                    # TODO: Validar a lógica de cálculo do horímetro
+                    imobilizado_item["quantidade_horimetro_hodometro"] = maquina.horimetro_fim - maquina.horimetro_inicio
+                lista_imobilizados.append(imobilizado_item)
+
+        # Montagem do payload principal do consumo
+        consumo_payload = {
+            "data": consumo.data_aplicacao.strftime('%d/%m/%Y') if hasattr(consumo.data_aplicacao, 'strftime') else consumo.data_aplicacao,
+            "responsavel_id": consumo.id_responsavel,
+            "ponto_estoque_id": consumo.id_ponto_estoque,
+            "tipo_operacao_id": None, # TODO: Adicionar lógica se necessário
+            "observacao": "Consumo registrado via WhatsApp",
+            "rateio": rateio_payload,
+            "lista_imobilizados": lista_imobilizados,
             "lista_produtos": [p.dict() for p in consumo.produtos]
         }
         
-        #! LIBERAR
-        # if maquinas: 
-        #     lista_imobilizados = []
-        #     for maquina in maquinas:
-        #         imobilizado_item = {"id": maquina.id}
-        #         if maquina.horimetro_inicio is not None and maquina.horimetro_fim is not None:
-        #             imobilizado_item["quantidade_horimetro_hodometro"] = maquina.horimetro_fim - maquina.horimetro_inicio # TODO: Mudar lógica
-        #         lista_imobilizados.append(imobilizado_item)
-        #     dados_para_salvar["lista_imobilizados"] = lista_imobilizados
+        # Estrutura final para a API
+        dados_para_salvar = {
+            "produtor_id": produtor_id,
+            "consumo": consumo_payload
+        }
 
-        #! LIBERAR
-        # if ids_talhoes:
-        #     dados_para_salvar["lista_rateios"] = ids_talhoes
-        # elif ids_propriedades:
-        #     dados_para_salvar["lista_rateios"] = ids_propriedades
-        # if id_responsavel:
-        #     dados_para_salvar["id_responsavel"] = id_responsavel
-
-        # ! FIZ UM MOCK PARA SALVAR ATÉ AJUSTAR A API
-        dados_para_salvar["epoca"] = "SAFRA"
-        dados_para_salvar["quantidade_horimetro_hodometro"] = 0
-        dados_para_salvar["lista_rateios"] = [{"plantio_id": 517}]
-
-        print("Dados preparados para salvar consumo:", dados_para_salvar)
+        print("Dados preparados para salvar consumo (nova estrutura):", json.dumps(dados_para_salvar, indent=4))
+        
         status_code, response_body = self.repositorio.salvar(
             produtor_id=produtor_id,
             dados_consumo=dados_para_salvar
         )
         
-        resultado_final = {
-            "status_code": status_code,
-            "message": response_body.get("message", "Ocorreu um erro desconhecido.")
-        }
-
-        resultado_json_str = json.dumps(resultado_final)
+        # Tratamento da resposta da API
+        message = response_body.get("message", response_body.get("mensagem", "Ocorreu um erro desconhecido."))
         
-        # Converte a string JSON de resposta em um dicionário Python
-        try:
-            resultado_api = json.loads(resultado_json_str)
-            status_code = resultado_api.get("status_code", 500)
-            message = resultado_api.get("message", "Erro desconhecido ao processar a resposta da API.")
-            
-            print(f"[SAVER] Resultado da API: StatusCode={status_code}, Mensagem='{message}'")
-            return status_code, message
-            
-        except (json.JSONDecodeError, AttributeError) as e:
-            print(f"[SAVER ERROR] Não foi possível decodificar a resposta da ferramenta de salvamento: {e}")
-            return 500, "Ocorreu um erro interno ao tentar salvar o registro."
+        print(f"[SAVER] Resultado da API: StatusCode={status_code}, Mensagem='{message}'")
+        return status_code, message

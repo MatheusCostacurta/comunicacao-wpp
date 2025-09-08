@@ -75,9 +75,23 @@ class AgriwinCliente:
         """Executa uma requisição GET para um endpoint da API Agriwin."""
         headers = self._get_headers()
         url = f"{self._url_base_atual.rstrip('/')}{endpoint}"
-        print(f"[AGRIWIN CLIENT] Executando GET em: {url} com params: {params}")
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
+        
+        if params:
+            # Constrói a query string manualmente para evitar a codificação do '='
+            # ! NAO É BOM BASE64 PARA URL - AGR-3865
+            query_string = "&".join([f"{key}={value}" for key, value in params.items()])
+            url = f"{url}?{query_string}"
+
+        print(f"[AGRIWIN CLIENT] Executando GET em: {url}")
+        response = requests.get(url, headers=headers)
+        
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            print(f"[AGRIWIN CLIENT ERROR] A API retornou um erro: {err}")
+            print(f"[AGRIWIN CLIENT ERROR] Corpo da resposta: {response.text}")
+            raise err
+            
         return response
 
     def post(self, endpoint: str, data: dict) -> requests.Response:

@@ -26,4 +26,4 @@ class ConsumoInformado(BaseModel):
     ponto_estoque_mencionado: Optional[str] = Field(default=None, description="O nome do ponto de estoque de onde os produtos saíram.")
     data_mencionada: Optional[Union[str, date]] = Field(default=None, description="A data da aplicação em texto (ex: 'ontem', 'dia 20', '20/07', 20 de julho).")
     safra_mencionada: Optional[str] = Field(default=None, description="O nome da safra para a qual o consumo deve ser alocado (ex: 'safra de soja').")
-    id_responsavel: Optional[int] = Field(default=None, description="O ID do responsável pelo registro, identificado pelo número de telefone.")
+    id_responsavel: Optional[str] = Field(default=None, description="O ID do responsável pelo registro, identificado pelo número de telefone.")

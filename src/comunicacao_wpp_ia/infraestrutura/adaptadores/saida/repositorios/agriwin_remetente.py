@@ -16,4 +16,4 @@ class RepoAgriwinRemetente(RepositorioRemetente):
     
     def buscar_remetente_por_telefone(self, telefone: str) -> Optional[DadosRemetente]:
         print(f"\n[API MOCK] Buscando produtor pelo telefone {telefone}...")
-        return DadosRemetente(produtor_id=57, numero_telefone=telefone)
+        return DadosRemetente(produtor_id="NTc=", numero_telefone=telefone)

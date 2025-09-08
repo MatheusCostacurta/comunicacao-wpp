@@ -18,32 +18,32 @@ class IngredienteAtivoDTO(BaseModel):
     nome: str
 
 class ProdutoAgriwinDTO(BaseModel):
-    identificador: int
+    identificador: str
     nome: str
     unidades_medida: Optional[List[UnidadeMedidaDTO]] = []
     ingredientes_ativo: Optional[List[IngredienteAtivoDTO]] = []
 
 class _PropriedadePlantioDTO(BaseModel):
-    identificador: int
+    identificador: str
     descricao: str
 
 class _TalhaoPlantioDTO(BaseModel):
-    identificador: int
+    identificador: str
     descricao: str
     propriedade: _PropriedadePlantioDTO
 
 class _SafraPlantioDTO(BaseModel):
-    identificador: int
+    identificador: str
 
 # --- DTO Principal para a resposta de /plantios ---
 class PlantioAgriwinDTO(BaseModel):
-    identificador: int
+    identificador: str
     safra: _SafraPlantioDTO
     talhao: _TalhaoPlantioDTO
 
 # --- DTO para Imobilizado (Máquina) ---
 class ImobilizadoAgriwinDTO(BaseModel):
-    identificador: int
+    identificador: str
     descricao: str
     ativo: Optional[bool] = None
     numero_serie: Optional[str] = None
@@ -51,13 +51,13 @@ class ImobilizadoAgriwinDTO(BaseModel):
 
 # --- DTO para Ponto de Estoque ---
 class PontoEstoqueAgriwinDTO(BaseModel):
-    identificador: int
+    identificador: str
     descricao: str
     ativo: Optional[bool] = None
 
 # --- DTO para Safra ---
 class SafraAgriwinDTO(BaseModel):
-    identificador: int
+    identificador: str
     ano_inicio: int
     ano_termino: int
     data_inicio: str  # A API retorna a data como string
@@ -65,7 +65,7 @@ class SafraAgriwinDTO(BaseModel):
 
 # --- DTO para Responsavel ---
 class ResponsavelAgriwinDTO(BaseModel):
-    identificador: int
+    identificador: str
     nome: str
     nome_fantasia: Optional[str] = None
     telefone: Optional[str] = None
