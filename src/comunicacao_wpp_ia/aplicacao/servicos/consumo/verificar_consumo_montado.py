@@ -21,24 +21,23 @@ def verificar_dados_consumo(consumo: ConsumoMontado, llm: ServicoLLM) -> Resulta
 
     **Regras Obrigatórias:**
     1.  O campo 'produtos' não pode ser uma lista vazia. Cada item dentro de 'produtos' deve ter um 'id' e uma 'quantidade'.
-    2.  Os campos 'id_ponto_estoque', 'id_safra' e 'data_aplicacao' não podem ser nulos.
-    3.  O campo 'tipo_rateio' não pode ser nulo.
-    4.  Se 'tipo_rateio' for 'talhao', a lista 'ids_talhoes' não pode ser vazia.
-    5.  Se 'tipo_rateio' for 'propriedade', a lista 'ids_propriedades' não pode ser vazia.
+    2.  Os campos 'id_ponto_estoque', 'id_safra' e 'data_aplicacao' não podem ser nulos ou vazios.
+    3.  O campo 'tipo_rateio' não pode ser nulo ou vazio.
+    4.  Se 'tipo_rateio' for 'talhao', a lista 'ids_talhoes' não pode ser nula ou vazia.
+    5.  Se 'tipo_rateio' for 'propriedade', a lista 'ids_propriedades' não pode ser nula ou vazia.
 
     **Análise e Resposta:**
     - Se TODAS as regras forem atendidas, retorne `aprovado: true` e uma justificativa simples como "Dados consistentes e prontos para salvar."
     - Se QUALQUER regra for violada, retorne `aprovado: false` e uma `justificativa` amigável para o usuário, explicando exatamente o que está faltando. Por exemplo: "Notei que você não informou de qual estoque o produto saiu. Poderia me dizer, por favor?".
     """
-    prompt_usuario = f"Por favor, analise este objeto de consumo: {consumo.model_dump_json(indent=2)}"
+    prompt_usuario = "Por favor, analise este objeto de consumo: {consumo_json}"
 
-    # Criamos um agente específico para esta tarefa de verificação.
     agente_verificador = llm.criar_agente(
         prompt_sistema=prompt_sistema,
         prompt_usuario=prompt_usuario,
         modelo_saida=ResultadoVerificacao
     )
 
-    resultado = agente_verificador.executar({}) # A entrada já está no prompt
+    resultado = agente_verificador.executar({"consumo_json": consumo.model_dump_json(indent=2)})
     print(f"[VERIFICADOR] Resultado: Aprovado={resultado.aprovado}, Justificativa='{resultado.justificativa}'")
     return resultado

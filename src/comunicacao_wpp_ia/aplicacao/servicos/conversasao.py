@@ -106,15 +106,15 @@ class ServicoConversa:
         self._memoria.salvar_estado(telefone, historico)
     
     def _salvar_consumo(self, remetente: DadosRemetente, mensagem: str, consumo_montado: ConsumoMontado, historico: list):
-        # eh_valido, msg_verificacao = verificar_dados_consumo(consumo_montado, self._llm)
-        # if not eh_valido: # O verificador encontrou inconsistências
-        #     print(f"\n--- RESULTADO FINAL (DADOS INCONSISTENTES) ---")
-        #     resposta_usuario = msg_verificacao
-        #     self._whatsapp.enviar(remetente.numero_telefone, resposta_usuario)
-        #     historico.append({"role": "user", "content": mensagem})
-        #     historico.append({"role": "assistant", "content": resposta_usuario})
-        #     self._memoria.salvar_estado(remetente.numero_telefone, historico)
-        #     return
+        resultado_verificacao = verificar_dados_consumo(consumo_montado, self._llm)
+        if not resultado_verificacao.aprovado:
+            print(f"\n--- RESULTADO FINAL (DADOS INCONSISTENTES) ---")
+            resposta_usuario = resultado_verificacao.justificativa
+            historico.append({"role": "user", "content": mensagem})
+            historico.append({"role": "assistant", "content": resposta_usuario})
+            self._memoria.salvar_estado(remetente.numero_telefone, historico)
+            self._whatsapp.enviar(remetente.numero_telefone, resposta_usuario)
+            return
 
         status_code, mensagem_api = self._salvar_consumo_service.executar(remetente.produtor_id, consumo_montado)
         if status_code == 200:
