@@ -37,7 +37,7 @@ def verificar_dados_consumo(consumo: ConsumoMontado, llm: ServicoLLM) -> Resulta
         prompt_usuario=prompt_usuario,
         modelo_saida=ResultadoVerificacao
     )
-
+    print(f"[VERIFICADOR] Consumo={consumo.model_dump_json(indent=2)}")
     resultado = agente_verificador.executar({"consumo_json": consumo.model_dump_json(indent=2)})
     print(f"[VERIFICADOR] Resultado: Aprovado={resultado.aprovado}, Justificativa='{resultado.justificativa}'")
     return resultado

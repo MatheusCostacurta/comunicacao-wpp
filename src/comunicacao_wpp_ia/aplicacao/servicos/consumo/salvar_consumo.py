@@ -32,7 +32,7 @@ class SalvarConsumo:
             return 400, json.dumps({"status_code": 400, "message": msg_erro})
         
         rateio_payload = {
-            "atividade_id": 1, # TODO: Ajustar atividade conforme necessário
+            "atividade_id": "MQ==", # TODO: Ajustar atividade conforme necessário
             "safra_id": consumo.id_safra,
             "epoca": "SAFRA", # TODO: Remover dps
             "tipo": None,
@@ -46,7 +46,7 @@ class SalvarConsumo:
             rateio_payload["tipo"] = "PROPRIEDADE_AGRICOLA"
             rateio_payload["propriedades"] = consumo.ids_propriedades
         elif consumo.tipo_rateio == 'talhao':
-            rateio_payload["tipo"] = "PLANTIO" 
+            rateio_payload["tipo"] = "TALHAO" #TODO: mudar dps na api
             rateio_payload["plantios"] = consumo.ids_talhoes
 
 
