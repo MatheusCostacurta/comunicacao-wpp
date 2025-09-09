@@ -35,7 +35,7 @@ class AdaptadorRedis(ServicoMemoriaConversa):
         estado_salvo_json = self._cliente_redis.get(chave)
         if estado_salvo_json:
             print(f"[REDIS] Estado encontrado para '{chave_identificadora}'.")
-            self._cliente_redis.expire(chave, TEMPO_MAXIMO_INATIVIDADE_SEGUNDOS)
+            self._cliente_redis.expire(chave, TEMPO_MAXIMO_INATIVIDADE_SEGUNDOS) # Renova o tempo de expiração sempre que o estado é obtido
             return json.loads(estado_salvo_json)
         else:
             print(f"[REDIS] Nenhum estado encontrado para '{chave_identificadora}'. Criando um novo.")

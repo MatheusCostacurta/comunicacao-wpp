@@ -29,6 +29,8 @@ services:
     # permitindo que você se conecte ao Redis de fora do Docker, se necessário.
     ports:
       - "6379:6379"
+    # Ativar as notificações de chaves expiradas (Ex)
+    command: redis-server --notify-keyspace-events Ex
     # Cria um volume persistente para os dados do Redis.
     # Isso garante que os dados não sejam perdidos se o contêiner for recriado.
     volumes:

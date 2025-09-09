@@ -20,6 +20,8 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import 
 from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.salvar_consumo import SalvarConsumo
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.entrada.eventos.redis_listener_adapter import AdaptadorListenerRedis
+from src.comunicacao_wpp_ia.aplicacao.servicos.notificacoes.notificar_expiracao_conversa import NotificarExpiracaoConversa
 
 
 # Cria a instância principal da aplicação FastAPI
@@ -29,11 +31,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# --- 2. Injeção de Dependência (Singleton) ---
-# Para garantir que os adaptadores sejam inicializados apenas uma vez e reutilizados
-# em todas as requisições, seguimos o padrão Singleton.
+# --- Variáveis globais para armazenar as instâncias dos serviços ---
+servico_conversa: ServicoConversa = None
+whatsapp_adapter: AdaptadorZAPI = None
+
+@app.on_event("startup")
 def inicializar_servicos_e_adaptadores():
     print("--- INICIALIZANDO ADAPTADORES E SERVIÇOS DA APLICAÇÃO ---")
+
+    global servico_conversa, whatsapp_adapter
     
     # Instancia o AgriwinCliente com as URLs do .env
     agriwin_urls = ["https://demo.agriwin.com.br"]
@@ -67,10 +73,13 @@ def inicializar_servicos_e_adaptadores():
         pre_processador=pre_processador,
         whatsapp=whatsapp_adapter
     )
-    
-    return servico_conversa, whatsapp_adapter
 
-servico_conversa, whatsapp_adapter = inicializar_servicos_e_adaptadores()
+    servico_notificacao = NotificarExpiracaoConversa(whatsapp=whatsapp_adapter)
+
+    if ambiente == "prod":
+        redis_listener = AdaptadorListenerRedis(servico_notificacao=servico_notificacao)
+        redis_listener.start()
+
 
 @app.post("/webhook/zapi", status_code=200)
 async def receber_webhook_zapi(request: Request, background_tasks: BackgroundTasks):

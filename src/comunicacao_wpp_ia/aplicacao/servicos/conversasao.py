@@ -28,6 +28,15 @@ class ServicoConversa:
         self._fabrica_consumo_informado = FabricaConsumoInformado(llm)
         self._whatsapp = whatsapp
 
+    def _encerrar_conversa(self, telefone: str, mensagem_erro: str):
+        """
+        Limpa a memória da conversa e envia uma mensagem de erro seguida da notificação de encerramento.
+        """
+        self._memoria.limpar_memoria_conversa(telefone)
+        if mensagem_erro:
+            self._whatsapp.enviar(telefone, mensagem_erro)
+        self._whatsapp.enviar(telefone, "Conversa finalizada.")
+        
     def processar_mensagem_recebida(self, mensagem_recebida: MensagemRecebida):
         """
         Ponto de entrada principal. Orquestra a busca do remetente, pré-processamento
@@ -36,16 +45,15 @@ class ServicoConversa:
         remetente = self._obter_remetente_service.executar(telefone=mensagem_recebida.telefone_remetente)
         if not remetente:
             print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
-            self._memoria.limpar_memoria_conversa(mensagem_recebida.telefone_remetente)
-            self._whatsapp.enviar(mensagem_recebida.telefone_remetente, "Não foi possível identificar seu usuário. Por favor, entre em contato com o suporte.")
+            mensagem_final = "Não foi possível identificar seu usuário. Por favor, entre em contato com o suporte."
+            self._encerrar_conversa(mensagem_recebida.telefone_remetente, mensagem_final)
             return 
         
         conteudo_texto = self._pre_processador.processar(mensagem_recebida)
         if not conteudo_texto:
             print("[SERVICO CONVERSA] Pré-processamento não retornou conteúdo. Encerrando fluxo.")
-            self._memoria.limpar_memoria_conversa(mensagem_recebida.telefone_remetente)
-            self._whatsapp.enviar(mensagem_recebida.telefone_remetente, "Não consegui entender sua mensagem. Por favor, tente novamente em texto, áudio ou imagem.")
-
+            mensagem_final = "Não consegui entender sua mensagem. Por favor, tente novamente em texto, áudio ou imagem."
+            self._encerrar_conversa(mensagem_recebida.telefone_remetente, mensagem_final)
             return
 
         self._processar_conteudo_texto(conteudo_texto, remetente)
