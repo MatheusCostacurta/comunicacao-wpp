@@ -76,13 +76,19 @@ class SalvarConsumo:
 
         print("Dados preparados para salvar consumo (nova estrutura):", json.dumps(consumo_payload, indent=4))
         
-        status_code, response_body = self.repositorio.salvar(
+        resposta = self.repositorio.salvar(
             produtor_id=produtor_id,
             dados_consumo=consumo_payload
         )
         
-        # Tratamento da resposta da API
-        message = response_body.get("message", response_body.get("mensagem", "Ocorreu um erro desconhecido."))
-        
-        print(f"[SAVER] Resultado da API: StatusCode={status_code}, Mensagem='{message}'")
-        return status_code, message
+        mensagem_final = ""
+        if resposta.status >= 400 and isinstance(resposta.dados, list) and resposta.dados:
+            # Concatena os detalhes do erro para uma mensagem clara
+            detalhes_erro = " ".join(str(item) for item in resposta.dados)
+            mensagem_final = f"{resposta.mensagem}: {detalhes_erro}"
+        else:
+            # Para casos de sucesso ou erros sem detalhes, usa a mensagem principal
+            mensagem_final = resposta.mensagem
+
+        print(f"[SAVER] Resultado da API: StatusCode={resposta.status}, Mensagem='{mensagem_final}'")
+        return resposta.status, mensagem_final

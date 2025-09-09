@@ -3,6 +3,7 @@ from typing import Dict, Tuple
 from requests import HTTPError
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_consumo import RepositorioConsumo
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
+from src.comunicacao_wpp_ia.aplicacao.dtos.resposta_api import RespostaApi
 
 
 class RepoAgriwinConsumo(RepositorioConsumo):
@@ -14,7 +15,7 @@ class RepoAgriwinConsumo(RepositorioConsumo):
         print("[INFRA] Adaptador do Repositório AgriwinRemetente inicializado.")
     
 
-    def salvar(self, produtor_id: int, dados_consumo: Dict) -> Tuple[int, Dict]:
+    def salvar(self, produtor_id: int, dados_consumo: Dict) -> Tuple[int, RespostaApi]:
         """
         Envia os dados de consumo para a API Agriwin através de um POST.
         Retorna uma tupla contendo o status_code e o corpo da resposta em JSON.
@@ -27,28 +28,33 @@ class RepoAgriwinConsumo(RepositorioConsumo):
         print(f"\n[API] Enviando POST para salvar consumo em {endpoint}: {json.dumps(payload_completo, indent=4)}")
 
         try:
-            response = self._cliente.post(endpoint, data=payload_completo)
-            
-            # A resposta de sucesso (2xx) já é tratada no AgriwinCliente.
-            # Se chegamos aqui, a requisição foi bem-sucedida.
+            response = self._cliente.post(endpoint, payload_completo)
             response_body = response.json()
-            return response.status_code, response_body
-
-        except HTTPError as e:
-            # O AgriwinCliente lança HTTPError para respostas 4xx e 5xx.
-            # Podemos capturar o erro para extrair o corpo da resposta de erro da API.
+            
+            return RespostaApi(
+                status=response.status_code,
+                mensagem=response_body.get("mensagem", "Operação bem-sucedida."),
+                dados=response_body.get("dados")
+            )
+        except HTTPError as e: # Erros 4xx e 5xx são capturados aqui
             print(f"[API ERROR] Erro ao salvar consumo: {e.response.status_code} - {e.response.text}")
-            print(f"[API ERROR] Detalhes do erro: {e}")
             try:
-                # Tenta extrair o JSON do corpo da resposta de erro
                 error_body = e.response.json()
-            except json.JSONDecodeError:
-                # Se o corpo do erro não for um JSON válido
-                error_body = {"message": e.response.text or "Erro desconhecido na API."}
-                
-            return e.response.status_code, error_body
-        
-        except Exception as e:
-            # Captura outras exceções (ex: falha de conexão)
+                return RespostaApi(
+                    status=e.response.status_code,
+                    mensagem=error_body.get("mensagem", "Erro ao processar requisição."),
+                    dados=error_body.get("dados")
+                )
+            except json.JSONDecodeError: # Se o corpo do erro não for um JSON válido
+                return RespostaApi(
+                    status=e.response.status_code,
+                    mensagem=e.response.text or "Erro desconhecido.",
+                    dados=None
+                )
+        except Exception as e: # Captura outras exceções (ex: falha de conexão)
             print(f"[API CRITICAL] Erro inesperado ao salvar consumo: {e}")
-            return 500, {"message": "Ocorreu um erro interno ao se comunicar com a API."}
+            return RespostaApi(
+                status=500,
+                mensagem="Ocorreu um erro interno ao se comunicar com o Agriwin.",
+                dados=str(e)
+            )
