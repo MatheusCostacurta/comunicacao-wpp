@@ -21,7 +21,7 @@ class RepoAgriwinConsumo(RepositorioConsumo):
         """
         endpoint = "/api/v1/consumos"
         payload_completo = {
-            "produtor_id": produtor_id,
+            "identificador_produtor": produtor_id,
             "consumo": dados_consumo
         }
         print(f"\n[API] Enviando POST para salvar consumo em {endpoint}: {json.dumps(payload_completo, indent=4)}")

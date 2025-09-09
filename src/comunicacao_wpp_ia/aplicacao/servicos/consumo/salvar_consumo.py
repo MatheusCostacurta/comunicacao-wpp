@@ -62,6 +62,7 @@ class SalvarConsumo:
                 lista_imobilizados.append(imobilizado_item)
 
         # Montagem do payload principal do consumo
+        # ! Preciso criar um tipo de consumoRequest para definir na interface e garantir que o adaptador implemente corretamente
         consumo_payload = {
             "data": consumo.data_aplicacao.strftime('%d/%m/%Y') if hasattr(consumo.data_aplicacao, 'strftime') else consumo.data_aplicacao,
             "responsavel_id": consumo.id_responsavel,
@@ -72,18 +73,12 @@ class SalvarConsumo:
             "lista_imobilizados": lista_imobilizados,
             "lista_produtos": [p.dict() for p in consumo.produtos]
         }
-        
-        # Estrutura final para a API
-        dados_para_salvar = {
-            "produtor_id": produtor_id,
-            "consumo": consumo_payload
-        }
 
-        print("Dados preparados para salvar consumo (nova estrutura):", json.dumps(dados_para_salvar, indent=4))
+        print("Dados preparados para salvar consumo (nova estrutura):", json.dumps(consumo_payload, indent=4))
         
         status_code, response_body = self.repositorio.salvar(
             produtor_id=produtor_id,
-            dados_consumo=dados_para_salvar
+            dados_consumo=consumo_payload
         )
         
         # Tratamento da resposta da API
