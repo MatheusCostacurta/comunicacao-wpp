@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request, HTTPException, BackgroundTasks, UploadFile
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.redis_adapter import AdaptadorRedis
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.persistencia_conversa.memoria_local_adapter import AdaptadorMemoriaLocal
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import AdaptadorGroq
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.openai_adapter import AdaptadorOpenAI
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.entrada.whatsapp.zapi_adapter import AdaptadorZAPI
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_remetente import RepoAgriwinRemetente
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
@@ -41,7 +42,7 @@ def inicializar_servicos_e_adaptadores():
     # Adaptadores de Saída (Infraestrutura)
     repo_remetente = RepoAgriwinRemetente(agriwin_cliente=agriwin_cliente)
     repo_consumo = RepoAgriwinConsumo(agriwin_cliente=agriwin_cliente)
-    llm_adapter = AdaptadorGroq()
+    llm_adapter = AdaptadorOpenAI()
     whatsapp_adapter = AdaptadorZAPI()
     whisper_adapter = AdaptadorWhisper()
     gemini_adapter = AdaptadorGeminiVision()
