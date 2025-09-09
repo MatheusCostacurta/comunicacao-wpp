@@ -7,16 +7,12 @@ class ValidadorConsumo:
     """
     
     _campos_obrigatorios = [
-        "produtos_mencionados", 
-        "ponto_estoque_mencionado",
-        "data_mencionada"
+        "produtos_mencionados"
     ]
 
     _mapa_perguntas = {
         "produtos_mencionados": "Qual foi o produto e quantidade utilizado?",
-        "local": "Em qual propriedade/talhão foi feita a aplicação?",
-        "ponto_estoque_mencionado": "De qual depósito/ponto de estoque o produto saiu?",
-        "data_mencionada": "Em que data foi a aplicação?"
+        "local": "Em qual propriedade/talhão foi feita a aplicação?"
     }
 
     @classmethod

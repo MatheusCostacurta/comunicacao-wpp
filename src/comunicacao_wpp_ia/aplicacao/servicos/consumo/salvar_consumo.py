@@ -19,8 +19,16 @@ class SalvarConsumo:
         """
         print("Iniciou SalvarConsumo")
 
-        if not all([consumo.produtos, consumo.id_ponto_estoque, consumo.id_safra, consumo.data_aplicacao, consumo.tipo_rateio]):
-            msg_erro = "Parâmetros obrigatórios ausentes. Verifique produtos, ponto_estoque, safra, data e rateio."
+        campos_obrigatorios = {
+            "produtos": consumo.produtos,
+            "id_ponto_estoque": consumo.id_ponto_estoque,
+            "id_safra": consumo.id_safra,
+            "data_aplicacao": consumo.data_aplicacao,
+            "tipo_rateio": consumo.tipo_rateio
+        }
+        campos_faltando = [campo for campo, valor in campos_obrigatorios.items() if not valor]
+        if campos_faltando:
+            msg_erro = f"Parâmetros obrigatórios ausentes: {', '.join(campos_faltando)}."
             return 400, json.dumps({"status_code": 400, "message": msg_erro})
         
         rateio_payload = {
