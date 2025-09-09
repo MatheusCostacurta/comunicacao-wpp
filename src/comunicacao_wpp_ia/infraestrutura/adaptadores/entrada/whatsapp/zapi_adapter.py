@@ -44,6 +44,7 @@ class AdaptadorZAPI(Whatsapp):
         }
         try:
             print(f"[Z-API] Enviando mensagem para {telefone}...")
+            print(f"[Z-API] Mensagem: {mensagem}")
             response = requests.post(endpoint, json=payload, headers=self.headers)
             response.raise_for_status() # Lança um erro para respostas HTTP 4xx/5xx
             print(f"[Z-API] Mensagem enviada com sucesso.")

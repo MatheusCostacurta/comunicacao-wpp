@@ -1,6 +1,7 @@
 import json
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
+from src.comunicacao_wpp_ia.aplicacao.portas.whatsapp import Whatsapp
 from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
 from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_informado_factory import FabricaConsumoInformado
 from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_builder import ConsumoBuilder
@@ -18,14 +19,14 @@ class ServicoConversa:
     """
     Serviço de aplicação responsável por orquestrar o fluxo de uma conversa.
     """
-    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, obter_remetente_service: ObterRemetente, salvar_consumo_service: SalvarConsumo, pre_processador: ServicoPreProcessamento):
+    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, obter_remetente_service: ObterRemetente, salvar_consumo_service: SalvarConsumo, pre_processador: ServicoPreProcessamento, whatsapp: Whatsapp):
         self._memoria = memoria
         self._llm = llm
         self._obter_remetente_service = obter_remetente_service
         self._pre_processador = pre_processador
         self._salvar_consumo_service = salvar_consumo_service
         self._fabrica_consumo_informado = FabricaConsumoInformado(llm)
-        # TODO: acho que seria melhor receber o servico de salvar consumo e não o repositório direto
+        self._whatsapp = whatsapp
 
     def processar_mensagem_recebida(self, mensagem_recebida: MensagemRecebida):
         """
@@ -34,17 +35,16 @@ class ServicoConversa:
         """
         remetente = self._obter_remetente_service.executar(telefone=mensagem_recebida.telefone_remetente)
         if not remetente:
-            # Poderíamos enviar uma mensagem de erro ao usuário aqui.
             print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
             self._memoria.limpar_memoria_conversa(mensagem_recebida.telefone_remetente)
-            
+            self._whatsapp.enviar(mensagem_recebida.telefone_remetente, "Não foi possível identificar seu usuário. Por favor, entre em contato com o suporte.")
             return 
         
         conteudo_texto = self._pre_processador.processar(mensagem_recebida)
         if not conteudo_texto:
-            # Poderíamos enviar uma mensagem de erro ao usuário aqui.
             print("[SERVICO CONVERSA] Pré-processamento não retornou conteúdo. Encerrando fluxo.")
             self._memoria.limpar_memoria_conversa(mensagem_recebida.telefone_remetente)
+            self._whatsapp.enviar(mensagem_recebida.telefone_remetente, "Não consegui entender sua mensagem. Por favor, tente novamente em texto, áudio ou imagem.")
 
             return
 
@@ -59,7 +59,7 @@ class ServicoConversa:
         historico = estado_conversa["historico"]
 
         # Etapa 0: Validar intenção
-        if not self._validar_intencao(mensagem, historico):
+        if not self._validar_intencao(mensagem, historico, remetente.numero_telefone):
             return
 
         # Etapa 1: Extrair dados e checar se faltam informações
@@ -81,13 +81,13 @@ class ServicoConversa:
                 consumo_montado = resultado_builder
                 self._salvar_consumo(remetente, mensagem, consumo_montado, historico)
 
-    def _validar_intencao(self, mensagem: str, historico: list) -> bool:
+    def _validar_intencao(self, mensagem: str, historico: list, telefone: str) -> bool:
         resultado_validacao = validar_intencao_do_usuario(mensagem, historico, self._llm)
         if not resultado_validacao.intencao_valida:
             print("\n--- RESULTADO FINAL (INTENÇÃO MALICIOSA/INVÁLIDA) ---")
             resposta_usuario = "Desculpe, só posso processar registros de consumo. Para outras solicitações, entre em contato com o suporte."
-            print(f"Resposta para o usuário: {resposta_usuario}")
             #? Enviar a má intenção para o amplitude para análise se estamos errando na validação
+            self._whatsapp.enviar(telefone, resposta_usuario)
             return False
         return True
     
@@ -100,7 +100,7 @@ class ServicoConversa:
         return builder_consumo.executar(remetente, mensagem, consumo_informado, historico)
     
     def _responder_e_salvar_historico(self, telefone: str, mensagem_usuario: str, resposta_assistente: str, historico: list):
-        print(f"Resposta para o usuário: {resposta_assistente}")
+        self._whatsapp.enviar(telefone, resposta_assistente)
         historico.append({"role": "user", "content": mensagem_usuario})
         historico.append({"role": "assistant", "content": resposta_assistente})
         self._memoria.salvar_estado(telefone, historico)
@@ -110,6 +110,7 @@ class ServicoConversa:
         # if not eh_valido: # O verificador encontrou inconsistências
         #     print(f"\n--- RESULTADO FINAL (DADOS INCONSISTENTES) ---")
         #     resposta_usuario = msg_verificacao
+        #     self._whatsapp.enviar(remetente.numero_telefone, resposta_usuario)
         #     historico.append({"role": "user", "content": mensagem})
         #     historico.append({"role": "assistant", "content": resposta_usuario})
         #     self._memoria.salvar_estado(remetente.numero_telefone, historico)
@@ -119,7 +120,7 @@ class ServicoConversa:
         if status_code == 200:
             self._memoria.limpar_memoria_conversa(remetente.numero_telefone)
             resposta_usuario = "Seu registro foi salvo com sucesso!"
-            print(f"Resposta final para o usuário: {resposta_usuario}")
+            self._whatsapp.enviar(remetente.numero_telefone, resposta_usuario)
         else:
             #TODO: a resposta pro usuario está vindo dentro do campo 'dados' do json
             resposta_usuario = f"Não foi possível salvar seu registro. Motivo: {mensagem_api}"

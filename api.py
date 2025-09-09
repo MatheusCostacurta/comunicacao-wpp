@@ -63,7 +63,8 @@ def inicializar_servicos_e_adaptadores():
         llm=llm_adapter,
         obter_remetente_service=obter_remetente_service,
         salvar_consumo_service=salvar_consumo_service,
-        pre_processador=pre_processador
+        pre_processador=pre_processador,
+        whatsapp=whatsapp_adapter
     )
     
     return servico_conversa, whatsapp_adapter
