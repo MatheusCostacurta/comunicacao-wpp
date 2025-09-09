@@ -132,9 +132,9 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
     
     def buscar_responsavel_por_telefone(self, id_produtor: str, telefone: str) -> Optional[Responsavel]:
         print(f"\nBuscando responsável pelo telefone {telefone} para o produtor {id_produtor}...")
-        # responsaveis = self._buscar_responsaveis_do_produtor(id_produtor)
-        # for responsavel in responsaveis:
-        #     if responsavel.telefone == telefone:
-        #         return responsavel
+        responsaveis = self._buscar_responsaveis_do_produtor(id_produtor)
+        for responsavel in responsaveis:
+            if responsavel.telefone == telefone:
+                return responsavel
         return None
     
