@@ -6,7 +6,7 @@ class ValidadorIntencaoUsuario:
     def __init__(self, llm: ServicoLLM):
         self._llm = llm
 
-    def __obter_prompt_sistema() -> str:
+    def __obter_prompt_sistema(self) -> str:
         return """
             Você é um assistente de segurança rigoroso. Sua função é analisar a mensagem de um usuário, **levando em conta o histórico da conversa**, para determinar se a intenção é válida.
 
@@ -22,7 +22,7 @@ class ValidadorIntencaoUsuario:
             - Se o histórico estiver vazio, a mensagem do usuário **DEVE** ser um novo registro de consumo para ser válida.
         """
 
-    def __obter_mensagem_usuario(mensagem_usuario: str, historico: List[Dict]) -> str:
+    def __obter_mensagem_usuario(self, mensagem_usuario: str, historico: List[Dict]) -> str:
         historico_formatado = "\n".join(f"{m['role']}: {m['content']}" for m in historico)
         return f"""
             Histórico da Conversa:

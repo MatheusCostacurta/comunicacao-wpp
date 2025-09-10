@@ -5,10 +5,14 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor
 from langchain.agents.format_scratchpad.tools import format_to_tool_messages
 from langchain.agents.output_parsers.tools import ToolsAgentOutputParser
-from src.comunicacao_wpp_ia.infraestrutura.ferramentas_llm.langchain_ferramentas import LangChainFerramentas
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.agente_com_ferramentas import AgenteComFerramentas
 from src.comunicacao_wpp_ia.aplicacao.portas.agente import Agente
+
+from src.comunicacao_wpp_ia.infraestrutura.ferramentas_llm.langchain_ferramentas_adapter import AdaptadorLangChainFerramentas
+from src.comunicacao_wpp_ia.aplicacao.servicos.llms.utilizar_ferramenta import UtilizarFerramenta
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -34,7 +38,14 @@ class AdaptadorGroq(ServicoLLM):
     """
     def __init__(self, modelo: str = "llama-3.3-70b-versatile", temperatura: float = 0):
         self._llm = ChatGroq(model_name=modelo, temperature=temperatura)
-        self.ferramentas = LangChainFerramentas().obter_ferramentas_de_coleta()
+        agriwin_urls = ["https://demo.agriwin.com.br"]
+        agriwin_cliente = AgriwinCliente(base_urls=agriwin_urls)
+        repo_ferramentas = RepoAgriwinFerramentas(agriwin_cliente=agriwin_cliente)
+        servico_ferramentas = UtilizarFerramenta(
+            repositorio_ferramentas=repo_ferramentas,
+            id_produtor="NTc="
+        )
+        self.ferramentas_adapter = AdaptadorLangChainFerramentas(servico_ferramentas)
         print("[INFRA] Adaptador Groq inicializado.")
 
     def criar_agente(self, prompt_sistema: str, prompt_usuario: str, modelo_saida: Type[T]) -> T:
@@ -88,4 +99,4 @@ class AdaptadorGroq(ServicoLLM):
         """
         Retorna a lista de ferramentas disponíveis para o agente.
         """
-        return self.ferramentas
+        return self.ferramentas_adapter.obter_ferramentas()
