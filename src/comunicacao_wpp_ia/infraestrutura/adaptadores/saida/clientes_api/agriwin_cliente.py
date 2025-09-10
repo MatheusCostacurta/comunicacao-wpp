@@ -2,6 +2,9 @@ import os
 import requests
 from typing import List, Optional, Tuple
 
+# ! Preciso tirar o loop de base daqui e mandar o endpoint completo, se nao essa classe nao poderá ser um singleton -> visto que cada iteração pode ser base diferente
+# ! Para manter ela singleton é bom deixar a info de base em outro lugar, acredito que possa ficar dentro do dados do remetente (base e produtor_id)
+# ! Uma solução simplista é gravar na sessão - a base, o token e o id do produtor.
 class AgriwinCliente:
     """
     Cliente centralizado para interagir com a API Agriwin.
