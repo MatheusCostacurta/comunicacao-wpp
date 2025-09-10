@@ -10,7 +10,7 @@ from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
 from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
 
 # --- DTOs da Infraestrutura (Camada Externa) ---
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_dtos import (
+from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
     ProdutoAgriwinDTO,
     PlantioAgriwinDTO,
     ImobilizadoAgriwinDTO,

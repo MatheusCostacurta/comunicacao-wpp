@@ -3,7 +3,7 @@ from pydantic import ValidationError, BaseModel
 import requests
 
 # --- DTOs da Camada de Infraestrutura ---
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_dtos import (
+from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
     ProdutoAgriwinDTO,
     PlantioAgriwinDTO,
     ImobilizadoAgriwinDTO,
@@ -12,7 +12,7 @@ from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwi
     ResponsavelAgriwinDTO
 )
 # --- Mapeador da Camada de Infraestrutura ---
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_mapeador import AgriwinMapeador
+from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_mapeador import AgriwinMapeador
 
 # --- Modelos e Portas do Domínio ---
 from src.comunicacao_wpp_ia.dominio.modelos.produto import Produto

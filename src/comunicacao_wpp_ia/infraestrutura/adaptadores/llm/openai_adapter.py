@@ -9,7 +9,7 @@ from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.agente_com_ferramentas import AgenteComFerramentas
 from src.comunicacao_wpp_ia.aplicacao.portas.agente import Agente
 
-from src.comunicacao_wpp_ia.infraestrutura.ferramentas_llm.langchain_ferramentas_adapter import AdaptadorLangChainFerramentas
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.langchain_ferramentas_adapter import AdaptadorLangChainFerramentas
 from src.comunicacao_wpp_ia.aplicacao.servicos.llms.utilizar_ferramenta import UtilizarFerramenta
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente

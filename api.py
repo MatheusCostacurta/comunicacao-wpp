@@ -9,8 +9,8 @@ from src.comunicacao_wpp_ia.infraestrutura.adaptadores.entrada.whatsapp.zapi_ada
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_remetente import RepoAgriwinRemetente
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
 
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.pre_processamento_texto.whisper_adapter import AdaptadorWhisper
-from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.pre_processamento_texto.gemini_vision_adapter import AdaptadorGeminiVision
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.whisper_adapter import AdaptadorWhisper
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.gemini_vision_adapter import AdaptadorGeminiVision
 
 from src.comunicacao_wpp_ia.aplicacao.servicos.pre_processamento import PreProcessamentoService
 from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import ServicoConversa
