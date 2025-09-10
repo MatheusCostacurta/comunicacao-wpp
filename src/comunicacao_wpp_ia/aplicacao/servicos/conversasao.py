@@ -5,7 +5,7 @@ from src.comunicacao_wpp_ia.dominio.objetos.consumo_informado import ConsumoInfo
 from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_informado_factory import FabricaConsumoInformado
 from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_builder import ConsumoBuilder
 from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.salvar_consumo import SalvarConsumo
-from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.validar_intencao import validar_intencao_do_usuario
+from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.validador_intencao_usuario import ValidadorIntencaoUsuario
 from src.comunicacao_wpp_ia.aplicacao.portas.pre_processamento_texto import ServicoPreProcessamento
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
@@ -89,7 +89,8 @@ class ServicoConversa:
                 self._salvar_consumo(remetente, mensagem, consumo_montado, historico)
 
     def _validar_intencao(self, mensagem: str, historico: list, telefone: str) -> bool:
-        resultado_validacao = validar_intencao_do_usuario(mensagem, historico, self._llm)
+        validar_intencao_do_usuario = ValidadorIntencaoUsuario(self._llm)
+        resultado_validacao = validar_intencao_do_usuario.executar(mensagem, historico)
         if not resultado_validacao.intencao_valida:
             print("\n--- RESULTADO FINAL (INTENÇÃO MALICIOSA/INVÁLIDA) ---")
             resposta_usuario = "Desculpe, só posso processar registros de consumo. Para outras solicitações, entre em contato com o suporte."
