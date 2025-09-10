@@ -12,7 +12,7 @@ from src.comunicacao_wpp_ia.dominio.servicos.localizar_propriedade import Locali
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_maquina import LocalizarMaquinaService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_responsavel import LocalizarResponsavelService
 
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ProdutoParaSalvar, MaquinaParaSalvar
+from src.comunicacao_wpp_ia.dominio.objetos.consumo import Produto, Maquina
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo

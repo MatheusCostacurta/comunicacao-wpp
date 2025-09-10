@@ -1,8 +1,7 @@
-import re
-from datetime import date, timedelta
+from datetime import date
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
-from src.comunicacao_wpp_ia.dominio.servicos.validador_consumo import ValidadorConsumo
+from src.comunicacao_wpp_ia.dominio.objetos.consumo_informado import ConsumoInformado
+from src.comunicacao_wpp_ia.dominio.servicos.consumo.validador_infos_para_consumo import ValidadorInformacoesParaConsumo
 from src.comunicacao_wpp_ia.dominio.utilitarios.string import StringUtilidade
 
 class FabricaConsumoInformado:
@@ -69,7 +68,7 @@ class FabricaConsumoInformado:
         if not dados_extraidos.data_mencionada:
             dados_extraidos.data_mencionada = date.today()
 
-        eh_valido, perguntas_faltantes = ValidadorConsumo.validar(dados_extraidos)
+        eh_valido, perguntas_faltantes = ValidadorInformacoesParaConsumo.validar(dados_extraidos)
 
         if not eh_valido:
             return "Para registrar o consumo, preciso de mais algumas informações: " + " ".join(perguntas_faltantes)

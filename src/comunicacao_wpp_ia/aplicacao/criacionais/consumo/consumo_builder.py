@@ -1,9 +1,9 @@
-from typing import List, Dict, Any
+from typing import List
 import json
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
+from src.comunicacao_wpp_ia.dominio.objetos.consumo_informado import ConsumoInformado
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ConsumoMontado
+from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 
 class ConsumoBuilder:
     """
@@ -68,7 +68,7 @@ class ConsumoBuilder:
                 clean_str = resultado_str
 
             dados_json = json.loads(clean_str)
-            consumo_montado = ConsumoMontado.model_validate(dados_json)
+            consumo_montado = Consumo.model_validate(dados_json)
             return consumo_montado
         except (json.JSONDecodeError, Exception) as e:
             print(f"[BUILDER ERROR] Falha ao decodificar o JSON do agente: {e}")

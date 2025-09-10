@@ -1,6 +1,6 @@
 from typing import Tuple
 from pydantic import BaseModel, Field
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ConsumoMontado
+from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 
 # TODO: Preciso de um agente para isso?
@@ -9,7 +9,7 @@ class ResultadoVerificacao(BaseModel):
     aprovado: bool = Field(description="Indica se o consumo está aprovado para ser salvo.")
     justificativa: str = Field(description="Uma mensagem clara explicando o motivo da aprovação ou reprovação.")
 
-def verificar_dados_consumo(consumo: ConsumoMontado, llm: ServicoLLM) -> ResultadoVerificacao:
+def verificar_dados_consumo(consumo: Consumo, llm: ServicoLLM) -> ResultadoVerificacao:
     """
     Utiliza um agente LLM para verificar se o objeto de consumo montado está completo e lógico.
     Retorna um objeto ResultadoVerificacao.

@@ -1,7 +1,7 @@
 from typing import List, Tuple
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
+from src.comunicacao_wpp_ia.dominio.objetos.consumo_informado import ConsumoInformado
 
-class ValidadorConsumo:
+class ValidadorInformacoesParaConsumo:
     """
     Serviço de domínio responsável por validar a consistência e a completude de um objeto de Consumo.
     """

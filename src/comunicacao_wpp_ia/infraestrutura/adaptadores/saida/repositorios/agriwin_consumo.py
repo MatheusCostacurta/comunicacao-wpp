@@ -15,7 +15,7 @@ class RepoAgriwinConsumo(RepositorioConsumo):
         print("[INFRA] Adaptador do Repositório AgriwinRemetente inicializado.")
     
 
-    def salvar(self, produtor_id: int, dados_consumo: Dict) -> Tuple[int, RespostaApi]:
+    def enviar(self, produtor_id: int, dados_consumo: Dict) -> Tuple[int, RespostaApi]:
         """
         Envia os dados de consumo para a API Agriwin através de um POST.
         Retorna uma tupla contendo o status_code e o corpo da resposta em JSON.

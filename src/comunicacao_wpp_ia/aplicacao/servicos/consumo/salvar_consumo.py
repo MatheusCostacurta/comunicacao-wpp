@@ -1,6 +1,6 @@
 import json
 from typing import Tuple
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ConsumoMontado
+from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_consumo import RepositorioConsumo
 
 class SalvarConsumo:
@@ -13,7 +13,7 @@ class SalvarConsumo:
     def __init__(self, repositorio: RepositorioConsumo):
         self.repositorio = repositorio
 
-    def executar(self, produtor_id: int, consumo: ConsumoMontado) -> Tuple[int, str]:
+    def executar(self, produtor_id: int, consumo: Consumo) -> Tuple[int, str]:
         """
         Executa a lógica para salvar o consumo.
         """

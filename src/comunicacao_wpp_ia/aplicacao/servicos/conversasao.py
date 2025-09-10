@@ -1,8 +1,7 @@
-import json
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.aplicacao.portas.memorias import ServicoMemoriaConversa
 from src.comunicacao_wpp_ia.aplicacao.portas.whatsapp import Whatsapp
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_informado import ConsumoInformado
+from src.comunicacao_wpp_ia.dominio.objetos.consumo_informado import ConsumoInformado
 from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_informado_factory import FabricaConsumoInformado
 from src.comunicacao_wpp_ia.aplicacao.criacionais.consumo.consumo_builder import ConsumoBuilder
 from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.salvar_consumo import SalvarConsumo
@@ -10,7 +9,7 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.validar_intencao import
 from src.comunicacao_wpp_ia.aplicacao.portas.pre_processamento_texto import ServicoPreProcessamento
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
-from src.comunicacao_wpp_ia.aplicacao.dtos.consumo_para_salvar import ConsumoMontado
+from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.verificar_consumo_montado import verificar_dados_consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
 
@@ -84,7 +83,7 @@ class ServicoConversa:
                 self._responder_e_salvar_historico(remetente.numero_telefone, mensagem, resultado_builder, historico)
                 return
             
-            if isinstance(resultado_builder, ConsumoMontado):
+            if isinstance(resultado_builder, Consumo):
                 # Etapa 3: Salvar o consumo e finalizar
                 consumo_montado = resultado_builder
                 self._salvar_consumo(remetente, mensagem, consumo_montado, historico)
@@ -102,7 +101,7 @@ class ServicoConversa:
     def _construir_consumo(self, remetente: DadosRemetente, mensagem: str, consumo_informado: ConsumoInformado, historico: list):
         """
         Invoca o ConsumoBuilder para coletar todos os IDs e montar o objeto final.
-        Retorna um ConsumoMontado em caso de sucesso ou uma string (pergunta) em caso de ambiguidade.
+        Retorna um Consumo em caso de sucesso ou uma string (pergunta) em caso de ambiguidade.
         """
         builder_consumo = ConsumoBuilder(self._llm)
         return builder_consumo.executar(remetente, mensagem, consumo_informado, historico)
@@ -113,7 +112,7 @@ class ServicoConversa:
         historico.append({"role": "assistant", "content": resposta_assistente})
         self._memoria.salvar_estado(telefone, historico)
     
-    def _salvar_consumo(self, remetente: DadosRemetente, mensagem: str, consumo_montado: ConsumoMontado, historico: list):
+    def _salvar_consumo(self, remetente: DadosRemetente, mensagem: str, consumo_montado: Consumo, historico: list):
         resultado_verificacao = verificar_dados_consumo(consumo_montado, self._llm)
         if not resultado_verificacao.aprovado:
             print(f"\n--- RESULTADO FINAL (DADOS INCONSISTENTES) ---")

@@ -3,7 +3,7 @@ import json
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part
 from google.oauth2 import service_account
-from src.comunicacao_wpp_ia.aplicacao.portas.extrair_imagem import ServicoImagem
+from src.comunicacao_wpp_ia.aplicacao.portas.extrair_texto_imagem import ExtrairTextoDaImagem
 
 def get_google_credentials():
     """
@@ -35,9 +35,9 @@ def get_google_credentials():
     return service_account.Credentials.from_service_account_info(creds_info)
 
 
-class AdaptadorGeminiVision(ServicoImagem):
+class AdaptadorGeminiVision(ExtrairTextoDaImagem):
     """
-    Implementação concreta (Adaptador) da porta ServicoImagem usando a API do Google Gemini (Vertex AI).
+    Implementação concreta (Adaptador) da porta ExtrairTextoDaImagem usando a API do Google Gemini (Vertex AI).
     """
     def __init__(self):
         try:
@@ -58,7 +58,7 @@ class AdaptadorGeminiVision(ServicoImagem):
             print(f"[INFRA ERROR] Falha ao inicializar o cliente Gemini Vision: {e}")
             raise
 
-    def extrair_texto_de_imagem(self, image_bytes: bytes) -> str:
+    def executar(self, image_bytes: bytes) -> str:
         print("\n--- ETAPA DE INTERPRETAÇÃO DE IMAGEM (GEMINI) ---")
         if not image_bytes:
             print("Erro: Nenhum byte de imagem foi fornecido.")

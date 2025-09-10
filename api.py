@@ -62,7 +62,7 @@ def inicializar_servicos_e_adaptadores():
 
     pre_processador = PreProcessamentoService(
         servico_transcricao=whisper_adapter,
-        servico_imagem=gemini_adapter
+        extrair_texto_imagem=gemini_adapter
     )
     
     servico_conversa = ServicoConversa(
