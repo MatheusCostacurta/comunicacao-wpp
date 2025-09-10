@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import Optional
 
 class DadosRemetente(BaseModel):
     """DTO para representar os dados do remetente da mensagem."""
-    produtor_id: str = Field(description="O ID do produtor associado ao remetente.")
-    numero_telefone: str = Field(description="O número de telefone do remetente, usado para identificar o responsável.")
+    produtor_id: Optional[str] = None
+    numero_telefone: str 
