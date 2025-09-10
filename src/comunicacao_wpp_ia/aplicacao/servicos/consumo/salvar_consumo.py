@@ -76,7 +76,7 @@ class SalvarConsumo:
 
         print("Dados preparados para salvar consumo (nova estrutura):", json.dumps(consumo_payload, indent=4))
         
-        resposta = self.repositorio.salvar(
+        resposta = self.repositorio.enviar(
             produtor_id=produtor_id,
             dados_consumo=consumo_payload
         )

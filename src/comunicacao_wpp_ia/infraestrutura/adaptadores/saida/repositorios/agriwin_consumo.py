@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 from requests import HTTPError
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_consumo import RepositorioConsumo
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
-from src.comunicacao_wpp_ia.aplicacao.dtos.resposta_api import RespostaApi
+from src.comunicacao_wpp_ia.dominio.objetos.api.resposta_api import RespostaApi
 
 
 class RepoAgriwinConsumo(RepositorioConsumo):
