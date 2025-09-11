@@ -14,7 +14,7 @@ class LocalizarPontoEstoqueService:
     def __init__(self, api_ferramentas):
         self.api = api_ferramentas
     
-    def obter(self, id_produtor: int, nome_mencionado: Optional[str] = None) -> List[PontoEstoque]:
+    def obter(self, base_url: str, id_produtor: int, nome_mencionado: Optional[str] = None) -> List[PontoEstoque]:
         """
         Encontra pontos de estoque com base em um nome mencionado ou retorna o padrão se for o único disponível.
         - Se houver apenas um ponto de estoque, retorna-o como padrão.
@@ -22,7 +22,7 @@ class LocalizarPontoEstoqueService:
         - Se nenhum nome for mencionado e houver múltiplos pontos, retorna uma lista vazia.
         """
         print(f"\n[SERVICE] Iniciando busca por Ponto de Estoque: '{nome_mencionado or 'Nenhum'}'")
-        todos_pontos_estoque = self.api.buscar_pontos_estoque_do_produtor(id_produtor)
+        todos_pontos_estoque = self.api.buscar_pontos_estoque_do_produtor(base_url,id_produtor)
         
         if not todos_pontos_estoque:
             return []

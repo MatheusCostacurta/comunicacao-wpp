@@ -13,37 +13,37 @@ class RepositorioFerramentas(ABC):
     Define a interface do repositório para operações relacionadas a llm.
     """
     @abstractmethod
-    def buscar_maquinas_do_produtor(self, id_produtor: int) -> List[Imobilizado]:
+    def buscar_maquinas_do_produtor(self, base_url: str, id_produtor: str) -> List[Imobilizado]:
         pass
 
     @abstractmethod
-    def buscar_pontos_estoque_do_produtor(self, id_produtor: int) -> List[PontoEstoque]:
+    def buscar_pontos_estoque_do_produtor(self, base_url: str, id_produtor: str) -> List[PontoEstoque]:
         pass
 
     @abstractmethod
-    def buscar_produtos_do_produtor(self, id_produtor: int) -> List[Produto]:
+    def buscar_produtos_do_produtor(self, base_url: str, id_produtor: str) -> List[Produto]:
         pass
 
     @abstractmethod
-    def buscar_produtos_em_estoque(self, id_produtor: int, nomes_produtos: List[str]) -> List[Produto]:
+    def buscar_produtos_em_estoque(self, base_url: str, id_produtor: str, nomes_produtos: List[str]) -> List[Produto]:
         pass
     
     @abstractmethod
-    def buscar_produtos_mais_consumidos(self, id_produtor: int, nomes_produtos: List[str]) -> List[Produto]:
+    def buscar_produtos_mais_consumidos(self, base_url: str, id_produtor: str, nomes_produtos: List[str]) -> List[Produto]:
         pass
 
     @abstractmethod
-    def buscar_responsavel_por_telefone(self, id_produtor: int, telefone: str) -> Optional[Responsavel]:
+    def buscar_responsavel_por_telefone(self, base_url: str, id_produtor: str, telefone: str) -> Optional[Responsavel]:
         pass
 
     @abstractmethod
-    def buscar_safras_do_produtor(self, id_produtor: int) -> List[Safra]:
+    def buscar_safras_do_produtor(self, base_url: str, id_produtor: str) -> List[Safra]:
         pass
 
     @abstractmethod
-    def buscar_talhoes_do_produtor(self, id_produtor: int) -> List[Talhao]:
+    def buscar_talhoes_do_produtor(self, base_url: str, id_produtor: str) -> List[Talhao]:
         pass
     
     @abstractmethod
-    def buscar_propriedades_do_produtor(self, id_produtor: int) -> List[Propriedade]:
+    def buscar_propriedades_do_produtor(self, base_url: str, id_produtor: str) -> List[Propriedade]:
         pass

@@ -22,4 +22,4 @@ class RepoAgriwinRemetente(RepositorioRemetente):
         # endpoint = "/api/v1/produtores"
         # params = {"telefone": telefone}
         # response = self._cliente.get(endpoint, params=params)
-        return DadosRemetente(produtor_id=["NTc="], numero_telefone=telefone)
+        return DadosRemetente(produtor_id=["NTc="], numero_telefone=telefone, base_url="https://demo.agriwin.com.br")

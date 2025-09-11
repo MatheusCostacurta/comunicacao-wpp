@@ -33,7 +33,7 @@ class LocalizarProdutoService:
         
         return list(candidatos_encontrados.values())
 
-    def obterPossiveisProdutos(self, nome_produto_mencionado: str, id_produtor: int) -> Dict[str, Any]:
+    def obterPossiveisProdutos(self, base_url: str, nome_produto_mencionado: str, id_produtor: int) -> Dict[str, Any]:
         """
         Orquestra a busca pelo produto e SEMPRE retorna um dicionário.
         """
@@ -43,7 +43,7 @@ class LocalizarProdutoService:
         produtos_mais_usados = []
 
         # 1. Primeira chamada: Buscar produtos
-        produtos_do_produtor = self.api.buscar_produtos_do_produtor(id_produtor)
+        produtos_do_produtor = self.api.buscar_produtos_do_produtor(base_url, id_produtor)
         produtos_similares = self.__obter_candidatos(nome_produto_mencionado, produtos_do_produtor)
 
         if not produtos_similares:
@@ -68,8 +68,8 @@ class LocalizarProdutoService:
             nomes_similares = [c.nome for c in produtos_similares]
             print(f"[SERVICE] Múltiplos produtos_similares encontrados: {nomes_similares}. Verificando estoque e consumo...")
             
-            produtos_em_estoque = self.api.buscar_produtos_em_estoque(id_produtor, produtos_similares)
-            produtos_mais_usados = self.api.buscar_produtos_mais_consumidos(id_produtor, produtos_similares)
+            # produtos_em_estoque = self.api.buscar_produtos_em_estoque(base_url, id_produtor, produtos_similares)
+            # produtos_mais_usados = self.api.buscar_produtos_mais_consumidos(base_url, id_produtor, produtos_similares)
 
         return {
             "produtos_similares": produtos_similares,

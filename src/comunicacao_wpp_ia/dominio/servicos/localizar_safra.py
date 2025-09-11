@@ -22,13 +22,13 @@ class LocalizarSafraService:
 
         return sorted((ano1, ano2))
     
-    def obter(self, id_produtor: int, nome_mencionado: Optional[str] = None) -> Optional[Safra]:
+    def obter(self, base_url: str, id_produtor: int, nome_mencionado: Optional[str] = None) -> Optional[Safra]:
         """
         Encontra a safra. Se um nome for mencionado, busca por ele.
         Caso contrário, busca a safra que corresponde à data atual.
         """
         print(f"\n[SERVICE] Iniciando busca por Safra...")
-        todas_safras = self.api.buscar_safras_do_produtor(id_produtor)
+        todas_safras = self.api.buscar_safras_do_produtor(base_url, id_produtor)
 
         if not todas_safras:
             return None

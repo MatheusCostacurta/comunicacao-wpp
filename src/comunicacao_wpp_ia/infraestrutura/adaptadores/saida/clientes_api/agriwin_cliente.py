@@ -1,6 +1,6 @@
 import os
 import requests
-from typing import List, Optional, Tuple
+from typing import List, Optional, Dict
 
 # ! Preciso tirar o loop de base daqui e mandar o endpoint completo, se nao essa classe nao poderá ser um singleton -> visto que cada iteração pode ser base diferente
 # ! Para manter ela singleton é bom deixar a info de base em outro lugar, acredito que possa ficar dentro do dados do remetente (base e produtor_id)
@@ -10,74 +10,59 @@ class AgriwinCliente:
     Cliente centralizado para interagir com a API Agriwin.
     Gerencia a autenticação e as requisições HTTP.
     """
-    def __init__(self, base_urls: List[str]):
-        if not base_urls:
-            raise ValueError("A lista de URLs base da API Agriwin não pode ser vazia.")
-        self._base_urls = base_urls
+    _tokens_cache: Dict[str, str] = {} # Cache de tokens por base_url
+
+    def __init__(self):
         self._usuario = os.getenv("AGRIWIN_USUARIO")
         self._senha = os.getenv("AGRIWIN_SENHA")
         if not self._usuario or not self._senha:
             raise ValueError("As variáveis de ambiente 'AGRIWIN_USUARIO' e 'AGRIWIN_SENHA' não foram configuradas.")
-        
-        self._token: Optional[str] = None
-        self._url_base_atual: Optional[str] = None
         print("[INFRA] AgriwinClient inicializado.")
 
-    def _autenticar(self) -> None:
+    def _autenticar(self, base_url: str) -> None:
         """
         Tenta autenticar em cada uma das URLs base fornecidas.
         Armazena o token e a URL ativa na primeira autenticação bem-sucedida.
         """
         print("[AGRIWIN CLIENT] Tentando autenticar...")
         endpoint_login = "/api/v1/autenticacao"
+        url_completa = f"{base_url.rstrip('/')}{endpoint_login}"
         
-        for url in self._base_urls:
-            try:
-                url_completa = f"{url.rstrip('/')}{endpoint_login}"
-                payload = {
-                    "login": self._usuario,
-                    "senha": self._senha
-                }
-                print(f"[AGRIWIN CLIENT] Tentando login em {url_completa}...")
-                response = requests.post(url_completa, json=payload)
+        try:
+            payload = {"login": self._usuario, "senha": self._senha}
+            response = requests.post(url_completa, json=payload)
+            response.raise_for_status() # Lança exceção para status 4xx/5xx
 
-                if response.status_code == 200:
-                    response_data = response.json()
-                    dados = response_data.get("dados")
-                    if isinstance(dados, dict):
-                        self._token = dados.get("token")
+            response_data = response.json()
+            dados = response_data.get("dados")
+            token = dados.get("token") if isinstance(dados, dict) else None
 
-                    if self._token:
-                        self._url_base_atual = url
-                        print(f"[AGRIWIN CLIENT] Autenticação bem-sucedida. Token extraído com sucesso.")
-                        return
-                    else:
-                        print("[AGRIWIN CLIENT ERROR] Autenticação retornou sucesso (200), mas o token não foi encontrado no JSON com a chave 'token'.")
-                    
-                else:
-                    print(f"[AGRIWIN CLIENT] Falha na autenticação em {url}: Status {response.status_code}")
-                    print(f"[AGRIWIN CLIENT] Falha na autenticação em {url}: Status {response.json().get('mensagem')}")
+            if not token:
+                raise ValueError("Token não encontrado na resposta da API de autenticação.")
+            
+            print(f"[AGRIWIN CLIENT] Autenticação bem-sucedida em {base_url}.")
+            self._tokens_cache[base_url] = token # Armazena no cache
+            return token
 
-            except requests.exceptions.RequestException as e:
-                print(f"[AGRIWIN CLIENT ERROR] Erro ao tentar conectar em {url}: {e}")
-                continue # Tenta a próxima URL
-        
-        raise ConnectionError("Não foi possível autenticar em nenhuma das URLs base da API Agriwin.")
+        except requests.exceptions.RequestException as e:
+            print(f"[AGRIWIN CLIENT ERROR] Erro ao tentar autenticar em {base_url}: {e}")
+            raise ConnectionError(f"Não foi possível autenticar na API Agriwin em {base_url}.")
 
-    def _get_headers(self) -> dict:
-        """Garante que a autenticação foi feita e retorna os headers necessários."""
-        if not self._token or not self._url_base_atual:
-            self._autenticar()
+    def _get_headers(self, base_url: str) -> dict:
+        """Obtém um token (do cache ou novo) e retorna os headers."""
+        token = self._tokens_cache.get(base_url)
+        if not token:
+            token = self._autenticar(base_url)
         
         return {
-            "Authorization": f"Bearer {self._token}",
+            "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
         }
 
-    def get(self, endpoint: str, params: Optional[dict] = None) -> requests.Response:
+    def get(self, base_url: str, endpoint: str, params: Optional[dict] = None) -> requests.Response:
         """Executa uma requisição GET para um endpoint da API Agriwin."""
-        headers = self._get_headers()
-        url = f"{self._url_base_atual.rstrip('/')}{endpoint}"
+        headers = self._get_headers(base_url)
+        url = f"{base_url.rstrip('/')}{endpoint}"
         
         if params:
             # Constrói a query string manualmente para evitar a codificação do '='
@@ -88,6 +73,12 @@ class AgriwinCliente:
         print(f"[AGRIWIN CLIENT] Executando GET em: {url}")
         response = requests.get(url, headers=headers)
         
+        # Se o token expirou (401), limpa o cache e tenta de novo
+        if response.status_code == 401 and base_url in self._tokens_cache:
+            print("[AGRIWIN CLIENT] Token possivelmente expirado. Tentando reautenticar...")
+            del self._tokens_cache[base_url]
+            return self.get(base_url, endpoint, params)
+        
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
@@ -97,11 +88,18 @@ class AgriwinCliente:
             
         return response
 
-    def post(self, endpoint: str, data: dict) -> requests.Response:
+    def post(self, base_url: str, endpoint: str, data: dict) -> requests.Response:
         """Executa uma requisição POST para um endpoint da API Agriwin."""
-        headers = self._get_headers()
-        url = f"{self._url_base_atual.rstrip('/')}{endpoint}"
+        headers = self._get_headers(base_url)
+        url = f"{base_url.rstrip('/')}{endpoint}"
         print(f"[AGRIWIN CLIENT] Executando POST em: {url}")
         response = requests.post(url, headers=headers, json=data)
+
+        # Se o token expirou (401), limpa o cache e tenta de novo
+        if response.status_code == 401 and base_url in self._tokens_cache:
+            print("[AGRIWIN CLIENT] Token possivelmente expirado. Tentando reautenticar...")
+            del self._tokens_cache[base_url]
+            return self.post(base_url, endpoint, data)
+        
         response.raise_for_status()
         return response

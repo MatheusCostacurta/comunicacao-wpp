@@ -1,29 +1,59 @@
 import json
 from langchain.tools import tool
+from functools import partial
 from typing import List, Any, Optional
 from src.comunicacao_wpp_ia.aplicacao.portas.ferramentas import Ferramentas
+from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 
 class AdaptadorLangChainFerramentas:
     """
     Adaptador que expõe as funcionalidades do ServicoFerramentas no formato
-    que a biblioteca LangChain espera (funções decoradas com @tool).
-
-    Esta classe depende da interface da camada de aplicação (`ServicoFerramentas`),
-    não de sua implementação concreta, seguindo o Princípio da Inversão de Dependência.
-    Sua responsabilidade é apenas a de adaptação tecnológica.
+    que a biblioteca LangChain espera.
+    
+    Este adaptador agora é responsável por criar ferramentas dinamicamente
+    com o contexto do usuário (remetente) embutido.
     """
     def __init__(self, servico_ferramentas: Ferramentas):
-        """
-        Inicializa o adaptador injetando o serviço de ferramentas da aplicação.
-
-        Args:
-            servico_ferramentas: Uma instância que implementa a interface ServicoFerramentas.
-        """
         self._servico = servico_ferramentas
 
         # O decorador @tool precisa ser aplicado a funções que o LangChain possa inspecionar.
         # Definimos estas funções dentro do construtor para capturar a instância `_servico`
         # do nosso serviço de aplicação (closure).
+
+    def obter_ferramentas_com_contexto(self, remetente: DadosRemetente) -> List[Any]:
+        """
+        Retorna a lista de ferramentas prontas para LangChain, com o contexto
+        do remetente (id_produtor, base_url) já injetado via functools.partial.
+        O LLM não verá esses parâmetros, mas eles serão usados na execução.
+        """
+        # Cria funções parciais, pré-preenchendo os parâmetros de contexto
+        buscar_produto_com_contexto = partial(self._servico.buscar_produto_por_nome, 
+                                            base_url=remetente.base_url, 
+                                            id_produtor=remetente.produtor_id[0])
+        
+        buscar_talhoes_com_contexto = partial(self._servico.buscar_talhoes_disponiveis,
+                                            base_url=remetente.base_url,
+                                            id_produtor=remetente.produtor_id[0])
+        
+        buscar_propriedades_com_contexto = partial(self._servico.buscar_propriedades_disponiveis,
+                                                base_url=remetente.base_url,
+                                                id_produtor=remetente.produtor_id[0])
+        
+        buscar_maquinas_com_contexto = partial(self._servico.buscar_maquinas_disponiveis,
+                                            base_url=remetente.base_url,
+                                            id_produtor=remetente.produtor_id[0])
+        
+        buscar_pontos_estoque_com_contexto = partial(self._servico.buscar_pontos_de_estoque_disponiveis,
+                                                    base_url=remetente.base_url,
+                                                id_produtor=remetente.produtor_id[0])
+        
+        buscar_safra_com_contexto = partial(self._servico.buscar_safra_disponivel,
+                                            base_url=remetente.base_url,
+                                        id_produtor=remetente.produtor_id[0])
+        
+        buscar_responsavel_com_contexto = partial(self._servico.buscar_responsavel_por_telefone,
+                                                base_url=remetente.base_url,
+                                                id_produtor=remetente.produtor_id[0])
 
         @tool
         def buscar_produto_por_nome(nome_produto: str) -> str:
@@ -38,7 +68,7 @@ class AdaptadorLangChainFerramentas:
             if not nome_produto or not isinstance(nome_produto, str):
                 return json.dumps({"produtos_similares": [], "produtos_em_estoque": [], "produtos_mais_usados": []})
             
-            resultado = self._servico.buscar_produto_por_nome(nome_produto)
+            resultado = buscar_produto_com_contexto(nome_produto=nome_produto)
             return json.dumps(resultado)
 
         @tool
@@ -48,7 +78,7 @@ class AdaptadorLangChainFerramentas:
             A IA deve então usar esta lista para encontrar o(s) ID(s) do talhão(s) que o usuário mencionou (pode ser mais de um).
             Retorna um JSON string com a lista de TODOS os talhões disponíveis.
             """
-            resultados = self._servico.buscar_talhoes_disponiveis()
+            resultados = buscar_talhoes_com_contexto()
             return json.dumps(resultados)
 
         @tool
@@ -58,7 +88,7 @@ class AdaptadorLangChainFerramentas:
             A IA deve usar esta lista para encontrar o(s) ID(s) da(s) propriedade(s) que o usuário mencionou (pode ser mais de uma).
             Retorna um JSON string com a lista de TODAS as propriedades disponíveis.
             """
-            resultados = self._servico.buscar_propriedades_disponiveis()
+            resultados = buscar_propriedades_com_contexto()
             return json.dumps(resultados)
 
         @tool
@@ -73,7 +103,7 @@ class AdaptadorLangChainFerramentas:
             """
             if not nome_maquina or not isinstance(nome_maquina, str):
                 return json.dumps([])
-            resultado = self._servico.buscar_maquinas_disponiveis(nome_maquina)
+            resultado = buscar_maquinas_com_contexto(nome_maquina=nome_maquina)
             return json.dumps(resultado)
 
         @tool
@@ -83,7 +113,7 @@ class AdaptadorLangChainFerramentas:
             - Se o usuário mencionou um nome (ex: 'depósito da sede'), passe a string para o parâmetro 'nome_ponto_estoque'. A ferramenta retornará uma lista de pontos de estoque com nome similar ou vazia.
             - Se o usuário NÃO mencionou um ponto de estoque, chame a ferramenta sem nenhum parâmetro (deixe como None).
             """
-            resultado = self._servico.buscar_pontos_de_estoque_disponiveis(nome_ponto_estoque)
+            resultado = buscar_pontos_estoque_com_contexto(nome_ponto_estoque=nome_ponto_estoque)
             return json.dumps(resultado)
 
         @tool
@@ -95,8 +125,8 @@ class AdaptadorLangChainFerramentas:
 
             Retorna um JSON string com a safra encontrada (pelo nome ou a safra ativa).
             """
-            resultado = self._servico.buscar_safra_disponivel(nome_safra)
-            return json.dumps(resultado)
+            resultado = buscar_safra_com_contexto(nome_safra=nome_safra)
+            return resultado
 
         @tool
         def buscar_responsavel_por_telefone(telefone: str) -> str:
@@ -106,10 +136,10 @@ class AdaptadorLangChainFerramentas:
             """
             if not telefone or not isinstance(telefone, str):
                 return json.dumps(None)
-            resultado = self._servico.buscar_responsavel_por_telefone(telefone)
+            resultado = buscar_responsavel_com_contexto(telefone=telefone)
             return json.dumps(resultado)
 
-        self.ferramentas: List[Any] = [
+        ferramentas: List[Any] = [
             buscar_produto_por_nome,
             buscar_talhoes_disponiveis,
             buscar_propriedades_disponiveis,
@@ -119,9 +149,11 @@ class AdaptadorLangChainFerramentas:
             buscar_responsavel_por_telefone
         ]
 
-    def obter_ferramentas(self) -> List[Any]:
-        """
-        Retorna a lista de ferramentas adaptadas e prontas para serem usadas
-        pelo agente LangChain.
-        """
-        return self.ferramentas
+        return ferramentas
+
+# def obter_ferramentas(self) -> List[Any]:
+#     """
+#     Retorna a lista de ferramentas adaptadas e prontas para serem usadas
+#     pelo agente LangChain.
+#     """
+#     return self.ferramentas

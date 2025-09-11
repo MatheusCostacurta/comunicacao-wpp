@@ -3,6 +3,7 @@ from typing import Type, TypeVar, List, Any, Dict
 from pydantic import BaseModel
 from src.comunicacao_wpp_ia.aplicacao.portas.agente_com_ferramentas import AgenteComFerramentas
 from src.comunicacao_wpp_ia.aplicacao.portas.agente import Agente
+from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -20,7 +21,7 @@ class ServicoLLM(ABC):
         pass
 
     @abstractmethod
-    def criar_agente_com_ferramentas(self, prompt_template: str, ferramentas: List[Any]) -> AgenteComFerramentas:
+    def criar_agente_com_ferramentas(self, remetente: DadosRemetente, prompt_template: str) -> AgenteComFerramentas:
         """
         Método Fábrica: constrói e retorna uma instância de um Agente executável.
         
@@ -30,12 +31,5 @@ class ServicoLLM(ABC):
 
         Returns:
             Um objeto que implementa a interface Agente.
-        """
-        pass
-
-    @abstractmethod
-    def obter_ferramentas(self) -> List[Any]:
-        """
-        Retorna a lista de ferramentas disponíveis para o agente.
         """
         pass

@@ -13,12 +13,15 @@ from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.verificar_consumo_montado import verificar_dados_consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
 
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
+from src.comunicacao_wpp_ia.aplicacao.servicos.llms.utilizar_ferramenta import UtilizarFerramenta
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
 class ServicoConversa:
     """
     Serviço de aplicação responsável por orquestrar o fluxo de uma conversa.
     """
-    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, obter_remetente_service: ObterRemetente, salvar_consumo_service: SalvarConsumo, pre_processador: ServicoPreProcessamento, whatsapp: Whatsapp):
+    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, obter_remetente_service: ObterRemetente, salvar_consumo_service: SalvarConsumo, pre_processador: ServicoPreProcessamento, whatsapp: Whatsapp, agriwin_cliente: AgriwinCliente):    
         self._memoria = memoria
         self._llm = llm
         self._obter_remetente_service = obter_remetente_service
@@ -26,6 +29,7 @@ class ServicoConversa:
         self._salvar_consumo_service = salvar_consumo_service
         self._fabrica_consumo_informado = FabricaConsumoInformado(llm)
         self._whatsapp = whatsapp
+        self._agriwin_cliente = agriwin_cliente
 
     def _encerrar_conversa(self, telefone: str, mensagem_erro: str):
         """
@@ -124,7 +128,11 @@ class ServicoConversa:
             self._whatsapp.enviar(remetente.numero_telefone, resposta_usuario)
             return
 
-        status_code, mensagem_api = self._salvar_consumo_service.executar(remetente.produtor_id, consumo_montado)
+        status_code, mensagem_api = self._salvar_consumo_service.executar(
+            base_url=remetente.base_url,
+            produtor_id=remetente.produtor_id[0], 
+            consumo=consumo_montado
+        )
         if status_code == 200:
             self._memoria.limpar_memoria_conversa(remetente.numero_telefone)
             resposta_usuario = "Seu registro foi salvo com sucesso!"

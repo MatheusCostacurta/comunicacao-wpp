@@ -14,6 +14,8 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.llms.utilizar_ferramenta import U
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 
+from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
+
 T = TypeVar('T', bound=BaseModel)
 
 class _ExecutorAgenteGroq(Agente[T]):
@@ -38,14 +40,7 @@ class AdaptadorGroq(ServicoLLM):
     """
     def __init__(self, modelo: str = "llama-3.3-70b-versatile", temperatura: float = 0):
         self._llm = ChatGroq(model_name=modelo, temperature=temperatura)
-        agriwin_urls = ["https://demo.agriwin.com.br"]
-        agriwin_cliente = AgriwinCliente(base_urls=agriwin_urls)
-        repo_ferramentas = RepoAgriwinFerramentas(agriwin_cliente=agriwin_cliente)
-        servico_ferramentas = UtilizarFerramenta(
-            repositorio_ferramentas=repo_ferramentas,
-            id_produtor="NTc="
-        )
-        self.ferramentas_adapter = AdaptadorLangChainFerramentas(servico_ferramentas)
+        self._agriwin_cliente = AgriwinCliente()
         print("[INFRA] Adaptador Groq inicializado.")
 
     def criar_agente(self, prompt_sistema: str, prompt_usuario: str, modelo_saida: Type[T]) -> T:
@@ -60,13 +55,20 @@ class AdaptadorGroq(ServicoLLM):
     
         return _ExecutorAgenteGroq(chain) 
     
-    def criar_agente_com_ferramentas(self, prompt_template: str, ferramentas: List[Any]) -> AgenteComFerramentas:
+    def criar_agente_com_ferramentas(self, remetente: DadosRemetente, prompt_template: str) -> AgenteComFerramentas:
         """
         Implementa o método fábrica para construir um agente com LangChain.
         """
         print("[ADAPTADOR GROQ] Criando uma instância de agente executável...")
 
-        llm_com_ferramentas = self._llm.bind_tools(ferramentas)
+        repo_ferramentas = RepoAgriwinFerramentas(self._agriwin_cliente)
+        servico_ferramentas = UtilizarFerramenta(repositorio_ferramentas=repo_ferramentas)
+        adaptador_ferramentas = AdaptadorLangChainFerramentas(servico_ferramentas)
+        
+        # Obtém as ferramentas com o contexto do usuário já embutido
+        ferramentas_com_contexto = adaptador_ferramentas.obter_ferramentas_com_contexto(remetente)
+
+        llm_com_ferramentas = self._llm.bind_tools(ferramentas_com_contexto)
 
         prompt = ChatPromptTemplate.from_messages([
             ("system", prompt_template),
@@ -88,15 +90,9 @@ class AdaptadorGroq(ServicoLLM):
 
         executor_langchain = AgentExecutor(
             agent=cadeia_agente,
-            tools=ferramentas,
+            tools=ferramentas_com_contexto,
             verbose=True
         )
 
         # Retorna a nossa classe "wrapper" que implementa a porta Agente
         return _ExecutorAgenteComFerramentasGroq(executor_langchain)
-    
-    def obter_ferramentas(self) -> List[Any]:
-        """
-        Retorna a lista de ferramentas disponíveis para o agente.
-        """
-        return self.ferramentas_adapter.obter_ferramentas()

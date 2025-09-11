@@ -6,14 +6,14 @@ class LocalizarMaquinaService:
     def __init__(self, api_ferramentas):
         self.api = api_ferramentas
 
-    def obter(self, id_produtor: int, termo_busca: str) -> List[Imobilizado]:
+    def obter(self, base_url: str, id_produtor: int, termo_busca: str) -> List[Imobilizado]:
         """
         Encontra máquinas com base em um termo de busca.
         - Se o termo for um número de série, busca por correspondência exata.
         - Se for um nome, busca por similaridade (score >= 80).
         """
         print(f"\n[SERVICE] Iniciando busca por Máquina: '{termo_busca}'")
-        todas_maquinas = self.api.buscar_maquinas_do_produtor(id_produtor)
+        todas_maquinas = self.api.buscar_maquinas_do_produtor(base_url, id_produtor)
 
         if not todas_maquinas:
             return []

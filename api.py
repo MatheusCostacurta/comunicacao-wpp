@@ -34,16 +34,13 @@ app = FastAPI(
 # --- Variáveis globais para armazenar as instâncias dos serviços ---
 servico_conversa: ServicoConversa = None
 whatsapp_adapter: AdaptadorZAPI = None
+agriwin_cliente: AgriwinCliente = None 
 
 @app.on_event("startup")
 def inicializar_servicos_e_adaptadores():
     print("--- INICIALIZANDO ADAPTADORES E SERVIÇOS DA APLICAÇÃO ---")
 
-    global servico_conversa, whatsapp_adapter
-    
-    # Instancia o AgriwinCliente com as URLs do .env
-    agriwin_urls = ["https://demo.agriwin.com.br"]
-    agriwin_cliente = AgriwinCliente(base_urls=agriwin_urls)
+    global servico_conversa, whatsapp_adapter, agriwin_cliente
 
     # Adaptadores de Saída (Infraestrutura)
     repo_remetente = RepoAgriwinRemetente(agriwin_cliente=agriwin_cliente)
@@ -71,7 +68,8 @@ def inicializar_servicos_e_adaptadores():
         obter_remetente_service=obter_remetente_service,
         salvar_consumo_service=salvar_consumo_service,
         pre_processador=pre_processador,
-        whatsapp=whatsapp_adapter
+        whatsapp=whatsapp_adapter,
+        agriwin_cliente=agriwin_cliente 
     )
 
     servico_notificacao = NotificarExpiracaoConversa(whatsapp=whatsapp_adapter)

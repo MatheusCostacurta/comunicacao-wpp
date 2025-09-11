@@ -11,7 +11,6 @@ class ConsumoBuilder:
     """
     def __init__(self, servico_llm: ServicoLLM):
         self._servico_llm = servico_llm
-        self.ferramentas = servico_llm.obter_ferramentas()
 
     # TODO: receber numero de telefone
     def _criar_prompt(self, remetente: DadosRemetente) -> str:
@@ -49,8 +48,10 @@ class ConsumoBuilder:
         historico_conversa = historico_conversa or []
 
         prompt_orquestrador = self._criar_prompt(remetente)
-
-        agente_com_ferramentas = self._servico_llm.criar_agente_com_ferramentas(prompt_template=prompt_orquestrador, ferramentas=self.ferramentas)
+        agente_com_ferramentas = self._servico_llm.criar_agente_com_ferramentas(
+            remetente=remetente,
+            prompt_template=prompt_orquestrador
+        )
         entradas_agente = {
             "input": mensagem_usuario,
             "dados_iniciais": dados_iniciais.dict(),

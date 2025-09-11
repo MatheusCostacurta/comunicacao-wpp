@@ -6,9 +6,9 @@ class LocalizarTalhaoService:
     def __init__(self, api_ferramentas):
         self.api = api_ferramentas
 
-    def obter(self, id_produtor: int) -> List[Talhao]:
+    def obter(self, base_url: str, id_produtor: int) -> List[Talhao]:
         """Encontra os talhões mais prováveis com base nos nomes mencionados."""
-        todos_talhoes = self.api.buscar_talhoes_do_produtor(id_produtor)
+        todos_talhoes = self.api.buscar_talhoes_do_produtor(base_url, id_produtor)
 
         if not todos_talhoes:
             return []
