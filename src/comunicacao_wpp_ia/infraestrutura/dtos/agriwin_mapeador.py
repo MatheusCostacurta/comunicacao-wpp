@@ -12,8 +12,8 @@ from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
 # --- DTOs da Infraestrutura (Camada Externa) ---
 from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
     ProdutoAgriwinDTO,
-    PlantioAgriwinDTO,
-    ImobilizadoAgriwinDTO,
+    AreasAgriwinDTO,
+    MaquinaAgriwinDTO,
     PontoEstoqueAgriwinDTO,
     SafraAgriwinDTO,
     ResponsavelAgriwinDTO
@@ -38,7 +38,7 @@ class AgriwinMapeador:
         )
 
     @staticmethod
-    def para_talhao_dominio(dto: PlantioAgriwinDTO) -> Talhao:
+    def para_talhao_dominio(dto: AreasAgriwinDTO) -> Talhao:
         return Talhao(
             id=dto.talhao.identificador,
             nome=dto.talhao.descricao,
@@ -46,14 +46,14 @@ class AgriwinMapeador:
         )
 
     @staticmethod
-    def para_propriedade_dominio(dto: PlantioAgriwinDTO) -> Propriedade:
+    def para_propriedade_dominio(dto: AreasAgriwinDTO) -> Propriedade:
         return Propriedade(
             id=dto.talhao.propriedade.identificador,
             nome=dto.talhao.propriedade.descricao
         )
     
     @staticmethod
-    def para_imobilizado_dominio(dto: ImobilizadoAgriwinDTO) -> Imobilizado:
+    def para_imobilizado_dominio(dto: MaquinaAgriwinDTO) -> Imobilizado:
         return Imobilizado(
             id=dto.identificador,
             nome=dto.descricao, # Mapeia 'descricao' do DTO para 'nome' no domínio

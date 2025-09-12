@@ -19,9 +19,12 @@ class Consumo(BaseModel):
     produtos: List[Produto]
     id_ponto_estoque: Optional[str] = None
     id_safra: Optional[str] = None
+    id_atividade: Optional[str] = None
     data_aplicacao: Optional[str] = None
     tipo_rateio: Optional[str] = None
     ids_talhoes: Optional[List[str]] = None
     ids_propriedades: Optional[List[str]] = None
     id_responsavel: Optional[str] = None
     maquinas: Optional[List[Maquina]] = None
+    epoca: Optional[str] = None
+    observacao: Optional[str] = None

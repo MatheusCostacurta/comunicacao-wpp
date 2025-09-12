@@ -35,14 +35,20 @@ class _TalhaoPlantioDTO(BaseModel):
 class _SafraPlantioDTO(BaseModel):
     identificador: str
 
-# --- DTO Principal para a resposta de /plantios ---
-class PlantioAgriwinDTO(BaseModel):
+class _CulturaPlantioDTO(BaseModel):
     identificador: str
+    descricao: str
+
+# --- DTO Principal para a resposta de /plantios ---
+class AreasAgriwinDTO(BaseModel):
+    identificador: str
+    ativo: bool
     safra: _SafraPlantioDTO
     talhao: _TalhaoPlantioDTO
+    cultura: _CulturaPlantioDTO
 
 # --- DTO para Imobilizado (Máquina) ---
-class ImobilizadoAgriwinDTO(BaseModel):
+class MaquinaAgriwinDTO(BaseModel):
     identificador: str
     descricao: str
     ativo: Optional[bool] = None
@@ -69,3 +75,30 @@ class ResponsavelAgriwinDTO(BaseModel):
     nome: str
     nome_fantasia: Optional[str] = None
     telefone: Optional[str] = None
+
+class _ConsumoRateioAgriwinDTO(BaseModel):
+    atividade_id: Optional[str] = None
+    safra_id: Optional[str] = None
+    tipo: Optional[str] = None
+    propriedades: Optional[List[str]] = []
+    plantios: Optional[List[str]] = []
+    culturas: Optional[List[str]] = []
+    lotes: Optional[List[str]] = []
+
+class _ConsumoItemAgriwinDTO(BaseModel):
+    id: str
+    quantidade: int
+
+class _ConsumoImobilizadoAgriwinDTO(BaseModel):
+    id: str
+    quantidade_horimetro_hodometro: int
+
+class ConsumoAgriwinRequest(BaseModel):
+    data: str
+    responsavel_id: Optional[str] = None
+    ponto_estoque_id: Optional[str] = None
+    tipo_operacao_id: Optional[str] = None
+    observacao: Optional[str] = None
+    rateio: Optional[_ConsumoRateioAgriwinDTO] = None
+    imobilizados: Optional[_ConsumoImobilizadoAgriwinDTO] = None
+    itens: List[_ConsumoItemAgriwinDTO]
