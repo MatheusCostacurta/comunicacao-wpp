@@ -91,7 +91,7 @@ class _ConsumoItemAgriwinDTO(BaseModel):
 
 class _ConsumoImobilizadoAgriwinDTO(BaseModel):
     id: str
-    quantidade_horimetro_hodometro: int
+    quantidade_horimetro_hodometro: Optional[int] = None
 
 class ConsumoAgriwinRequest(BaseModel):
     data: str
@@ -100,5 +100,5 @@ class ConsumoAgriwinRequest(BaseModel):
     tipo_operacao_id: Optional[str] = None
     observacao: Optional[str] = None
     rateio: Optional[_ConsumoRateioAgriwinDTO] = None
-    imobilizados: Optional[_ConsumoImobilizadoAgriwinDTO] = None
+    imobilizados: Optional[List[_ConsumoImobilizadoAgriwinDTO]] = None
     itens: List[_ConsumoItemAgriwinDTO]

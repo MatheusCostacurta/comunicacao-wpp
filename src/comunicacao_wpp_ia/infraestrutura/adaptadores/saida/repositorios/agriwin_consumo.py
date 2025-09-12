@@ -5,6 +5,7 @@ from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_consumo import RepositorioConsumo
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
 from src.comunicacao_wpp_ia.dominio.objetos.api.resposta_api import RespostaApi
+from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_mapeador import AgriwinMapeador
 
 
 class RepoAgriwinConsumo(RepositorioConsumo):
@@ -22,49 +23,11 @@ class RepoAgriwinConsumo(RepositorioConsumo):
         Retorna uma tupla contendo o status_code e o corpo da resposta em JSON.
         """
         endpoint = "/api/v1/consumos"
-
-        rateio_payload = {
-            "atividade_id": consumo.id_atividade,
-            "safra_id": consumo.id_safra,
-            "tipo": None,
-            "propriedades": None,
-            "plantios": None,
-            "culturas": None,
-            "lotes": None
-        }
-
-        if consumo.tipo_rateio == 'propriedade':
-            rateio_payload["tipo"] = "PROPRIEDADE_AGRICOLA"
-            rateio_payload["propriedades"] = consumo.ids_propriedades
-        elif consumo.tipo_rateio == 'talhao':
-            rateio_payload["tipo"] = "PLANTIO"
-            rateio_payload["plantios"] = consumo.ids_talhoes
-
-        # Montagem da lista de imobilizados (máquinas)
-        lista_imobilizados = None
-        if consumo.maquinas:
-            lista_imobilizados = []
-            for maquina in consumo.maquinas:
-                imobilizado_item = {"id": maquina.id}
-                if maquina.horimetro_inicio is not None and maquina.horimetro_fim is not None:
-                    imobilizado_item["quantidade_horimetro_hodometro"] = maquina.horimetro_fim - maquina.horimetro_inicio
-                lista_imobilizados.append(imobilizado_item)
-
-        # ! Preciso criar um tipo de consumoRequest para definir na interface e garantir que o adaptador implemente corretamente
-        consumo_payload = {
-            "data": consumo.data_aplicacao.strftime('%d/%m/%Y') if hasattr(consumo.data_aplicacao, 'strftime') else consumo.data_aplicacao,
-            "responsavel_id": consumo.id_responsavel,
-            "ponto_estoque_id": consumo.id_ponto_estoque,
-            "tipo_operacao_id": None, # TODO: Adicionar lógica se necessário
-            "rateio": rateio_payload,
-            "imobilizados": lista_imobilizados,
-            "itens": [p.dict() for p in consumo.produtos],
-            "observacao": consumo.observacao
-        }
+        consumo_dto = AgriwinMapeador.de_consumo_dominio_para_dto(consumo)
 
         payload_completo = {
             "identificador_produtor": produtor_id,
-            "consumo": consumo_payload
+            "consumo": consumo_dto.model_dump(exclude_none=True) # Converte o DTO para um dicionário
         }
         print(f"\n[API] Enviando POST para salvar consumo em {endpoint}: {json.dumps(payload_completo, indent=4)}")
 

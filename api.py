@@ -42,10 +42,13 @@ def inicializar_servicos_e_adaptadores():
 
     global servico_conversa, whatsapp_adapter, agriwin_cliente
 
+    # Cliente da API Externa
+    agriwin_cliente = AgriwinCliente()
+
     # Adaptadores de Saída (Infraestrutura)
-    repo_remetente = RepoAgriwinRemetente(agriwin_cliente=agriwin_cliente)
-    repo_consumo = RepoAgriwinConsumo(agriwin_cliente=agriwin_cliente)
-    llm_adapter = AdaptadorOpenAI()
+    repo_remetente = RepoAgriwinRemetente(agriwin_cliente)
+    repo_consumo = RepoAgriwinConsumo(agriwin_cliente)
+    llm_adapter = AdaptadorOpenAI()  #TODO: Este adaptador também cria sua própria instância de AgriwinCliente internamente, o que pode ser refatorado no futuro.
     whatsapp_adapter = AdaptadorZAPI()
     whisper_adapter = AdaptadorWhisper()
     gemini_adapter = AdaptadorGeminiVision()

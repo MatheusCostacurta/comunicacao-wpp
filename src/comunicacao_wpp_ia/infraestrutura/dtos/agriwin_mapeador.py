@@ -8,6 +8,7 @@ from src.comunicacao_wpp_ia.dominio.modelos.imobilizado import Imobilizado
 from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
 from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
+from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 
 # --- DTOs da Infraestrutura (Camada Externa) ---
 from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
@@ -16,8 +17,13 @@ from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
     MaquinaAgriwinDTO,
     PontoEstoqueAgriwinDTO,
     SafraAgriwinDTO,
-    ResponsavelAgriwinDTO
+    ResponsavelAgriwinDTO,
+    ConsumoAgriwinRequest,
+    _ConsumoRateioAgriwinDTO,
+    _ConsumoItemAgriwinDTO,
+    _ConsumoImobilizadoAgriwinDTO
 )
+
 
 class AgriwinMapeador:
     """
@@ -88,4 +94,53 @@ class AgriwinMapeador:
             nome=dto.nome,
             nome_fantasia=dto.nome_fantasia,
             telefone=dto.telefone
+        )
+    
+    @staticmethod
+    def para_responsavel_dominio(dto: ResponsavelAgriwinDTO) -> Responsavel:
+        return Responsavel(
+            id=dto.identificador,
+            nome=dto.nome,
+            nome_fantasia=dto.nome_fantasia,
+            telefone=dto.telefone
+        )
+
+    @staticmethod
+    def de_consumo_dominio_para_dto(consumo: Consumo) -> ConsumoAgriwinRequest:
+        rateio_payload = _ConsumoRateioAgriwinDTO(
+            atividade_id=consumo.id_atividade,
+            safra_id=consumo.id_safra
+        )
+
+        if consumo.tipo_rateio == 'propriedade':
+            rateio_payload.tipo = "PROPRIEDADE_AGRICOLA"
+            rateio_payload.propriedades = consumo.ids_propriedades
+        elif consumo.tipo_rateio == 'talhao':
+            rateio_payload.tipo = "PLANTIO"
+            rateio_payload.plantios = consumo.ids_talhoes
+
+        lista_imobilizados = None
+        if consumo.maquinas:
+            lista_imobilizados = []
+            for maquina in consumo.maquinas:
+                horimetro = None
+                if maquina.horimetro_inicio is not None and maquina.horimetro_fim is not None:
+                    horimetro = maquina.horimetro_fim - maquina.horimetro_inicio
+                
+                imobilizado_item = _ConsumoImobilizadoAgriwinDTO(
+                    id=maquina.id,
+                    quantidade_horimetro_hodometro=horimetro
+                )
+                lista_imobilizados.append(imobilizado_item)
+        
+        itens_consumo = [_ConsumoItemAgriwinDTO(id=p.id, quantidade=p.quantidade) for p in consumo.produtos]
+
+        return ConsumoAgriwinRequest(
+            data=consumo.data_aplicacao.strftime('%d/%m/%Y') if hasattr(consumo.data_aplicacao, 'strftime') else consumo.data_aplicacao,
+            responsavel_id=consumo.id_responsavel,
+            ponto_estoque_id=consumo.id_ponto_estoque,
+            observacao=consumo.observacao,
+            rateio=rateio_payload,
+            imobilizados=lista_imobilizados,
+            itens=itens_consumo
         )
