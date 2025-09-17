@@ -1,18 +1,11 @@
-import os
+import os, re
 import requests
 from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field, ValidationError
 
 from src.comunicacao_wpp_ia.aplicacao.portas.whatsapp import Whatsapp
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida, TipoMensagem
-
-# DTO específico para validar o payload do webhook da Z-API
-class _ZAPIPayload(BaseModel):
-    phone: str
-    message_type: str = Field(..., alias="type")
-    text: Optional[str] = None
-    media_url: Optional[str] = Field(None, alias="mediaUrl")
-    mime_type: Optional[str] = Field(None, alias="mimeType")
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.entrada.whatsapp.zapi_dtos import ZAPIPayload
 
 class AdaptadorZAPI(Whatsapp):
     """
@@ -33,13 +26,33 @@ class AdaptadorZAPI(Whatsapp):
         response.raise_for_status()
         return response.content
     
+    def _formatar_numero_telefone(self, telefone: str) -> str:
+        """
+        Remove o código do país (55) e caracteres não numéricos do telefone.
+        """
+        numeros = re.sub(r'\D', '', telefone) # Remove tudo que não for dígito
+        
+        # Se o número começar com 55 e tiver o tamanho de um celular com DDD (11 dígitos) + 55, remove o 55
+        if numeros.startswith('55'):
+            numeros = numeros[2:]
+        
+        # 3. Verifica a necessidade de adicionar o nono dígito.
+        # Um número de celular no Brasil com DDD tem 10 (formato antigo) ou 11 (formato novo) dígitos.
+        if len(numeros) == 10:
+            ddd = numeros[:2]
+            numero_sem_9 = numeros[2:]
+            print(f"[Z-API] Número {numeros} ajustado para o formato com 9º dígito.")
+            return f"{ddd}9{numero_sem_9}"
+        
+        return numeros
+    
     def enviar(self, telefone: str, mensagem: str) -> None:
         """
         Envia uma mensagem de texto usando o endpoint /send-text da Z-API.
         """
         endpoint = f"{self.api_url}/send-text"
         payload = {
-            "phone": telefone,
+            "phone": f"+55{telefone}",
             "message": mensagem
         }
         try:
@@ -53,31 +66,41 @@ class AdaptadorZAPI(Whatsapp):
 
     def receber(self, payload_webhook: Dict[str, Any]) -> MensagemRecebida:
         try:
-            payload = _ZAPIPayload.model_validate(payload_webhook)
+            payload = ZAPIPayload.model_validate(payload_webhook)
 
-            if payload.message_type == "chat" and payload.text:
+            # if payload.message_type == "chat" and payload.text and payload.text.message:
+            #     return MensagemRecebida(
+            #         telefone_remetente=payload.phone,
+            #         tipo="TEXTO",
+            #         texto_conteudo=payload.text.message
+            #     )
+            # elif payload.message_type in ["image", "audio", "ptt"] and payload.media_url and payload.mime_type:
+            #     conteudo_bytes = self._baixar_midia(payload.media_url)
+                
+            #     tipo_msg: TipoMensagem = "DESCONHECIDO"
+            #     if "image" in payload.mime_type:
+            #         tipo_msg = "IMAGEM"
+            #     elif "audio" in payload.mime_type:
+            #         tipo_msg = "AUDIO"
+
+            #     return MensagemRecebida(
+            #         telefone_remetente=payload.phone,
+            #         tipo=tipo_msg,
+            #         media_conteudo=conteudo_bytes,
+            #         media_mime_type=payload.mime_type
+            #     )
+
+            telefone_formatado = self._formatar_numero_telefone(payload.phone)
+            print(f"[Z-API] payload.phone: {payload.phone}")
+            print(f"[Z-API] Telefone formatado: {telefone_formatado}")
+            if payload.message_type == "ReceivedCallback" and payload.text and payload.text.message:
                 return MensagemRecebida(
+                    telefone_formatado=telefone_formatado,
                     telefone_remetente=payload.phone,
                     tipo="TEXTO",
-                    texto_conteudo=payload.text
+                    texto_conteudo=payload.text.message
                 )
-            
-            elif payload.message_type in ["image", "audio", "ptt"] and payload.media_url and payload.mime_type:
-                conteudo_bytes = self._baixar_midia(payload.media_url)
-                
-                tipo_msg: TipoMensagem = "DESCONHECIDO"
-                if "image" in payload.mime_type:
-                    tipo_msg = "IMAGEM"
-                elif "audio" in payload.mime_type:
-                    tipo_msg = "AUDIO"
 
-                return MensagemRecebida(
-                    telefone_remetente=payload.phone,
-                    tipo=tipo_msg,
-                    media_conteudo=conteudo_bytes,
-                    media_mime_type=payload.mime_type
-                )
-            
             raise ValueError(f"Tipo de mensagem não suportado ou payload incompleto: '{payload.message_type}'")
 
         except (ValidationError, requests.RequestException) as e:

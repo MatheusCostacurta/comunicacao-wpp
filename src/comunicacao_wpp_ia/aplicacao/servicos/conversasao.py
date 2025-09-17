@@ -35,9 +35,8 @@ class ServicoConversa:
 
     def _encerrar_conversa(self, telefone: str, mensagem_erro: str):
         """
-        Limpa a memória da conversa e envia uma mensagem de erro seguida da notificação de encerramento.
+        Envia uma mensagem de erro seguida da notificação de encerramento.
         """
-        self._memoria.limpar_memoria_conversa(telefone)
         if mensagem_erro:
             self._whatsapp.enviar(telefone, mensagem_erro)
         self._whatsapp.enviar(telefone, "Conversa finalizada.")
@@ -49,22 +48,25 @@ class ServicoConversa:
         """
         
         try:
-            remetente = self._obter_remetente_service.executar(telefone=mensagem_recebida.telefone_remetente)
+            remetente = self._obter_remetente_service.executar(telefone=mensagem_recebida.telefone_formatado)
         except (ValueError, NenhumProdutorEncontradoError):
-            print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
+            print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_formatado}. Encerrando fluxo.")
             mensagem_final = "Não foi possível identificar seu usuário. Por favor, entre em contato com o suporte."
+            self._memoria.limpar_memoria_conversa(mensagem_recebida.telefone_formatado)
             self._encerrar_conversa(mensagem_recebida.telefone_remetente, mensagem_final)
             return
             
         except MultiplosProdutoresError:
-            print(f"[ERROR] Múltiplos produtores encontrados para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
+            print(f"[ERROR] Múltiplos produtores encontrados para o telefone: {mensagem_recebida.telefone_formatado}. Encerrando fluxo.")
             mensagem_final = "Identifiquei que seu número está associado a mais de um produtor. No momento, só posso processar registros para usuários com um único produtor vinculado. Por favor, contate o suporte."
+            self._memoria.limpar_memoria_conversa(mensagem_recebida.telefone_formatado)
             self._encerrar_conversa(mensagem_recebida.telefone_remetente, mensagem_final)
             return
         
         if not remetente:
-            print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
+            print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_formatado}. Encerrando fluxo.")
             mensagem_final = "Não foi possível identificar seu usuário. Por favor, entre em contato com o suporte."
+            self._memoria.limpar_memoria_conversa(mensagem_recebida.telefone_formatado)
             self._encerrar_conversa(mensagem_recebida.telefone_remetente, mensagem_final)
             return 
         
@@ -72,6 +74,7 @@ class ServicoConversa:
         if not conteudo_texto:
             print("[SERVICO CONVERSA] Pré-processamento não retornou conteúdo. Encerrando fluxo.")
             mensagem_final = "Não consegui entender sua mensagem. Por favor, tente novamente em texto, áudio ou imagem."
+            self._memoria.limpar_memoria_conversa(mensagem_recebida.telefone_formatado)
             self._encerrar_conversa(mensagem_recebida.telefone_remetente, mensagem_final)
             return
 

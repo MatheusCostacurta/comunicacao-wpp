@@ -9,6 +9,7 @@ class MensagemRecebida(BaseModel):
     Ele lida com o conteúdo bruto (seja texto ou bytes de mídia).
     """
     telefone_remetente: str
+    telefone_formatado: str
     
     # Tipo da mensagem para roteamento na camada de aplicação
     tipo: TipoMensagem = Field(..., description="O tipo de conteúdo da mensagem.")
