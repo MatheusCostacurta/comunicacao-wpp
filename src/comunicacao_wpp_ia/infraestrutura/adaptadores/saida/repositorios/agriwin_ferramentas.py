@@ -53,6 +53,14 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         objetos_dominio = []
         for item_dict in dados_api:
             try:
+                #TODO: Não esta legal esses if/else para um método genérico
+                if dto_class == ProdutoAgriwinDTO:
+                    if 'ingredientes_ativo' in item_dict and isinstance(item_dict['ingredientes_ativo'], list):
+                        item_dict['ingredientes_ativo'] = [{'nome': ia} for ia in item_dict['ingredientes_ativo'] if isinstance(ia, str)]
+                    
+                    if 'unidades_medida' in item_dict and isinstance(item_dict['unidades_medida'], list):
+                        item_dict['unidades_medida'] = [{'sigla': um} for um in item_dict['unidades_medida'] if isinstance(um, str)]
+
                 dto_instance = dto_class.model_validate(item_dict)
                 domain_object = map_func(dto_instance)
                 objetos_dominio.append(domain_object)
