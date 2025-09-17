@@ -68,29 +68,6 @@ class AdaptadorZAPI(Whatsapp):
             payload = ZAPIPayload.model_validate(payload_webhook)
             telefone_formatado = self._formatar_numero_telefone(payload.phone)
 
-            # if payload.message_type == "chat" and payload.text and payload.text.message:
-            #     return MensagemRecebida(
-            #         telefone_remetente=payload.phone,
-            #         tipo="TEXTO",
-            #         texto_conteudo=payload.text.message
-            #     )
-            # elif payload.message_type in ["image", "audio", "ptt"] and payload.media_url and payload.mime_type:
-            #     conteudo_bytes = self._baixar_midia(payload.media_url)
-                
-            #     tipo_msg: TipoMensagem = "DESCONHECIDO"
-            #     if "image" in payload.mime_type:
-            #         tipo_msg = "IMAGEM"
-            #     elif "audio" in payload.mime_type:
-            #         tipo_msg = "AUDIO"
-
-            #     return MensagemRecebida(
-            #         telefone_remetente=payload.phone,
-            #         tipo=tipo_msg,
-            #         media_conteudo=conteudo_bytes,
-            #         media_mime_type=payload.mime_type
-            #     )
-
-            
             if payload.text and payload.text.message:
                 print("[Z-API] Texto recebido")
                 return MensagemRecebida(
@@ -109,7 +86,17 @@ class AdaptadorZAPI(Whatsapp):
                     media_conteudo=conteudo_bytes,
                     media_mime_type=payload.audio.mimeType
                 )
-
+            elif payload.image and payload.image.imageUrl:
+                print("[Z-API] Imagem recebida")
+                conteudo_bytes = self._baixar_midia(payload.image.imageUrl)
+                return MensagemRecebida(
+                    telefone_formatado=telefone_formatado,
+                    telefone_remetente=payload.phone,
+                    tipo="IMAGEM",
+                    media_conteudo=conteudo_bytes,
+                    media_mime_type=payload.image.mimeType
+                )
+            
             raise ValueError(f"Tipo de mensagem não suportado ou payload incompleto: '{payload.message_type}'")
 
         except (ValidationError, requests.RequestException) as e:
