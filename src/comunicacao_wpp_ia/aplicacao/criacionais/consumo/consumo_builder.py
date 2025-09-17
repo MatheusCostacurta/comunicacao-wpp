@@ -4,6 +4,7 @@ from src.comunicacao_wpp_ia.dominio.objetos.consumo_informado import ConsumoInfo
 from src.comunicacao_wpp_ia.aplicacao.portas.llms import ServicoLLM
 from src.comunicacao_wpp_ia.dominio.modelos.dados_remetente import DadosRemetente
 from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
+from pydantic import ValidationError
 
 class ConsumoBuilder:
     """
@@ -24,6 +25,7 @@ class ConsumoBuilder:
         2.  **Seja Resiliente:** Se uma busca não retornar um ID (retornar nulo ou vazio), não tem problema. Continue para o próximo item.
         3.  **Ambiguidade:** O único caso em que você deve parar e fazer uma pergunta é se UMA busca por UM item retornar MÚLTIPLOS resultados possíveis (ex: dois produtos com nomes parecidos).
         3.1 - - Nesse caso, PARE e pergunte ao usuário para esclarecer qual ele quer. Responda sempre em português (Brasil)
+        3.1 - - **Exemplo de Pergunta:** "Encontrei mais de um produto. Você se refere ao 'Produto A' ou ao 'Produto B'?"
         4.  **Formato Final:** Após buscar tudo, sua resposta final DEVE SER APENAS um objeto JSON estruturado com os dados que você encontrou. Use o seguinte formato:
             {{{{
                 "produtos": [{{{{ "id": <string>, "quantidade": <float> }}}}],
@@ -71,8 +73,11 @@ class ConsumoBuilder:
             dados_json = json.loads(clean_str)
             consumo_montado = Consumo.model_validate(dados_json)
             return consumo_montado
+        except ValidationError as e:
+            print(f"[BUILDER VALIDATION ERROR] O JSON do agente é inválido: {e}")
+            print(f"[BUILDER ERROR] String recebida: {resultado_str}")
+            return "Parece que ainda faltam algumas informações ou algo não ficou claro. Poderia revisar e enviar novamente os dados, por favor?"
         except (json.JSONDecodeError, Exception) as e:
             print(f"[BUILDER ERROR] Falha ao decodificar o JSON do agente: {e}")
             print(f"[BUILDER ERROR] String recebida: {resultado_str}")
-            # Se falhar, retorna a string original para que o fluxo possa pedir esclarecimento
             return resultado_str
