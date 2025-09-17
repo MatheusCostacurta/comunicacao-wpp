@@ -10,7 +10,10 @@ garantindo que qualquer dado vindo de fora seja validado antes de ser processado
 pelo sistema.
 """
 
-# --- DTOs para Produto ---
+class RemetenteAgriwinDTO(BaseModel):
+    identificador: str
+    nome: str
+    
 class UnidadeMedidaDTO(BaseModel):
     sigla: str
 

@@ -1,6 +1,6 @@
 import os
 import requests
-from typing import List, Optional, Dict
+from typing import Optional, Dict
 
 class AgriwinCliente:
     """
@@ -8,6 +8,13 @@ class AgriwinCliente:
     Gerencia a autenticação e as requisições HTTP.
     """
     _tokens_cache: Dict[str, str] = {} # Cache de tokens por base_url
+    todas_bases_urls = [
+        "https://sistema.agriwin.com.br",
+        "https://castrolanda.agriwin.com.br",
+        "https://frisia.agriwin.com.br",
+        "https://capal.agriwin.com.br",
+        "https://demo.agriwin.com.br",
+    ]
 
     def __init__(self):
         self._usuario = os.getenv("AGRIWIN_USUARIO")
