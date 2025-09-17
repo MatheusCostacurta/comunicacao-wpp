@@ -77,11 +77,14 @@ Siga os passos abaixo para configurar e executar o projeto em seu ambiente local
     # 'dev' para usar memória local, 'prod' para usar Redis do Docker
     AMBIENTE="dev"
 
-    # Suas credenciais da Groq API
-    GROQ_API_KEY="SUA_CHAVE_API_GROQ"
+    # Suas credenciais da IA
+    OPENAI_API_KEY="SUA_CHAVE_OPENAI"
 
     # URL da sua instância Z-API
-    ZAPI_URL="[https://api.z-api.io/instances/SUA_INSTANCIA/token/SEU_TOKEN](https://api.z-api.io/instances/SUA_INSTANCIA/token/SEU_TOKEN)"
+    ZAPI_INSTANCIA_ID=
+    ZAPI_INSTANCIA_TOKEN=
+    ZAPI_CLIENTE_TOKEN=
+    ZAPI_URL_BASE="https://api.z-api.io"
 
     # Configuração do Redis (usado quando AMBIENTE=prod)
     REDIS_HOST=wpp-redis

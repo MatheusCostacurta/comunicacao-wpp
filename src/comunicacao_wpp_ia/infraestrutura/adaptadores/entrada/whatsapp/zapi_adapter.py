@@ -12,11 +12,23 @@ class AdaptadorZAPI(Whatsapp):
     Implementação concreta (Adaptador) da porta ServicoMensageria para a Z-API.
     """
     def __init__(self):
-        self.api_url = os.getenv("ZAPI_URL")
-        if not self.api_url:
-            raise ValueError("A variável de ambiente 'ZAPI_URL' não foi configurada.")
+        self.url_base = os.getenv("ZAPI_URL_BASE")
+        self.instancia_id = os.getenv("ZAPI_INSTANCIA_ID")
+        self.instancia_token = os.getenv("ZAPI_INSTANCIA_TOKEN")
+        self.token_cliente = os.getenv("ZAPI_CLIENTE_TOKEN")
+        if not self.url_base:
+            raise ValueError("A variável de ambiente 'ZAPI_URL_BASE' não foi configurada.")
+        if not self.instancia_id:
+            raise ValueError("A variável de ambiente 'ZAPI_INSTANCIA_ID' não foi configurada.")
+        if not self.instancia_token:
+            raise ValueError("A variável de ambiente 'ZAPI_INSTANCIA_TOKEN' não foi configurada.")
+        if not self.token_cliente:
+            raise ValueError("A variável de ambiente 'ZAPI_CLIENTE_TOKEN' não foi configurada.")
         
-        self.headers = { "Content-Type": "application/json" }
+        self.headers = { 
+            "Content-Type": "application/json", 
+            "Client-Token": self.token_cliente
+        }
         print("[INFRA] Adaptador Z-API inicializado.")
 
     def _baixar_midia(self, url: str) -> bytes:
@@ -49,14 +61,13 @@ class AdaptadorZAPI(Whatsapp):
         """
         Envia uma mensagem de texto usando o endpoint /send-text da Z-API.
         """
-        endpoint = f"{self.api_url}/send-text"
+        endpoint = f"{self.url_base}/instances/{self.instancia_id}/token/{self.instancia_token}/send-text"
         payload = {
-            "phone": f"+55{telefone}",
+            # "phone": f"+55{telefone}",
+            "phone": "5542998536683",
             "message": mensagem
         }
         try:
-            print(f"[Z-API] Enviando mensagem para {telefone}...")
-            print(f"[Z-API] Mensagem: {mensagem}")
             response = requests.post(endpoint, json=payload, headers=self.headers)
             response.raise_for_status() # Lança um erro para respostas HTTP 4xx/5xx
             print(f"[Z-API] Mensagem enviada com sucesso.")
