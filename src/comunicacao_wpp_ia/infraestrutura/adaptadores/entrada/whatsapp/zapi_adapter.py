@@ -41,7 +41,6 @@ class AdaptadorZAPI(Whatsapp):
         if len(numeros) == 10:
             ddd = numeros[:2]
             numero_sem_9 = numeros[2:]
-            print(f"[Z-API] Número {numeros} ajustado para o formato com 9º dígito.")
             return f"{ddd}9{numero_sem_9}"
         
         return numeros
@@ -67,6 +66,7 @@ class AdaptadorZAPI(Whatsapp):
     def receber(self, payload_webhook: Dict[str, Any]) -> MensagemRecebida:
         try:
             payload = ZAPIPayload.model_validate(payload_webhook)
+            telefone_formatado = self._formatar_numero_telefone(payload.phone)
 
             # if payload.message_type == "chat" and payload.text and payload.text.message:
             #     return MensagemRecebida(
@@ -90,15 +90,24 @@ class AdaptadorZAPI(Whatsapp):
             #         media_mime_type=payload.mime_type
             #     )
 
-            telefone_formatado = self._formatar_numero_telefone(payload.phone)
-            print(f"[Z-API] payload.phone: {payload.phone}")
-            print(f"[Z-API] Telefone formatado: {telefone_formatado}")
-            if payload.message_type == "ReceivedCallback" and payload.text and payload.text.message:
+            
+            if payload.text and payload.text.message:
+                print("[Z-API] Texto recebido")
                 return MensagemRecebida(
                     telefone_formatado=telefone_formatado,
                     telefone_remetente=payload.phone,
                     tipo="TEXTO",
                     texto_conteudo=payload.text.message
+                )
+            elif payload.audio and payload.audio.audioUrl:
+                print("[Z-API] Áudio recebido")
+                conteudo_bytes = self._baixar_midia(payload.audio.audioUrl)
+                return MensagemRecebida(
+                    telefone_formatado=telefone_formatado,
+                    telefone_remetente=payload.phone,
+                    tipo="AUDIO",
+                    media_conteudo=conteudo_bytes,
+                    media_mime_type=payload.audio.mimeType
                 )
 
             raise ValueError(f"Tipo de mensagem não suportado ou payload incompleto: '{payload.message_type}'")
