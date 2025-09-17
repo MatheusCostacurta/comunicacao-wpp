@@ -8,12 +8,11 @@ class LocalizarProdutoService:
 
     def __obter_candidatos(self, nome_mencionado: str, lista_produtos: List[dict], limite: Optional[int] = None) -> List[dict]:
         """
-        Encontra produtos candidatos com base na similaridade do nome (score >= 80) 
-        OU dos ingredientes ativos (score >= 90).
+        Encontra produtos candidatos com base na similaridade do nome ou dos ingredientes ativos
         """
         candidatos_encontrados = {}  # Usar um dicionário para evitar duplicatas, com ID como chave
         nome_mencionado_lower = nome_mencionado.lower()
-        score_nome_minimo = 80
+        score_nome_minimo = 75
         score_ingrediente_minimo = 90
 
         for produto in lista_produtos:
