@@ -6,6 +6,7 @@ from src.comunicacao_wpp_ia.aplicacao.portas.ferramentas import Ferramentas
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_ferramentas import RepositorioFerramentas
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_produto import LocalizarProdutoService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_talhao import LocalizarTalhaoService
+from src.comunicacao_wpp_ia.dominio.servicos.localizar_plantio import LocalizarPlantioService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_propriedade import LocalizarPropriedadeService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_maquina import LocalizarMaquinaService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_ponto_estoque import LocalizarPontoEstoqueService
@@ -25,6 +26,7 @@ class UtilizarFerramenta(Ferramentas):
         """
         self._localizar_produto_service = LocalizarProdutoService(repositorio_ferramentas)
         self._localizar_talhao_service = LocalizarTalhaoService(repositorio_ferramentas)
+        self._localizar_plantio_service = LocalizarPlantioService(repositorio_ferramentas)
         self._localizar_propriedade_service = LocalizarPropriedadeService(repositorio_ferramentas)
         self._localizar_maquina_service = LocalizarMaquinaService(repositorio_ferramentas)
         self._localizar_ponto_estoque_service = LocalizarPontoEstoqueService(repositorio_ferramentas)
@@ -45,11 +47,20 @@ class UtilizarFerramenta(Ferramentas):
 
     def buscar_talhoes_disponiveis(self, base_url: str, id_produtor: str) -> List[Dict[str, Any]]:
         """
-        Busca todos os talhões disponíveis para o produtor.
+        Busca todos os plantios através dos talhões disponíveis para o produtor.
 
-        Invoca o serviço de domínio e retorna a lista de talhões serializada.
+        Invoca o serviço de domínio e retorna a lista de plantios serializada.
         """
         resultados = self._localizar_talhao_service.obter(base_url=base_url,id_produtor=id_produtor)
+        return serializar_para_json(resultados)
+    
+    def buscar_plantios_disponiveis(self, base_url: str, id_produtor: str) -> List[Dict[str, Any]]:
+        """
+        Busca todos os plantios através disponíveis para o produtor.
+
+        Invoca o serviço de domínio e retorna a lista de plantios serializada.
+        """
+        resultados = self._localizar_plantio_service.obter(base_url=base_url,id_produtor=id_produtor)
         return serializar_para_json(resultados)
     
     def buscar_propriedades_disponiveis(self, base_url: str, id_produtor: str) -> List[Dict[str, Any]]:

@@ -38,13 +38,13 @@ class ValidadorInformacoesParaConsumo:
         # 2. Validação dos outros campos obrigatórios (não relacionados a produtos)
         for campo in cls._campos_obrigatorios:
             if campo != "produtos_mencionados" and not getattr(consumo, campo):
-                chave_pergunta = "local" if "talhao" in campo or "propriedade" in campo else campo  # Remapeia o nome do campo para a pergunta genérica se necessário
+                chave_pergunta = "local" if "talhao" in campo or "propriedade" in campo or "plantio" in campo else campo  # Remapeia o nome do campo para a pergunta genérica se necessário
                 if cls._mapa_perguntas[chave_pergunta] not in campos_faltantes:
                     campos_faltantes.append(cls._mapa_perguntas[chave_pergunta])
 
         # 3. Validação do local (talhão ou propriedade)
         local_informado = False
-        if consumo.tipo_rateio == 'talhao' and consumo.talhoes_mencionados:
+        if consumo.tipo_rateio == 'plantio' and (consumo.talhoes_mencionados or consumo.plantios_mencionados):
             local_informado = True
         elif consumo.tipo_rateio == 'propriedade' and consumo.propriedades_mencionadas:
             local_informado = True

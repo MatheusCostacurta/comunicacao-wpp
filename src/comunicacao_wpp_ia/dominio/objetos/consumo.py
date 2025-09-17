@@ -22,7 +22,7 @@ class Consumo(BaseModel):
     id_atividade: Optional[str] = None
     data_aplicacao: Optional[str] = None
     tipo_rateio: Optional[str] = None
-    ids_talhoes: Optional[List[str]] = None
+    ids_plantios: Optional[List[str]] = None
     ids_propriedades: Optional[List[str]] = None
     id_responsavel: Optional[str] = None
     maquinas: Optional[List[Maquina]] = None

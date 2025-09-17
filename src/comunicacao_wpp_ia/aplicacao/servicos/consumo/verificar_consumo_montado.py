@@ -23,7 +23,7 @@ def verificar_dados_consumo(consumo: Consumo, llm: ServicoLLM) -> ResultadoVerif
     1.  O campo 'produtos' não pode ser uma lista vazia. Cada item dentro de 'produtos' deve ter um 'id' e uma 'quantidade'.
     2.  Os campos 'id_ponto_estoque', 'id_safra' e 'data_aplicacao' não podem ser nulos ou vazios.
     3.  O campo 'tipo_rateio' não pode ser nulo ou vazio.
-    4.  Se 'tipo_rateio' for 'talhao', a lista 'ids_talhoes' não pode ser nula ou vazia.
+    4.  Se 'tipo_rateio' for 'plantio', a lista 'ids_plantios' não pode ser nula ou vazia.
     5.  Se 'tipo_rateio' for 'propriedade', a lista 'ids_propriedades' não pode ser nula ou vazia.
 
     **Análise e Resposta:**

@@ -35,6 +35,10 @@ class AdaptadorLangChainFerramentas:
                                             base_url=remetente.base_url,
                                             id_produtor=remetente.produtor_id[0])
         
+        buscar_plantios_com_contexto = partial(self._servico.buscar_plantios_disponiveis,
+                                            base_url=remetente.base_url,
+                                            id_produtor=remetente.produtor_id[0])
+        
         buscar_propriedades_com_contexto = partial(self._servico.buscar_propriedades_disponiveis,
                                                 base_url=remetente.base_url,
                                                 id_produtor=remetente.produtor_id[0])
@@ -74,11 +78,21 @@ class AdaptadorLangChainFerramentas:
         @tool
         def buscar_talhoes_disponiveis() -> str:
             """
-            Use esta ferramenta para obter uma lista de TODOS os talhões (áreas ou campos) disponíveis na fazenda do produtor. 
-            A IA deve então usar esta lista para encontrar o(s) ID(s) do talhão(s) que o usuário mencionou (pode ser mais de um).
-            Retorna um JSON string com a lista de TODOS os talhões disponíveis.
+            Use esta ferramenta para obter uma lista de TODOS os plantios disponíveis na fazenda do produtor.
+            A IA deve então usar esta lista para encontrar o(s) ID(s) dos plantios que correspondem ao talhão que o usuário mencionou (pode ser mais de um).
+            Retorna um JSON string com a lista de TODOS os plantios disponíveis.
             """
             resultados = buscar_talhoes_com_contexto()
+            return json.dumps(resultados)
+        
+        @tool
+        def buscar_plantios_disponiveis() -> str:
+            """
+            Use esta ferramenta para obter uma lista de TODOS os plantios disponíveis na fazenda do produtor. 
+            A IA deve então usar esta lista para encontrar o(s) ID(s) do plantio(s) que o usuário mencionou (pode ser mais de um).
+            Retorna um JSON string com a lista de TODOS os plantios disponíveis.
+            """
+            resultados = buscar_plantios_com_contexto()
             return json.dumps(resultados)
 
         @tool
@@ -142,6 +156,7 @@ class AdaptadorLangChainFerramentas:
         ferramentas: List[Any] = [
             buscar_produto_por_nome,
             buscar_talhoes_disponiveis,
+            buscar_plantios_disponiveis,
             buscar_propriedades_disponiveis,
             buscar_maquinas_disponiveis,
             buscar_pontos_de_estoque_disponiveis,

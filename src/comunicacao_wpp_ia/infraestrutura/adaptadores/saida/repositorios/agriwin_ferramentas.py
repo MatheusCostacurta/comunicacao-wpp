@@ -22,6 +22,7 @@ from src.comunicacao_wpp_ia.dominio.modelos.imobilizado import Imobilizado
 from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
 from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
+from src.comunicacao_wpp_ia.dominio.modelos.plantio import Plantio
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_ferramentas import RepositorioFerramentas
 
 # --- Cliente HTTP ---
@@ -86,12 +87,12 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         response = self._cliente.get(base_url, endpoint, params=params)
         return self._processar_e_mapear_resposta(response, ProdutoAgriwinDTO, AgriwinMapeador.para_produto_dominio)
 
-    def buscar_talhoes_do_produtor(self, base_url: str, id_produtor: str) -> List[Talhao]:
+    def buscar_atraves_dos_talhoes_do_produtor(self, base_url: str, id_produtor: str) -> List[Talhao]:
         print(f"\n[API] Buscando todos os talhões para o produtor {id_produtor}...")
         endpoint = "/api/v1/areas"
         params = {"identificador_produtor": id_produtor}
         response = self._cliente.get(base_url, endpoint, params=params)
-        return self._processar_e_mapear_resposta(response, AreasAgriwinDTO, AgriwinMapeador.para_talhao_dominio)
+        return self._processar_e_mapear_resposta(response, AreasAgriwinDTO, AgriwinMapeador.para_plantio_dominio)
     
     def buscar_propriedades_do_produtor(self, base_url: str, id_produtor: str) -> List[Propriedade]:
         print(f"\n[API] Buscando todas as propriedades para o produtor {id_produtor}...")
@@ -99,6 +100,13 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         params = {"identificador_produtor": id_produtor}
         response = self._cliente.get(base_url, endpoint, params=params)
         return self._processar_e_mapear_resposta(response, AreasAgriwinDTO, AgriwinMapeador.para_propriedade_dominio)
+    
+    def buscar_plantios_do_produtor(self, base_url: str, id_produtor: str) -> List[Plantio]:
+        print(f"\n[API] Buscando todos os plantios para o produtor {id_produtor}...")
+        endpoint = "/api/v1/areas"
+        params = {"identificador_produtor": id_produtor}
+        response = self._cliente.get(base_url, endpoint, params=params)
+        return self._processar_e_mapear_resposta(response, AreasAgriwinDTO, AgriwinMapeador.para_plantio_dominio)
     
     def buscar_maquinas_do_produtor(self, base_url: str, id_produtor: str) -> List[Imobilizado]:
         print(f"\n[API] Buscando todas as máquinas para o produtor {id_produtor}...")

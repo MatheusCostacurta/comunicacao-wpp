@@ -19,7 +19,7 @@ class ConsumoBuilder:
         Sua única missão é usar as ferramentas para encontrar os IDs de todos os itens mencionados pelo usuário e, ao final, montar um objeto JSON estruturado com esses dados.
 
         **Regras:**
-        1.  **Colete Primeiro:** Use as ferramentas para buscar IDs para produtos, talhões/propriedades, máquinas, pontos de estoque, safra, responsavel, etc., com base nos `dados_iniciais`.
+        1.  **Colete Primeiro:** Use as ferramentas para buscar IDs para produtos, talhões/plantios/propriedades (apenas um dos 3 - o informado), máquinas, pontos de estoque, safra etc., com base nos `dados_iniciais`.
         1.1. **Sempre busque a Safra e o Ponto de Estoque:** Você DEVE obrigatoriamente chamar as ferramentas `buscar_safra_disponivel` e `buscar_pontos_de_estoque_disponiveis`. Se o usuário não especificou nos `dados_iniciais`, invoque as ferramentas sem parâmetros.
         2.  **Seja Resiliente:** Se uma busca não retornar um ID (retornar nulo ou vazio), não tem problema. Continue para o próximo item.
         3.  **Ambiguidade:** O único caso em que você deve parar e fazer uma pergunta é se UMA busca por UM item retornar MÚLTIPLOS resultados possíveis (ex: dois produtos com nomes parecidos).
@@ -31,7 +31,7 @@ class ConsumoBuilder:
                 "id_safra": <string | null>,
                 "data_aplicacao": "<DD/MM/YYYY>",
                 "tipo_rateio": "<'talhao' | 'propriedade'>",
-                "ids_talhoes": [<string>],
+                "ids_plantios": [<string>],
                 "ids_propriedades": [<string>],
                 "id_responsavel": <string | null>,
                 "maquinas": [{{{{ "id": <string>, "horimetro_inicio": <float | null>, "horimetro_fim": <float | null> }}}}]

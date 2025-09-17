@@ -9,6 +9,7 @@ from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
 from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
 from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
+from src.comunicacao_wpp_ia.dominio.modelos.plantio import Plantio
 
 # --- DTOs da Infraestrutura (Camada Externa) ---
 from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
@@ -43,19 +44,28 @@ class AgriwinMapeador:
             ingredientes_ativos=ingredientes
         )
 
-    @staticmethod
-    def para_talhao_dominio(dto: AreasAgriwinDTO) -> Talhao:
-        return Talhao(
-            id=dto.talhao.identificador,
-            nome=dto.talhao.descricao,
-            area_ha=0.0  # O endpoint de plantios não fornece a área
-        )
+    # @staticmethod
+    # def para_talhao_dominio(dto: AreasAgriwinDTO) -> Talhao:
+    #     return Talhao(
+    #         id=dto.talhao.identificador,
+    #         nome=dto.talhao.descricao,
+    #         area_ha=0.0  # O endpoint de plantios não fornece a área
+    #     )
 
     @staticmethod
     def para_propriedade_dominio(dto: AreasAgriwinDTO) -> Propriedade:
         return Propriedade(
             id=dto.talhao.propriedade.identificador,
             nome=dto.talhao.propriedade.descricao
+        )
+    
+    @staticmethod
+    def para_plantio_dominio(dto: AreasAgriwinDTO) -> Plantio:
+        return Plantio(
+            id=dto.identificador,
+            nome=dto.cultura.descricao,
+            talhao=Talhao(id=dto.talhao.identificador, nome=dto.talhao.descricao, area_ha=0.0),
+            propriedade=Propriedade(id=dto.talhao.propriedade.identificador, nome=dto.talhao.propriedade.descricao)
         )
     
     @staticmethod
@@ -115,9 +125,9 @@ class AgriwinMapeador:
         if consumo.tipo_rateio == 'propriedade':
             rateio_payload.tipo = "PROPRIEDADE_AGRICOLA"
             rateio_payload.propriedades = consumo.ids_propriedades
-        elif consumo.tipo_rateio == 'talhao':
+        elif consumo.tipo_rateio == 'plantio':
             rateio_payload.tipo = "PLANTIO"
-            rateio_payload.plantios = consumo.ids_talhoes
+            rateio_payload.plantios = consumo.ids_plantios
 
         lista_imobilizados = None
         if consumo.maquinas:

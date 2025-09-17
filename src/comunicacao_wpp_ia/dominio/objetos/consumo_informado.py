@@ -18,8 +18,9 @@ class ConsumoInformado(BaseModel):
     produtos_mencionados: Optional[List[ProdutoInformado]] = Field(default=None, description="Uma lista de todos os produtos e suas respectivas quantidades mencionados.")
     
     talhoes_mencionados: Optional[List[str]] = Field(default=None, description="Uma lista com os nomes dos locais, campos ou talhões onde o insumo foi aplicado.")
+    plantios_mencionados: Optional[List[str]] = Field(default=None, description="Uma lista com os nomes dos locais, campos onde o insumo foi aplicado.")
     propriedades_mencionadas: Optional[List[str]] = Field(default=None, description="Uma lista com os nomes das propriedades ou fazendas onde o insumo foi aplicado.")
-    tipo_rateio: Optional[Literal['talhao', 'propriedade']] = Field(default=None, description="Indica se o custo do consumo deve ser rateado por 'talhao' ou para a 'propriedade' inteira.")
+    tipo_rateio: Optional[Literal['plantio', 'propriedade']] = Field(default=None, description="Indica se o custo do consumo deve ser rateado por 'talhao' ou para a 'propriedade' inteira.")
 
     maquinas_mencionadas: Optional[List[MaquinaInformada]] = Field(default=None, description="Uma lista de todas as máquinas e seus respectivos horímetros mencionados.")
     

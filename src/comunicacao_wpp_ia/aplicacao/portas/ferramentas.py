@@ -19,6 +19,10 @@ class Ferramentas(ABC):
     @abstractmethod
     def buscar_propriedades_disponiveis(self) -> List[Dict[str, Any]]:
         pass
+    
+    @abstractmethod
+    def buscar_plantios_disponiveis(self) -> List[Dict[str, Any]]:
+        pass
 
     @abstractmethod
     def buscar_maquinas_disponiveis(self, nome_maquina: str) -> List[Dict[str, Any]]:
