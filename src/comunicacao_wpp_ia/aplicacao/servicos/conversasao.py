@@ -13,6 +13,8 @@ from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.verificar_consumo_montado import verificar_dados_consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
 
+from src.comunicacao_wpp_ia.dominio.excecoes.excecoes import MultiplosProdutoresError, NenhumProdutorEncontradoError
+
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_ferramentas import RepoAgriwinFerramentas
 from src.comunicacao_wpp_ia.aplicacao.servicos.llms.utilizar_ferramenta import UtilizarFerramenta
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
@@ -45,7 +47,21 @@ class ServicoConversa:
         Ponto de entrada principal. Orquestra a busca do remetente, pré-processamento
         e o fluxo de conversação.
         """
-        remetente = self._obter_remetente_service.executar(telefone=mensagem_recebida.telefone_remetente)
+        
+        try:
+            remetente = self._obter_remetente_service.executar(telefone=mensagem_recebida.telefone_remetente)
+        except (ValueError, NenhumProdutorEncontradoError):
+            print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
+            mensagem_final = "Não foi possível identificar seu usuário. Por favor, entre em contato com o suporte."
+            self._encerrar_conversa(mensagem_recebida.telefone_remetente, mensagem_final)
+            return
+            
+        except MultiplosProdutoresError:
+            print(f"[ERROR] Múltiplos produtores encontrados para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
+            mensagem_final = "Identifiquei que seu número está associado a mais de um produtor. No momento, só posso processar registros para usuários com um único produtor vinculado. Por favor, contate o suporte."
+            self._encerrar_conversa(mensagem_recebida.telefone_remetente, mensagem_final)
+            return
+        
         if not remetente:
             print(f"[ERROR] Remetente não encontrado para o telefone: {mensagem_recebida.telefone_remetente}. Encerrando fluxo.")
             mensagem_final = "Não foi possível identificar seu usuário. Por favor, entre em contato com o suporte."
