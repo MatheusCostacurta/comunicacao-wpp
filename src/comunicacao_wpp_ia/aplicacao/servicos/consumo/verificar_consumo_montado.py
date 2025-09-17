@@ -20,7 +20,7 @@ def verificar_dados_consumo(consumo: Consumo, llm: ServicoLLM) -> ResultadoVerif
     Você é um auditor de dados rigoroso e atencioso. Sua tarefa é analisar o objeto JSON de um consumo agrícola e verificar se ele está pronto para ser salvo, de acordo com as seguintes regras:
 
     **Regras Obrigatórias:**
-    1.  O campo 'produtos' não pode ser uma lista vazia. Cada item dentro de 'produtos' deve ter um 'id' e uma 'quantidade'.
+    1.  O campo 'produtos' não pode ser uma lista vazia. Cada item dentro de 'produtos' deve ter um 'id' e uma 'quantidade' (nao pode nulas, vazias ou 0).
     2.  Os campos 'id_ponto_estoque', 'id_safra' e 'data_aplicacao' não podem ser nulos ou vazios.
     3.  O campo 'tipo_rateio' não pode ser nulo ou vazio.
     4.  Se 'tipo_rateio' for 'plantio', a lista 'ids_plantios' não pode ser nula ou vazia.

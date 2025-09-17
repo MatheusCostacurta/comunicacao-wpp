@@ -116,7 +116,7 @@ class ServicoConversa:
         resultado_validacao = validar_intencao_do_usuario.executar(mensagem, historico)
         if not resultado_validacao.intencao_valida:
             print("\n--- RESULTADO FINAL (INTENÇÃO MALICIOSA/INVÁLIDA) ---")
-            resposta_usuario = "Desculpe, só posso processar registros de consumo. Para outras solicitações, entre em contato com o suporte."
+            resposta_usuario = resultado_validacao.justificativa or "Desculpe, só posso processar registros de consumo. Para outras solicitações, entre em contato com o suporte."
             #? Enviar a má intenção para o amplitude para análise se estamos errando na validação
             self._whatsapp.enviar(telefone, resposta_usuario)
             return False
