@@ -12,28 +12,31 @@ class FabricaConsumoInformado:
     def __init__(self, llm: ServicoLLM):
         self._llm = llm
 
+    # TODO: Nem sempre está substituindo oq foi falado por ultimo pelo que está no historico > por ex: tinha o estoque A mencionado, ao nao encontrar e solicitar novamente eu informei o B porém ele manteve o A que tinha sido enviado anteriormente.
     @staticmethod
     def __obter_prompt_sistema() -> str:
         return """
             Você é um assistente especialista em extrair informações de consumo agrícola a partir de um texto. 
-            Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário e no histórico.
+            Sua tarefa é preencher os campos do modelo de dados com base na mensagem do usuário e no histórico da conversa.
 
-            Siga estas regras estritamente:
-            1.  **Produtos:** Crie uma lista em `produtos_mencionados`. Para cada produto (insumo químico, fertilizante), adicione um objeto com seu `nome` e `quantidade`.
+            **Regras de Extração e Fusão:**
+            1.  **Analise o Histórico Primeiro:** O histórico pode conter uma conversa em andamento. Se a "Nova Mensagem do Usuário" for curta e parecer uma resposta a uma pergunta do assistente (ex: "estoque da sede", "15 litros", "trator amarelo"), sua principal fonte de informação é a mensagem original do usuário no histórico.
+            2.  **Construa o Objeto Completo:** Sua missão é sempre retornar um objeto `ConsumoInformado` o mais completo possível, combinando informações de toda a conversa.
+            2.  **Produtos:** Crie uma lista em `produtos_mencionados`. Para cada produto (insumo químico, fertilizante), adicione um objeto com seu `nome` e `quantidade`.
                 - Ex: "Boxer 1, Convicto 13" -> `produtos_mencionados: [{{"nome": "Boxer", "quantidade": "1"}}, {{"nome": "Convicto", "quantidade": "13"}}]`
-            2.  **Máquinas:** Crie uma lista em `maquinas_mencionadas`. Para cada máquina, adicione um objeto com seu `nome` e, se disponíveis, `horimetro_inicio`/`horimetro_fim` ou quantidade andada/utilizada.
-            3.  **Locais:** Extraia `talhoes_mencionados` e/ou `propriedades_mencionadas` e/ou `plantios_mencionados` como listas de strings.
+            3.  **Máquinas:** Crie uma lista em `maquinas_mencionadas`. Para cada máquina, adicione um objeto com seu `nome` e, se disponíveis, `horimetro_inicio`/`horimetro_fim` ou quantidade andada/utilizada.
+            4.  **Locais:** Extraia `talhoes_mencionados` e/ou `propriedades_mencionadas` e/ou `plantios_mencionados` como listas de strings.
                 - Ex: "no talhão A e B" -> `talhoes_mencionados: ["A", "B"]`
                 - Ex: "na fazenda C" -> `propriedades_mencionadas: ["C"]`
                 - Ex: "no plantio D" -> `plantios_mencionados: ["D"]`
-            4.  **Tipo de Rateio:** Determine o `tipo_rateio` com base na seguinte prioridade:
+            5.  **Tipo de Rateio:** Determine o `tipo_rateio` com base na seguinte prioridade:
                 - Se a mensagem mencionar um ou mais talhões/glebas e/ou plantios, o tipo é 'plantio'. Ignore qualquer menção à fazenda/propriedade no mesmo comando.
                 - Se a mensagem mencionar APENAS uma ou mais fazendas/propriedades, o tipo é 'propriedade'.
-            5.  **Data:** Extraia a `data_mencionada` como uma string EXATAMENTE como o usuário falou (ex: "ontem", "dia 20", "20/07", "24 de julho").
-            6.  **Safra:** A safra pode ser mencionada apenas através de numeros (ex: 23/24, 2023/2024, 24/24 ou 24)
-            7.  Se algum campo(produtos_mencionados, propriedades_mencionadas, talhoes_mencionados, plantios_mencionados, maquinas_mencionadas) não for mencionado, seu valor deve ser [].
-            7.1. Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquinas_mencionadas` com o valor [].
-            8.  Se algum campo(ponto_estoque_mencionado, data_mencionada, safra_mencionada, id_responsavel, tipo_rateio) não for mencionado, seu valor deve ser nulo (None).
+            6.  **Data:** Extraia a `data_mencionada` como uma string EXATAMENTE como o usuário falou (ex: "ontem", "dia 20", "20/07", "24 de julho").
+            7.  **Safra:** A safra pode ser mencionada apenas através de numeros (ex: 23/24, 2023/2024, 24/24 ou 24)
+            8.  Se algum campo(produtos_mencionados, propriedades_mencionadas, talhoes_mencionados, plantios_mencionados, maquinas_mencionadas) não for mencionado, seu valor deve ser [].
+            8.1. Se o usuário indicar que **não usou** uma máquina (ex: "aplicação manual", "sem trator"), preencha o campo `maquinas_mencionadas` com o valor [].
+            9.  Se algum campo(ponto_estoque_mencionado, data_mencionada, safra_mencionada, id_responsavel, tipo_rateio) não for mencionado, seu valor deve ser nulo (None).
         """
 
     @staticmethod
