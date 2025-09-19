@@ -5,6 +5,7 @@ import requests
 # --- DTOs da Camada de Infraestrutura ---
 from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
     ProdutoAgriwinDTO,
+    EstoqueAgriwinDTO,
     AreasAgriwinDTO,
     MaquinaAgriwinDTO,
     PontoEstoqueAgriwinDTO,
@@ -37,30 +38,27 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         self._cliente = agriwin_cliente
         print("[INFRA] Adaptador do Repositório Agriwin inicializado.")
 
-    def _processar_e_mapear_resposta(self, response: requests.Response, dto_class: Type[BaseModel], map_func: Callable[[Any], Any]) -> List[Any]:
-        """
-        Método genérico e robusto para processar a resposta da API.
-        1. Valida os dados brutos contra um DTO.
-        2. Usa uma função de mapeamento para converter o DTO em um objeto de domínio.
-        """
+    def _processar_resposta(self, response: requests.Response) -> List[Any]:
         if response.status_code != 200:
             return []
 
         dados_api = response.json().get("dados", [])
         if not isinstance(dados_api, list):
             dados_api = [dados_api] if dados_api else []
+        
+        return dados_api
+    
+    def _processar_e_mapear_resposta(self, response: requests.Response, dto_class: Type[BaseModel], map_func: Callable[[Any], Any]) -> List[Any]:
+        """
+        Método genérico e robusto para processar a resposta da API.
+        1. Valida os dados brutos contra um DTO.
+        2. Usa uma função de mapeamento para converter o DTO em um objeto de domínio.
+        """
+        dados_api = self._processar_resposta(response)
 
         objetos_dominio = []
         for item_dict in dados_api:
             try:
-                #TODO: Não esta legal esses if/else para um método genérico
-                if dto_class == ProdutoAgriwinDTO:
-                    if 'ingredientes_ativo' in item_dict and isinstance(item_dict['ingredientes_ativo'], list):
-                        item_dict['ingredientes_ativo'] = [{'nome': ia} for ia in item_dict['ingredientes_ativo'] if isinstance(ia, str)]
-                    
-                    if 'unidades_medida' in item_dict and isinstance(item_dict['unidades_medida'], list):
-                        item_dict['unidades_medida'] = [{'sigla': um} for um in item_dict['unidades_medida'] if isinstance(um, str)]
-
                 dto_instance = dto_class.model_validate(item_dict)
                 domain_object = map_func(dto_instance)
                 objetos_dominio.append(domain_object)
@@ -76,15 +74,48 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         endpoint = "/api/v1/produtos"
         params = {"identificador_produtor": id_produtor}
         response = self._cliente.get(base_url, endpoint, params=params)
-        return self._processar_e_mapear_resposta(response, ProdutoAgriwinDTO, AgriwinMapeador.para_produto_dominio)
+
+        dados_api = self._processar_resposta(response)
+        produtos = []
+        for item_dict in dados_api:
+            try:
+                if 'ingredientes_ativo' in item_dict and isinstance(item_dict['ingredientes_ativo'], list):
+                    item_dict['ingredientes_ativo'] = [{'nome': ia} for ia in item_dict['ingredientes_ativo'] if isinstance(ia, str)]
+                
+                if 'unidades_medida' in item_dict and isinstance(item_dict['unidades_medida'], list):
+                    item_dict['unidades_medida'] = [{'sigla': um} for um in item_dict['unidades_medida'] if isinstance(um, str)]
+
+                produto_agriwin_dto = ProdutoAgriwinDTO.model_validate(item_dict)
+                produto_dominio = AgriwinMapeador.para_produto_dominio(produto_agriwin_dto)
+                produtos.append(produto_dominio)
+            except ValidationError as e:
+                print(f"[ADAPTER WARNING] Dados de estoque da API são inválidos e serão ignorados. Erro: {e}")
+            except Exception as e:
+                print(f"[ADAPTER CRITICAL] Erro inesperado durante o mapeamento de estoque. Erro: {e}")
+
+        return produtos
     
     def buscar_produtos_em_estoque(self, base_url: str, id_produtor: str, produtos: List[str]) -> List[Produto]:
         print(f"\n[API] Buscando produtos em estoque para o produtor {id_produtor}...")
-        endpoint = "/api/v1/estoque/produtos"
+        endpoint = "/api/v1/estoques/produtos"
         ids_produtos = [p.id for p in produtos]
         params = {"identificador_produtor": id_produtor, "ids": ids_produtos}
         response = self._cliente.get(base_url, endpoint, params=params)
-        return self._processar_e_mapear_resposta(response, ProdutoAgriwinDTO, AgriwinMapeador.para_produto_dominio)
+
+        dados_api = self._processar_resposta(response)
+        produtos_com_estoque = []
+        for item_dict in dados_api:
+            try:
+                estoque_dto = EstoqueAgriwinDTO.model_validate(item_dict)
+                if estoque_dto.saldo > 0:
+                    produto_dominio = AgriwinMapeador.para_produto_dominio(estoque_dto.produto)
+                    produtos_com_estoque.append(produto_dominio)
+            except ValidationError as e:
+                print(f"[ADAPTER WARNING] Dados de estoque da API são inválidos e serão ignorados. Erro: {e}")
+            except Exception as e:
+                print(f"[ADAPTER CRITICAL] Erro inesperado durante o mapeamento de estoque. Erro: {e}")
+
+        return produtos_com_estoque
 
     def buscar_produtos_mais_consumidos(self, base_url: str, id_produtor: str, produtos: List[str]) -> List[Produto]:
         print(f"\n[API] Buscando consumo recente de produtos para o produtor {id_produtor}...")

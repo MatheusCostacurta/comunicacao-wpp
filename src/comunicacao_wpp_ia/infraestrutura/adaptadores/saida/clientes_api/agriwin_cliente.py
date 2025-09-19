@@ -69,9 +69,17 @@ class AgriwinCliente:
         url = f"{base_url.rstrip('/')}{endpoint}"
         
         if params:
-            # Constrói a query string manualmente para evitar a codificação do '='
+            partes_query = []
+            for chave, valor in params.items():
+                if isinstance(valor, list): # Se o valor é uma lista, cria um 'chave=item' para cada item
+                    for item in valor:
+                        partes_query.append(f"{chave}={item}")
+                else:
+                    partes_query.append(f"{chave}={valor}")
+
             # ! NAO É BOM BASE64 PARA URL - AGR-3865
-            query_string = "&".join([f"{key}={value}" for key, value in params.items()])
+            # Junta tudo com '&'
+            query_string = "&".join(partes_query)
             url = f"{url}?{query_string}"
 
         print(f"[AGRIWIN CLIENT] Executando GET em: {url}")
