@@ -125,7 +125,7 @@ class AgriwinMapeador:
         if consumo.tipo_rateio == 'propriedade':
             rateio_payload.tipo = "PROPRIEDADE_AGRICOLA"
             rateio_payload.propriedades = consumo.ids_propriedades
-        elif consumo.tipo_rateio == 'plantio':
+        elif consumo.tipo_rateio in ['plantio', 'talhao']:
             rateio_payload.tipo = "PLANTIO"
             rateio_payload.plantios = consumo.ids_plantios
 
