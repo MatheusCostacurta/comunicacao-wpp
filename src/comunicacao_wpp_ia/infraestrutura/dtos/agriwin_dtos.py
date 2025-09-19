@@ -26,6 +26,10 @@ class ProdutoAgriwinDTO(BaseModel):
     unidades_medida: Optional[List[UnidadeMedidaDTO]] = []
     ingredientes_ativo: Optional[List[IngredienteAtivoDTO]] = []
 
+class EstoqueAgriwinDTO(BaseModel):
+    produto: ProdutoAgriwinDTO
+    saldo: float
+
 class _PropriedadePlantioDTO(BaseModel):
     identificador: str
     descricao: str

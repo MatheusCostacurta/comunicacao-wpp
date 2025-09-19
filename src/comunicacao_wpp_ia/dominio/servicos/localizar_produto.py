@@ -67,7 +67,7 @@ class LocalizarProdutoService:
             nomes_similares = [c.nome for c in produtos_similares]
             print(f"[SERVICE] Múltiplos produtos_similares encontrados: {nomes_similares}. Verificando estoque e consumo...")
             
-            # produtos_em_estoque = self.api.buscar_produtos_em_estoque(base_url, id_produtor, produtos_similares)
+            produtos_em_estoque = self.api.buscar_produtos_em_estoque(base_url, id_produtor, produtos_similares)
             # produtos_mais_usados = self.api.buscar_produtos_mais_consumidos(base_url, id_produtor, produtos_similares)
 
         return {
