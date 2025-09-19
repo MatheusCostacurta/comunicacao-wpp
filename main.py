@@ -1,5 +1,6 @@
 import uvicorn
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
@@ -12,12 +13,14 @@ def run():
     """
     print("--- INICIANDO SERVIDOR DA API DE COMUNICAÇÃO WPP ---")
     
+    # Obtém a porta da variável de ambiente PORT. O padrão é 8000 para desenvolvimento local.
+    port = int(os.environ.get("PORT", 8000))
+
     # O uvicorn.run inicia o servidor.
     # "api:app" informa ao uvicorn para procurar o objeto 'app' no arquivo 'api.py'.
     # host="0.0.0.0" torna a API acessível na rede local.
-    # port=8000 define a porta.
-    # reload=True reinicia o servidor automaticamente quando detecta alterações no código.
-    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True)
+    # port=8000 define a porta..
+    uvicorn.run("api:app", host="0.0.0.0", port=port)
 
 
 if __name__ == "__main__":
