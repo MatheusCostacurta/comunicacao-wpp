@@ -28,6 +28,8 @@ def verificar_dados_consumo(consumo: Consumo, llm: ServicoLLM) -> ResultadoVerif
     
     **Regras Obrigatórias:**
     1.  O campo 'produtos' não pode ser uma lista vazia. Cada item dentro de 'produtos' deve ter um 'id' e uma 'quantidade' (nao pode nulas, vazias ou 0).
+        - **Problema Técnico:** O campo 'produtos' é vazio ou possui algum id nulo.
+        - **Sua Resposta:** "Não foi possível identificar o produto mencionado. Poderia revisar e me informar novamente?"
     2.  Os campos 'id_ponto_estoque', 'id_safra' e 'data_aplicacao' não podem ser nulos ou vazios.
     2.1  Exemplo do Ponto de Estoque/Depósito faltando:
         - **Problema Técnico:** O campo 'id_ponto_estoque' é nulo.

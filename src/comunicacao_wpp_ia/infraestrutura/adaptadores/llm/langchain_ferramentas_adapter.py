@@ -58,6 +58,8 @@ class AdaptadorLangChainFerramentas:
         buscar_responsavel_com_contexto = partial(self._servico.buscar_responsavel_por_telefone,
                                                 base_url=remetente.base_url,
                                                 id_produtor=remetente.produtor_id[0])
+        
+        solicitar_esclarecimento_com_contexto = partial(self._servico.solicitar_esclarecimento_ao_usuario)
 
         @tool
         def buscar_produto_por_nome(nome_produto: str) -> str:
@@ -152,6 +154,15 @@ class AdaptadorLangChainFerramentas:
                 return json.dumps(None)
             resultado = buscar_responsavel_com_contexto(telefone=telefone)
             return json.dumps(resultado)
+        
+        @tool
+        def solicitar_esclarecimento_ao_usuario(pergunta: str) -> str:
+            """
+            Use esta ferramenta QUANDO E SOMENTE QUANDO uma busca por um item (como produto, máquina ou talhão) retornar MÚLTIPLOS resultados e você precisar perguntar ao usuário qual deles é o correto.
+            A sua resposta final para o usuário será o texto que você passar para o parâmetro 'pergunta'.
+            NÃO use esta ferramenta para pedir informações que estão faltando; use-a apenas para resolver ambiguidades.
+            """
+            return solicitar_esclarecimento_com_contexto(pergunta=pergunta)
 
         ferramentas: List[Any] = [
             buscar_produto_por_nome,
@@ -161,7 +172,8 @@ class AdaptadorLangChainFerramentas:
             buscar_maquinas_disponiveis,
             buscar_pontos_de_estoque_disponiveis,
             buscar_safra_disponivel,
-            buscar_responsavel_por_telefone
+            buscar_responsavel_por_telefone,
+            solicitar_esclarecimento_ao_usuario
         ]
 
         return ferramentas

@@ -39,3 +39,7 @@ class Ferramentas(ABC):
     @abstractmethod
     def buscar_responsavel_por_telefone(self, telefone: str) -> Optional[Dict[str, Any]]:
         pass
+    
+    @abstractmethod
+    def solicitar_esclarecimento_ao_usuario(self, pergunta: str) -> str:
+        pass

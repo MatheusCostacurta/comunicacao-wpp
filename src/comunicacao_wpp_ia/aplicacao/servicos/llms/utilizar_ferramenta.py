@@ -120,6 +120,12 @@ class UtilizarFerramenta(Ferramentas):
         )
         return serializar_para_json(resultado)
     
+    def solicitar_esclarecimento_ao_usuario(self, pergunta: str) -> str:
+        """
+        Implementação da ferramenta de esclarecimento. Simplesmente retorna a pergunta.
+        """
+        return pergunta
+    
 def serializar_para_json(dados):
     if hasattr(dados, 'model_dump'): # Para objetos Pydantic
         return dados.model_dump(mode='json')
