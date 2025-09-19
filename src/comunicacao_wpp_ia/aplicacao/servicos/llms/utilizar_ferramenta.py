@@ -11,7 +11,6 @@ from src.comunicacao_wpp_ia.dominio.servicos.localizar_propriedade import Locali
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_maquina import LocalizarMaquinaService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_ponto_estoque import LocalizarPontoEstoqueService
 from src.comunicacao_wpp_ia.dominio.servicos.localizar_safra import LocalizarSafraService
-from src.comunicacao_wpp_ia.dominio.servicos.localizar_responsavel import LocalizarResponsavelService
 
 class UtilizarFerramenta(Ferramentas):
     """
@@ -31,7 +30,6 @@ class UtilizarFerramenta(Ferramentas):
         self._localizar_maquina_service = LocalizarMaquinaService(repositorio_ferramentas)
         self._localizar_ponto_estoque_service = LocalizarPontoEstoqueService(repositorio_ferramentas)
         self._localizar_safra_service = LocalizarSafraService(repositorio_ferramentas)
-        self._localizar_responsavel_service = LocalizarResponsavelService(repositorio_ferramentas)
 
     def buscar_produto_por_nome(self, base_url: str, id_produtor: str, nome_produto: str) -> Dict[str, Any]:
         """
@@ -108,17 +106,6 @@ class UtilizarFerramenta(Ferramentas):
         )
         return json.dumps(resultado.model_dump() if resultado else None, default=json_converter)
 
-    def buscar_responsavel_por_telefone(self, base_url: str, id_produtor: str, telefone: str) -> Optional[Dict[str, Any]]:
-        """
-        Busca um responsável pelo número de telefone.
-
-        Invoca o serviço de domínio para localizar o responsável e retorna o
-        resultado serializado.
-        """
-        resultado = self._localizar_responsavel_service.obter(
-            base_url=base_url,telefone=telefone, id_produtor=id_produtor
-        )
-        return serializar_para_json(resultado)
     
     def solicitar_esclarecimento_ao_usuario(self, pergunta: str) -> str:
         """

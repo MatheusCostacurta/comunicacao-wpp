@@ -77,7 +77,7 @@ class SafraAgriwinDTO(BaseModel):
     data_termino: str # A API retorna a data como string
 
 # --- DTO para Responsavel ---
-class ResponsavelAgriwinDTO(BaseModel):
+class PessoaAgriwinDTO(BaseModel):
     identificador: str
     nome: str
     nome_fantasia: Optional[str] = None

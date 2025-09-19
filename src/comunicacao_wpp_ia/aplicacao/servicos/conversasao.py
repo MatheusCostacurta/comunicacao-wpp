@@ -12,6 +12,7 @@ from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRece
 from src.comunicacao_wpp_ia.dominio.objetos.consumo import Consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.verificar_consumo_montado import verificar_dados_consumo
 from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
+from src.comunicacao_wpp_ia.dominio.servicos.responsavel.obter_responsavel import ObterResponsavel
 
 from src.comunicacao_wpp_ia.dominio.excecoes.excecoes import MultiplosProdutoresError, NenhumProdutorEncontradoError
 
@@ -23,7 +24,7 @@ class ServicoConversa:
     """
     Serviço de aplicação responsável por orquestrar o fluxo de uma conversa.
     """
-    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, obter_remetente_service: ObterRemetente, salvar_consumo_service: SalvarConsumo, pre_processador: ServicoPreProcessamento, whatsapp: Whatsapp, agriwin_cliente: AgriwinCliente):    
+    def __init__(self, memoria: ServicoMemoriaConversa, llm: ServicoLLM, obter_remetente_service: ObterRemetente, obter_responsavel_service: ObterResponsavel, salvar_consumo_service: SalvarConsumo, pre_processador: ServicoPreProcessamento, whatsapp: Whatsapp, agriwin_cliente: AgriwinCliente):    
         self._memoria = memoria
         self._llm = llm
         self._obter_remetente_service = obter_remetente_service
@@ -32,6 +33,7 @@ class ServicoConversa:
         self._fabrica_consumo_informado = FabricaConsumoInformado(llm)
         self._whatsapp = whatsapp
         self._agriwin_cliente = agriwin_cliente
+        self._obter_responsavel_service = obter_responsavel_service
 
     def _encerrar_conversa(self, telefone: str, mensagem_erro: str):
         """
@@ -101,6 +103,12 @@ class ServicoConversa:
         if isinstance(resultado_construcao, ConsumoInformado):
             # Etapa 2: Construir o objeto de consumo completo
             consumo_informado = resultado_construcao
+
+            # TODO: deveria estar sendo dentro da fabrica de consumo? acho que sim,
+            responsavel = self._obter_responsavel_service.obter(base_url=remetente.base_url, telefone=remetente.numero_telefone, id_produtor=remetente.produtor_id[0])
+            if responsavel:
+                consumo_informado.id_responsavel = responsavel.id
+
             resultado_builder = self._construir_consumo(remetente, mensagem, consumo_informado, historico)
             if isinstance(resultado_builder, str): # Builder pediu esclarecimento
                 self._responder_e_salvar_historico(remetente.numero_telefone, mensagem, resultado_builder, historico)

@@ -55,10 +55,6 @@ class AdaptadorLangChainFerramentas:
                                             base_url=remetente.base_url,
                                         id_produtor=remetente.produtor_id[0])
         
-        buscar_responsavel_com_contexto = partial(self._servico.buscar_responsavel_por_telefone,
-                                                base_url=remetente.base_url,
-                                                id_produtor=remetente.produtor_id[0])
-        
         solicitar_esclarecimento_com_contexto = partial(self._servico.solicitar_esclarecimento_ao_usuario)
 
         @tool
@@ -143,17 +139,6 @@ class AdaptadorLangChainFerramentas:
             """
             resultado = buscar_safra_com_contexto(nome_safra=nome_safra)
             return resultado
-
-        @tool
-        def buscar_responsavel_por_telefone(telefone: str) -> str:
-            """
-            Use esta ferramenta para encontrar o ID do responsável com base no número de telefone do remetente.
-            Retorna um JSON string com o responsável encontrado pelo telefone.
-            """
-            if not telefone or not isinstance(telefone, str):
-                return json.dumps(None)
-            resultado = buscar_responsavel_com_contexto(telefone=telefone)
-            return json.dumps(resultado)
         
         @tool
         def solicitar_esclarecimento_ao_usuario(pergunta: str) -> str:
@@ -172,7 +157,6 @@ class AdaptadorLangChainFerramentas:
             buscar_maquinas_disponiveis,
             buscar_pontos_de_estoque_disponiveis,
             buscar_safra_disponivel,
-            buscar_responsavel_por_telefone,
             solicitar_esclarecimento_ao_usuario
         ]
 

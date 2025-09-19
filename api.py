@@ -7,6 +7,7 @@ from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.groq_adapter import A
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.openai_adapter import AdaptadorOpenAI
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.entrada.whatsapp.zapi_adapter import AdaptadorZAPI
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_remetente import RepoAgriwinRemetente
+from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_responsavel import RepoAgriwinResponsavel
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.repositorios.agriwin_consumo import RepoAgriwinConsumo
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.llm.whisper_adapter import AdaptadorWhisper
@@ -17,6 +18,7 @@ from src.comunicacao_wpp_ia.aplicacao.servicos.conversasao import ServicoConvers
 from src.comunicacao_wpp_ia.aplicacao.dtos.mensagem_recebida import MensagemRecebida
 
 from src.comunicacao_wpp_ia.aplicacao.servicos.remetente.obter_remetente import ObterRemetente
+from src.comunicacao_wpp_ia.dominio.servicos.responsavel.obter_responsavel import ObterResponsavel
 from src.comunicacao_wpp_ia.aplicacao.servicos.consumo.salvar_consumo import SalvarConsumo
 
 from src.comunicacao_wpp_ia.infraestrutura.adaptadores.saida.clientes_api.agriwin_cliente import AgriwinCliente
@@ -47,6 +49,7 @@ def inicializar_servicos_e_adaptadores():
 
     # Adaptadores de Saída (Infraestrutura)
     repo_remetente = RepoAgriwinRemetente(agriwin_cliente)
+    repo_responsavel = RepoAgriwinResponsavel(agriwin_cliente)
     repo_consumo = RepoAgriwinConsumo(agriwin_cliente)
     llm_adapter = AdaptadorOpenAI()  #TODO: Este adaptador também cria sua própria instância de AgriwinCliente internamente, o que pode ser refatorado no futuro.
     whatsapp_adapter = AdaptadorZAPI()
@@ -58,6 +61,7 @@ def inicializar_servicos_e_adaptadores():
 
     # Serviços de Aplicação (Core)
     obter_remetente_service = ObterRemetente(repo_remetente=repo_remetente)
+    obter_responsavel_service = ObterResponsavel(repo_responsavel=repo_responsavel)
     salvar_consumo_service = SalvarConsumo(repositorio=repo_consumo)
 
     pre_processador = PreProcessamentoService(
@@ -72,7 +76,8 @@ def inicializar_servicos_e_adaptadores():
         salvar_consumo_service=salvar_consumo_service,
         pre_processador=pre_processador,
         whatsapp=whatsapp_adapter,
-        agriwin_cliente=agriwin_cliente 
+        agriwin_cliente=agriwin_cliente ,
+        obter_responsavel_service = obter_responsavel_service
     )
 
     servico_notificacao = NotificarExpiracaoConversa(whatsapp=whatsapp_adapter)

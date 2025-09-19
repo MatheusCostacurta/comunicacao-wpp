@@ -33,10 +33,6 @@ class RepositorioFerramentas(ABC):
         pass
 
     @abstractmethod
-    def buscar_responsavel_por_telefone(self, base_url: str, id_produtor: str, telefone: str) -> Optional[Responsavel]:
-        pass
-
-    @abstractmethod
     def buscar_safras_do_produtor(self, base_url: str, id_produtor: str) -> List[Safra]:
         pass
 

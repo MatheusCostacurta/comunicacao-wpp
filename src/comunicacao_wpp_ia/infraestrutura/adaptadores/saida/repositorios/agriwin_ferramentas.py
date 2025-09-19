@@ -9,8 +9,7 @@ from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
     AreasAgriwinDTO,
     MaquinaAgriwinDTO,
     PontoEstoqueAgriwinDTO,
-    SafraAgriwinDTO,
-    ResponsavelAgriwinDTO
+    SafraAgriwinDTO
 )
 # --- Mapeador da Camada de Infraestrutura ---
 from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_mapeador import AgriwinMapeador
@@ -22,7 +21,6 @@ from src.comunicacao_wpp_ia.dominio.modelos.propriedade import Propriedade
 from src.comunicacao_wpp_ia.dominio.modelos.imobilizado import Imobilizado
 from src.comunicacao_wpp_ia.dominio.modelos.ponto_estoque import PontoEstoque
 from src.comunicacao_wpp_ia.dominio.modelos.safra import Safra
-from src.comunicacao_wpp_ia.dominio.modelos.responsavel import Responsavel
 from src.comunicacao_wpp_ia.dominio.modelos.plantio import Plantio
 from src.comunicacao_wpp_ia.dominio.repositorios.repositorio_ferramentas import RepositorioFerramentas
 
@@ -167,20 +165,4 @@ class RepoAgriwinFerramentas(RepositorioFerramentas):
         params = {"identificador_produtor": id_produtor}
         response = self._cliente.get(base_url, endpoint, params=params)
         return self._processar_e_mapear_resposta(response, SafraAgriwinDTO, AgriwinMapeador.para_safra_dominio)
-    
-    def _buscar_responsaveis_do_produtor(self, base_url: str, id_produtor: str) -> List[Responsavel]:
-        print(f"\n[API] Buscando responsáveis para o produtor {id_produtor}...")
-        endpoint = "/api/v1/pessoas"
-        params = {"identificador_produtor": id_produtor}
-        response = self._cliente.get(base_url, endpoint, params=params)
-        return self._processar_e_mapear_resposta(response, ResponsavelAgriwinDTO, AgriwinMapeador.para_responsavel_dominio)
-
-    
-    def buscar_responsavel_por_telefone(self, base_url: str, id_produtor: str, telefone: str) -> Optional[Responsavel]:
-        print(f"\nBuscando responsável pelo telefone {telefone} para o produtor {id_produtor}...")
-        responsaveis = self._buscar_responsaveis_do_produtor(base_url, id_produtor)
-        for responsavel in responsaveis:
-            if responsavel.telefone == telefone:
-                return responsavel
-        return None
     

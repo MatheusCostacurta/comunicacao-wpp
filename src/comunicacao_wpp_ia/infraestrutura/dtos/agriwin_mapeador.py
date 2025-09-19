@@ -18,7 +18,7 @@ from src.comunicacao_wpp_ia.infraestrutura.dtos.agriwin_dtos import (
     MaquinaAgriwinDTO,
     PontoEstoqueAgriwinDTO,
     SafraAgriwinDTO,
-    ResponsavelAgriwinDTO,
+    PessoaAgriwinDTO,
     ConsumoAgriwinRequest,
     _ConsumoRateioAgriwinDTO,
     _ConsumoItemAgriwinDTO,
@@ -98,16 +98,7 @@ class AgriwinMapeador:
         )
 
     @staticmethod
-    def para_responsavel_dominio(dto: ResponsavelAgriwinDTO) -> Responsavel:
-        return Responsavel(
-            id=dto.identificador,
-            nome=dto.nome,
-            nome_fantasia=dto.nome_fantasia,
-            telefone=dto.telefone
-        )
-    
-    @staticmethod
-    def para_responsavel_dominio(dto: ResponsavelAgriwinDTO) -> Responsavel:
+    def para_responsavel_dominio(dto: PessoaAgriwinDTO) -> Responsavel:
         return Responsavel(
             id=dto.identificador,
             nome=dto.nome,
